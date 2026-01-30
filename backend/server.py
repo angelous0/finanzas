@@ -2188,6 +2188,62 @@ async def pagar_adelanto(
             
             return result
 
+@api_router.put("/adelantos/{id}", response_model=Adelanto)
+async def update_adelanto(id: int, data: AdelantoCreate):
+    """Update an existing advance"""
+    pool = await get_pool()
+    async with pool.acquire() as conn:
+        await conn.execute("SET search_path TO finanzas2, public")
+        
+        # Check if adelanto exists and is not already paid/discounted
+        existing = await conn.fetchrow(
+            "SELECT * FROM finanzas2.cont_adelanto_empleado WHERE id = $1", id
+        )
+        if not existing:
+            raise HTTPException(404, "Adelanto no encontrado")
+        if existing['pagado'] or existing['descontado']:
+            raise HTTPException(400, "No se puede editar un adelanto pagado o descontado")
+        
+        row = await conn.fetchrow("""
+            UPDATE finanzas2.cont_adelanto_empleado 
+            SET empleado_id = $1, fecha = $2, monto = $3, motivo = $4
+            WHERE id = $5
+            RETURNING *
+        """, data.empleado_id, data.fecha, data.monto, data.motivo, id)
+        
+        # Get empleado nombre
+        emp = await conn.fetchrow(
+            "SELECT nombre FROM finanzas2.cont_tercero WHERE id = $1", 
+            row['empleado_id']
+        )
+        result = dict(row)
+        result['empleado_nombre'] = emp['nombre'] if emp else None
+        
+        return result
+
+@api_router.delete("/adelantos/{id}")
+async def delete_adelanto(id: int):
+    """Delete an advance (only if not paid or discounted)"""
+    pool = await get_pool()
+    async with pool.acquire() as conn:
+        await conn.execute("SET search_path TO finanzas2, public")
+        
+        # Check if adelanto exists and can be deleted
+        existing = await conn.fetchrow(
+            "SELECT * FROM finanzas2.cont_adelanto_empleado WHERE id = $1", id
+        )
+        if not existing:
+            raise HTTPException(404, "Adelanto no encontrado")
+        if existing['pagado']:
+            raise HTTPException(400, "No se puede eliminar un adelanto pagado. Primero anule el pago.")
+        if existing['descontado']:
+            raise HTTPException(400, "No se puede eliminar un adelanto ya descontado en planilla")
+        
+        await conn.execute(
+            "DELETE FROM finanzas2.cont_adelanto_empleado WHERE id = $1", id
+        )
+        return {"message": "Adelanto eliminado"}
+
 # =====================
 # PLANILLA
 # =====================
