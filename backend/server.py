@@ -3050,10 +3050,9 @@ async def get_historial_conciliaciones():
                 p.numero as numero_sistema,
                 p.tipo as tipo_sistema,
                 p.notas as descripcion_sistema,
-                t.nombre as tercero_nombre
+                p.referencia as ref_sistema
             FROM finanzas2.cont_banco_mov_raw b
             INNER JOIN finanzas2.cont_pago p ON b.cuenta_financiera_id = p.cuenta_financiera_id
-            LEFT JOIN finanzas2.cont_tercero t ON p.tercero_id = t.id
             WHERE b.procesado = TRUE AND p.conciliado = TRUE
             ORDER BY b.fecha DESC, b.id DESC
         """)
@@ -3070,7 +3069,7 @@ async def get_historial_conciliaciones():
                 "descripcion_banco": row['descripcion_banco'],
                 "numero_sistema": row['numero_sistema'],
                 "tipo_sistema": row['tipo_sistema'],
-                "descripcion_sistema": row['descripcion_sistema'] or row['tercero_nombre'],
+                "descripcion_sistema": row['descripcion_sistema'] or row['ref_sistema'] or '-',
                 "monto": float(row['monto']) if row['monto'] else 0.0
             })
         
