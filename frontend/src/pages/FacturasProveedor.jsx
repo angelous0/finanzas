@@ -459,20 +459,12 @@ export const FacturasProveedor = () => {
 
   // Crear letras
   const handleCrearLetras = async () => {
-    if (!letrasConfig.banco_id) {
-      toast.error('Seleccione un banco');
-      return;
-    }
-    
     try {
       // Usar la API de generar letras
       await generarLetras({
-        factura_proveedor_id: facturaParaLetras.id,
-        cantidad: parseInt(letrasConfig.cantidad),
-        intervalo_dias: parseInt(letrasConfig.intervalo_dias),
-        fecha_emision: letrasConfig.fecha_giro,
-        banco_id: parseInt(letrasConfig.banco_id),
-        prefijo: letrasConfig.prefijo
+        factura_id: facturaParaLetras.id,
+        cantidad_letras: parseInt(letrasConfig.cantidad),
+        dias_entre_letras: parseInt(letrasConfig.intervalo_dias)
       });
       
       toast.success(`${letrasPreview.length} letras creadas exitosamente`);
