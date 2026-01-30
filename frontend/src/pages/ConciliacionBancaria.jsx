@@ -796,37 +796,123 @@ export const ConciliacionBancaria = () => {
       {activeTab === 'historial' && (
         <div className="card">
           <div className="data-table-wrapper">
-            {conciliaciones.length === 0 ? (
-              <div className="empty-state">
-                <CheckCircle className="empty-state-icon" />
-                <div className="empty-state-title">No hay conciliaciones registradas</div>
+            {/* Movimientos del Banco Conciliados */}
+            <div style={{ marginBottom: '1.5rem' }}>
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '0.75rem',
+                padding: '0.875rem 1rem',
+                background: 'linear-gradient(135deg, #2563eb 0%, #1e40af 100%)',
+                borderRadius: '12px',
+                marginBottom: '1rem'
+              }}>
+                <CheckCircle size={20} color="white" />
+                <h3 style={{ margin: 0, color: 'white', fontSize: '1rem', fontWeight: 600 }}>
+                  Movimientos del Banco Conciliados ({movimientosBanco.filter(m => m.procesado).length})
+                </h3>
               </div>
-            ) : (
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>Fecha</th>
-                    <th>Cuenta</th>
-                    <th>Período</th>
-                    <th className="text-right">Saldo Inicial</th>
-                    <th className="text-right">Saldo Final</th>
-                    <th className="text-center">Movimientos</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {conciliaciones.map(conc => (
-                    <tr key={conc.id}>
-                      <td>{formatDate(conc.created_at)}</td>
-                      <td>{conc.cuenta_nombre}</td>
-                      <td>{formatDate(conc.fecha_inicio)} - {formatDate(conc.fecha_fin)}</td>
-                      <td className="text-right currency-display">{formatCurrency(conc.saldo_inicial)}</td>
-                      <td className="text-right currency-display">{formatCurrency(conc.saldo_final)}</td>
-                      <td className="text-center">{conc.lineas?.length || 0}</td>
+              
+              {movimientosBanco.filter(m => m.procesado).length === 0 ? (
+                <div className="empty-state">
+                  <CheckCircle className="empty-state-icon" />
+                  <div className="empty-state-title">No hay movimientos bancarios conciliados</div>
+                </div>
+              ) : (
+                <table className="data-table" style={{ fontSize: '0.8125rem' }}>
+                  <thead>
+                    <tr>
+                      <th>Fecha</th>
+                      <th>Banco</th>
+                      <th>Nro Operación</th>
+                      <th>Descripción</th>
+                      <th className="text-right">Monto</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
+                  </thead>
+                  <tbody>
+                    {movimientosBanco.filter(m => m.procesado).map(mov => (
+                      <tr key={mov.id}>
+                        <td>{formatDate(mov.fecha)}</td>
+                        <td>{mov.banco_excel || mov.banco || '-'}</td>
+                        <td style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.75rem' }}>
+                          {mov.referencia || '-'}
+                        </td>
+                        <td style={{ maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {mov.descripcion}
+                        </td>
+                        <td className="text-right currency-display" style={{ 
+                          color: mov.monto < 0 ? '#dc2626' : '#16a34a',
+                          fontWeight: 500
+                        }}>
+                          {formatCurrency(mov.monto, mov.monto < 0 ? '-S/' : 'S/')}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+
+            {/* Movimientos del Sistema Conciliados */}
+            <div>
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '0.75rem',
+                padding: '0.875rem 1rem',
+                background: 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)',
+                borderRadius: '12px',
+                marginBottom: '1rem'
+              }}>
+                <CheckCircle size={20} color="white" />
+                <h3 style={{ margin: 0, color: 'white', fontSize: '1rem', fontWeight: 600 }}>
+                  Movimientos del Sistema Conciliados ({movimientosSistema.filter(m => m.conciliado).length})
+                </h3>
+              </div>
+              
+              {movimientosSistema.filter(m => m.conciliado).length === 0 ? (
+                <div className="empty-state">
+                  <CheckCircle className="empty-state-icon" />
+                  <div className="empty-state-title">No hay movimientos del sistema conciliados</div>
+                </div>
+              ) : (
+                <table className="data-table" style={{ fontSize: '0.8125rem' }}>
+                  <thead>
+                    <tr>
+                      <th>Fecha</th>
+                      <th>Número</th>
+                      <th>Tipo</th>
+                      <th>Descripción</th>
+                      <th className="text-right">Monto</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {movimientosSistema.filter(m => m.conciliado).map(mov => (
+                      <tr key={mov.id}>
+                        <td>{formatDate(mov.fecha)}</td>
+                        <td style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.75rem' }}>
+                          {mov.numero}
+                        </td>
+                        <td>
+                          <span className={`badge ${mov.tipo === 'ingreso' ? 'badge-success' : 'badge-danger'}`} style={{ fontSize: '0.6875rem' }}>
+                            {mov.tipo === 'ingreso' ? 'INGRESO' : 'EGRESO'}
+                          </span>
+                        </td>
+                        <td style={{ maxWidth: '250px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {mov.notas || mov.tercero_nombre || '-'}
+                        </td>
+                        <td className="text-right currency-display" style={{ 
+                          fontWeight: 500,
+                          color: mov.tipo === 'ingreso' ? '#16a34a' : '#dc2626'
+                        }}>
+                          {mov.tipo === 'ingreso' ? '' : '-'}{formatCurrency(mov.monto_total)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
           </div>
         </div>
       )}
