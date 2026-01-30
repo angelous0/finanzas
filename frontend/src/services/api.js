@@ -153,6 +153,13 @@ export const importarExcelBanco = (file, cuentaFinancieraId, banco) => {
     headers: { 'Content-Type': 'multipart/form-data' },
   });
 };
+export const previsualizarExcelBanco = (file, banco) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  return api.post(`/conciliacion/previsualizar-excel?banco=${banco}`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+};
 export const conciliarMovimientos = (bancoIds, pagoIds) => {
   const params = new URLSearchParams();
   bancoIds.forEach(id => params.append('banco_ids', id));
