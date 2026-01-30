@@ -1113,13 +1113,15 @@ export const FacturasProveedor = () => {
 
       {/* Modal Nueva Factura - Estilo como la imagen */}
       {showModal && (
-        <div className="modal-overlay" onClick={() => setShowModal(false)}>
+        <div className="modal-overlay" onClick={() => { setShowModal(false); setEditingFactura(null); }}>
           <div className="factura-modal" onClick={(e) => e.stopPropagation()}>
             {/* Header */}
             <div className="factura-modal-header">
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                 <FileText size={24} color="#1B4D3E" />
-                <h2 style={{ fontSize: '1.25rem', fontWeight: 600, margin: 0 }}>Factura de proveedor</h2>
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 600, margin: 0 }}>
+                  {editingFactura ? `Editar Factura ${editingFactura.numero}` : 'Factura de proveedor'}
+                </h2>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
                 <div style={{ textAlign: 'right' }}>
@@ -1130,7 +1132,7 @@ export const FacturasProveedor = () => {
                     {formatCurrency(totales.total, monedaActual?.simbolo || 'S/.')}
                   </div>
                 </div>
-                <button className="modal-close" onClick={() => setShowModal(false)}>
+                <button className="modal-close" onClick={() => { setShowModal(false); setEditingFactura(null); }}>
                   <X size={20} />
                 </button>
               </div>
