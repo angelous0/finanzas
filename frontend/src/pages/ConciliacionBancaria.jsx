@@ -164,7 +164,7 @@ export const ConciliacionBancaria = () => {
     
     const totalBanco = selectedBanco.reduce((sum, id) => {
       const mov = movimientosBanco.find(m => m.id === id);
-      return sum + (mov ? (mov.abono || 0) - (mov.cargo || 0) : 0);
+      return sum + (mov ? (mov.monto || 0) : 0);
     }, 0);
     
     const totalSistema = selectedSistema.reduce((sum, id) => {
