@@ -131,6 +131,55 @@ export const VentasPOS = () => {
     }
   };
 
+  const handleExportExcel = () => {
+    try {
+      // Prepare data for Excel (without ID)
+      const excelData = filteredVentas.map(v => ({
+        'Fecha': formatDateTime(v.date_order),
+        'Tipo': v.tipo_comp || '-',
+        'N° Comprobante': v.num_comp || '-',
+        'Orden': v.name || '-',
+        'Empresa': v.company_name || '-',
+        'Cliente': v.partner_name || '-',
+        'Tienda': v.tienda_name || '-',
+        'Pagos Odoo': v.x_pagos || '-',
+        'Pagos Asignados': '-', // TODO: implementar cuando tengas pagos asignados
+        'Total': v.amount_total || 0
+      }));
+
+      // Create workbook
+      const ws = XLSX.utils.json_to_sheet(excelData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Ventas POS');
+
+      // Auto-size columns
+      const colWidths = [
+        { wch: 18 }, // Fecha
+        { wch: 8 },  // Tipo
+        { wch: 15 }, // N° Comprobante
+        { wch: 20 }, // Orden
+        { wch: 30 }, // Empresa
+        { wch: 30 }, // Cliente
+        { wch: 20 }, // Tienda
+        { wch: 25 }, // Pagos Odoo
+        { wch: 18 }, // Pagos Asignados
+        { wch: 12 }  // Total
+      ];
+      ws['!cols'] = colWidths;
+
+      // Generate filename with date
+      const today = new Date().toISOString().split('T')[0];
+      const filename = `ventas_pos_${today}.xlsx`;
+
+      // Download
+      XLSX.writeFile(wb, filename);
+      toast.success(`Exportadas ${excelData.length} ventas a Excel`);
+    } catch (error) {
+      console.error('Error exporting:', error);
+      toast.error('Error al exportar a Excel');
+    }
+  };
+
   // Filter ventas by search
   const filteredVentas = ventas.filter(v => {
     if (!search) return true;
