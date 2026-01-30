@@ -1844,7 +1844,7 @@ async def list_gastos(
 
 @api_router.post("/gastos", response_model=Gasto)
 async def create_gasto(data: GastoCreate):
-    """Create a gasto with mandatory payment"""
+    """Create a gasto with mandatory payment(s) that must cover total"""
     pool = await get_pool()
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
@@ -1857,40 +1857,23 @@ async def create_gasto(data: GastoCreate):
             igv = sum(l.importe * 0.18 for l in data.lineas if l.igv_aplica)
             total = subtotal + igv
             
-            # Create pago first (mandatory for gastos)
-            pago_numero = await generate_pago_number(conn, 'egreso')
-            pago = await conn.fetchrow("""
-                INSERT INTO finanzas2.cont_pago 
-                (numero, tipo, fecha, cuenta_financiera_id, moneda_id, monto_total, referencia, notas)
-                VALUES ($1, 'egreso', $2, $3, $4, $5, $6, $7)
-                RETURNING id
-            """, pago_numero, data.fecha, data.pago_cuenta_financiera_id, data.moneda_id,
-                total, data.pago_referencia, f"Pago de gasto {numero}")
+            # Validate payments sum to total
+            if not data.pagos:
+                raise HTTPException(400, "El gasto debe tener al menos un pago")
             
-            pago_id = pago['id']
+            total_pagos = sum(p.monto for p in data.pagos)
+            if abs(total_pagos - total) > 0.01:
+                raise HTTPException(400, f"El total de pagos ({total_pagos:.2f}) debe ser igual al total del gasto ({total:.2f})")
             
-            # Insert pago detalle
-            await conn.execute("""
-                INSERT INTO finanzas2.cont_pago_detalle 
-                (pago_id, cuenta_financiera_id, medio_pago, monto, referencia)
-                VALUES ($1, $2, $3, $4, $5)
-            """, pago_id, data.pago_cuenta_financiera_id, data.pago_medio, total, data.pago_referencia)
-            
-            # Update cuenta financiera
-            await conn.execute("""
-                UPDATE finanzas2.cont_cuenta_financiera 
-                SET saldo_actual = saldo_actual - $1 WHERE id = $2
-            """, total, data.pago_cuenta_financiera_id)
-            
-            # Create gasto
+            # Create gasto first
             gasto = await conn.fetchrow("""
                 INSERT INTO finanzas2.cont_gasto 
                 (numero, fecha, proveedor_id, beneficiario_nombre, moneda_id, subtotal, igv, total,
-                 tipo_documento, numero_documento, notas, pago_id)
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+                 tipo_documento, numero_documento, notas)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
                 RETURNING id
             """, numero, data.fecha, data.proveedor_id, data.beneficiario_nombre, data.moneda_id,
-                subtotal, igv, total, data.tipo_documento, data.numero_documento, data.notas, pago_id)
+                subtotal, igv, total, data.tipo_documento, data.numero_documento, data.notas)
             
             gasto_id = gasto['id']
             
@@ -1902,6 +1885,33 @@ async def create_gasto(data: GastoCreate):
                     VALUES ($1, $2, $3, $4, $5, $6, $7)
                 """, gasto_id, linea.categoria_id, linea.descripcion, linea.linea_negocio_id,
                     linea.centro_costo_id, linea.importe, linea.igv_aplica)
+            
+            # Create pago(s)
+            pago_numero = await generate_pago_number(conn, 'egreso')
+            pago = await conn.fetchrow("""
+                INSERT INTO finanzas2.cont_pago 
+                (numero, tipo, fecha, cuenta_financiera_id, moneda_id, monto_total, notas)
+                VALUES ($1, 'egreso', $2, $3, $4, $5, $6)
+                RETURNING id
+            """, pago_numero, data.fecha, data.pagos[0].cuenta_financiera_id, data.moneda_id,
+                total, f"Pago de gasto {numero}")
+            
+            pago_id = pago['id']
+            
+            # Insert pago detalles (multiple methods)
+            for pago_det in data.pagos:
+                await conn.execute("""
+                    INSERT INTO finanzas2.cont_pago_detalle 
+                    (pago_id, cuenta_financiera_id, medio_pago, monto, referencia)
+                    VALUES ($1, $2, $3, $4, $5)
+                """, pago_id, pago_det.cuenta_financiera_id, pago_det.medio_pago, 
+                    pago_det.monto, pago_det.referencia)
+                
+                # Update cuenta financiera
+                await conn.execute("""
+                    UPDATE finanzas2.cont_cuenta_financiera 
+                    SET saldo_actual = saldo_actual - $1 WHERE id = $2
+                """, pago_det.monto, pago_det.cuenta_financiera_id)
             
             # Insert pago aplicacion
             await conn.execute("""
