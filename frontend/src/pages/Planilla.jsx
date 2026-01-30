@@ -399,7 +399,6 @@ export const Planilla = () => {
                     <th className="text-right">Total Bruto</th>
                     <th className="text-right">Descuentos</th>
                     <th className="text-right">Neto a Pagar</th>
-                    <th className="text-center">Pago</th>
                     <th className="text-center">Estado</th>
                     <th className="text-center">Acciones</th>
                   </tr>
@@ -425,15 +424,6 @@ export const Planilla = () => {
                         {formatCurrency(planilla.total_neto)}
                       </td>
                       <td className="text-center">
-                        {planilla.pago_id ? (
-                          <span className="badge badge-info" title={`Pago ID: ${planilla.pago_id}`}>
-                            #{planilla.pago_id}
-                          </span>
-                        ) : (
-                          <span style={{ color: '#94a3b8' }}>-</span>
-                        )}
-                      </td>
-                      <td className="text-center">
                         <span className={getEstadoBadge(planilla.estado)}>
                           {planilla.estado?.toUpperCase()}
                         </span>
@@ -457,6 +447,18 @@ export const Planilla = () => {
                                 <Trash2 size={15} />
                               </button>
                             </>
+                          )}
+                          {planilla.pago_id && (
+                            <button 
+                              className="action-btn action-info"
+                              onClick={() => {
+                                setSelectedPlanilla(planilla);
+                                setShowPagosListModal(true);
+                              }}
+                              title="Ver Pagos"
+                            >
+                              <CreditCard size={15} />
+                            </button>
                           )}
                           <button 
                             className="action-btn"
