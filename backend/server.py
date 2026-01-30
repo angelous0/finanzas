@@ -2620,9 +2620,17 @@ async def sync_ventas_pos(company: str = "ambission", days_back: int = 30):
                         reserva_use_id = reserva_use_id_raw
                     
                     # Check if already exists
-                    existing = await conn.fetchval("""
-                        SELECT id FROM finanzas2.cont_venta_pos WHERE odoo_id = $1
+                    existing = await conn.fetchrow("""
+                        SELECT id, estado_local FROM finanzas2.cont_venta_pos 
+                        WHERE odoo_id = $1
                     """, odoo_id)
+                    
+                    # If exists and already processed (confirmada/credito/descartada), skip update
+                    if existing:
+                        existing_estado = existing['estado_local']
+                        if existing_estado in ['confirmada', 'credito', 'descartada']:
+                            # Skip this order - already processed, don't re-import
+                            continue
                     
                     if existing:
                         # Update existing record
