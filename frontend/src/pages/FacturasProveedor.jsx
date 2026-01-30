@@ -7,6 +7,7 @@ import {
 import { Plus, Trash2, Search, X, FileText, ChevronDown, ChevronUp, Copy } from 'lucide-react';
 import { toast } from 'sonner';
 import SearchableSelect from '../components/SearchableSelect';
+import TableSearchSelect from '../components/TableSearchSelect';
 
 const formatCurrency = (value, symbol = 'S/') => {
   return `${symbol} ${Number(value || 0).toLocaleString('es-PE', { minimumFractionDigits: 2 })}`;
