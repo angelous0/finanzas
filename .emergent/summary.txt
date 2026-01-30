@@ -5,53 +5,45 @@ The user wants to create a QuickBooks-like application named Finanzas 4.0 using 
 -   **Modules:** Base Catalogs, Purchase Orders, Supplier Invoices (CxP), Centralized Payments, Bills of Exchange (Letras), Expenses, Items/Inventory, Payroll, POS Sales (from Odoo), Budgets, Bank Reconciliation, and Reports. All must have full CRUD.
 -   **UI/UX:** Inspired by user screenshots, featuring a fixed sidebar, table-based views with filters, and inline Excel-like forms.
 -   **Specific Feature Requests during session:**
-    -   **Invoice Form:**
-        -   When a provider is selected, hide the beneficiary input.
-        -   The item details section should connect to , start empty, have a read-only UND field, and support horizontal scrolling.
-        -   Improve UI: remove number input arrows, restyle select dropdowns, and add search functionality to them.
-        -   Allow creating a new provider on-the-fly from the invoice modal.
-    -   **Invoice List View:**
-        -   Add inline actions: Pay, Generate Letras, Edit, View, Delete.
-        -   Implement logic: a canjeado (exchanged for bills) invoice cannot be paid directly.
-        -   Add ability to view related payments and linked letras.
-        -   Add ability to undo payments and letras generation.
-    -   **UI Bugs/Improvements:**
-        -   Fix sidebar not opening on mobile (hamburger menu).
-        -   Fix collapsed sidebar not being expandable.
-        -   Improve visual style of status badges.
-        -   Add filters (document #, provider, date, status) to the invoice list.
-        -   Fix responsive table rows becoming too thick.
-    -   **Letras Modal:**
-        -   Allow manual editing of the generated letras *before* creation.
+    -   **Invoice Form:** Implement various UI/UX improvements, including searchable selects and on-the-fly provider creation.
+    -   **Invoice List View:** Add inline actions (Pay, Generate Letras, etc.), filters, and fix responsive bugs.
+    -   **Letras Modal:** Allow manual editing of generated letras before creation.
+    -   **Critical Bug:** Prevent payments from exceeding the total invoice amount.
+    -   **Expenses Module:** Create a module similar to invoices but without a due date, forcing payment upon creation.
+    -   **Purchase Orders (OC) Module:** Create a module to manage OCs and allow converting them into supplier invoices. Implement multi-company support, a print option, and specific UI enhancements like a fullscreen modal and better summary visuals.
+    -   **Global UI:** Add a global company selector in the main application header.
 
 **User's preferred language**: Spanish
 
 **what currently exists?**
-The application is a full-stack FastAPI/React app connected to PostgreSQL. The core business logic for the **Supplier Invoice -> Accounts Payable (CxP) -> Payments -> Bills of Exchange (Letras)** lifecycle is now fully implemented and functional. This includes creating invoices, generating CxP automatically, applying partial/multi-method payments, generating letras from an invoice (which changes its state to canjeado), and viewing/reversing these actions.
-
-The frontend has been significantly enhanced with reusable searchable select components, numerous UI/UX improvements on the invoice form, and a responsive sidebar with a hamburger menu. The CRUD functionality for most base catalogs (, , , , ) is complete.
+The application is a full-stack FastAPI/React app connected to a PostgreSQL database. It features several core modules:
+-   **Supplier Invoices (Facturas Proveedor):** Full CRUD, payments, and conversion to Bills of Exchange (Letras). The UI includes advanced filters and improved action buttons.
+-   **Expenses (Gastos):** A functional module that forces the user to create one or more payments that sum to the total expense upon creation.
+-   **Purchase Orders (Órdenes de Compra):** Full CRUD functionality, including the ability to generate a supplier invoice from an OC. The UI has been refined with a multi-column layout and supports multi-company operations.
+-   **Global State:** A global header () has been added, which includes a company selector that manages the application's company context via React Context.
+-   **Backend:** Endpoints for all implemented modules exist in a monolithic  file. Critical bugs related to payment validation and database transaction scopes have been fixed.
 
 **Last working item**:
-- **Last item agent was working:** The agent was working on a batch of user requests. The very last action was fixing a bug where the collapsed sidebar could not be expanded again by modifying the CSS in . The next step is to address the remaining items from the user's request.
-- **Status:** IN PROGRESS
-- **Agent Testing Done:** Y
-- **Which testing method agent to use?** screenshot tool
+- **Last item agent was working:** The user requested another round of UI/UX improvements for the Purchase Order (OC) creation/editing modal. The agent analyzed the user's request and a provided image, and was about to start implementation.
+- **Status:** NOT STARTED
+- **Agent Testing Done:** N
+- **Which testing method agent to use?** frontend testing agent
 - **User Testing Done:** N
 
 **All Pending/In progress Issue list**:
-- **Issue 1 (P0):** Complete the remaining UI/UX improvements from the user's latest request.
-- **Issue 2 (P1):** The backend  error, noted in the initial handoff, was never investigated or resolved.
+- **Issue 1 (P0):** Implement latest user feedback for the Purchase Order (OC) modal.
+- **Issue 2 (P1):** A backend  error, noted in the initial handoff, was never investigated or resolved.
 
 **Issues Detail:**
-- **Issue 1: Pending UI/UX Improvements**
-  - **Attempted fixes:** The agent has already fixed the sidebar expansion bug. The other items are not started.
+- **Issue 1: OC Modal UI/UX Enhancements**
+  - **Attempted fixes:** None, this is a new request.
   - **Next debug checklist:**
-    1.  **Visuals:** Update CSS in  for better status badges and table styling.
-    2.  **Filters:** Add state and input fields for filters in  and update the  function to pass filter parameters to the API.
-    3.  **Responsive Rows:** Investigate and fix the CSS in  causing table rows to grow in height on small screens.
-    4.  **Edit Letras:** Modify the Canjear por Letras modal in  to make the generated letras table editable before submitting.
-  - **Why fix this issue and what will be achieved with the fix?** To fulfill the user's latest set of requirements for improving application usability and appearance.
-  - **Status:** IN PROGRESS
+    1.  **Fullscreen Modal:** Modify  to use a larger or fullscreen class for the modal (e.g., ).
+    2.  **Item Selector:** In  and potentially , improve the item selection UI to make the selected item more visible and the search list clearer.
+    3.  **On-the-fly Provider:** Add a Create New option to the  component used for providers, similar to what was done for invoices.
+    4.  **Monetary Font:** Add a new font family (e.g., a monospace font like 'Roboto Mono' or 'Fira Code') to  and apply it to all elements displaying currency values.
+  - **Why fix this issue and what will be achieved with the fix?** To address direct user feedback and improve the usability and aesthetics of a core feature.
+  - **Status:** NOT STARTED
   - **Is recurring issue?** N
   - **Should Test frontend/backend/both after fix?** frontend
   - **Blocked on other issue:** None
@@ -59,411 +51,411 @@ The frontend has been significantly enhanced with reusable searchable select com
 - **Issue 2: Ignored Backend 'asyncio' Error**
   - **Attempted fixes:** None. The agent ignored this issue from the start.
   - **Next debug checklist:**
-    1.  Check backend logs for errors: ==> /var/log/supervisor/backend.err.log <==
-    raise exc
-  File "/root/.venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
-    await app(scope, receive, sender)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 756, in __call__
-    await self.middleware_stack(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 776, in app
-    await route.handle(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 297, in handle
-    await self.app(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 77, in app
-    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 64, in wrapped_app
-    raise exc
-  File "/root/.venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
-    await app(scope, receive, sender)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 72, in app
-    response = await func(request)
-               ^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/fastapi/routing.py", line 278, in app
-    raw_response = await run_endpoint_function(
-                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/fastapi/routing.py", line 191, in run_endpoint_function
-    return await dependant.call(**values)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/app/backend/server.py", line 1270, in get_letras_de_factura
-    rows = await conn.fetch("""
-           ^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/asyncpg/connection.py", line 694, in fetch
-    return await self._execute(
-           ^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/asyncpg/connection.py", line 1873, in _execute
-    result, _ = await self.__execute(
-                ^^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/asyncpg/connection.py", line 1970, in __execute
-    result, stmt = await self._do_execute(
-                   ^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/asyncpg/connection.py", line 2021, in _do_execute
-    stmt = await self._get_statement(
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/asyncpg/connection.py", line 443, in _get_statement
-    statement = await self._protocol.prepare(
-                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "asyncpg/protocol/protocol.pyx", line 165, in prepare
-asyncpg.exceptions.UndefinedColumnError: column l.moneda_id does not exist
-ERROR:    Exception in ASGI application
-Traceback (most recent call last):
-  File "/root/.venv/lib/python3.11/site-packages/uvicorn/protocols/http/h11_impl.py", line 408, in run_asgi
-    result = await app(  # type: ignore[func-returns-value]
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/uvicorn/middleware/proxy_headers.py", line 84, in __call__
-    return await self.app(scope, receive, send)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/fastapi/applications.py", line 1054, in __call__
-    await super().__call__(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/applications.py", line 123, in __call__
-    await self.middleware_stack(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/middleware/errors.py", line 186, in __call__
-    raise exc
-  File "/root/.venv/lib/python3.11/site-packages/starlette/middleware/errors.py", line 164, in __call__
-    await self.app(scope, receive, _send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/middleware/cors.py", line 93, in __call__
-    await self.simple_response(scope, receive, send, request_headers=headers)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/middleware/cors.py", line 148, in simple_response
-    await self.app(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/middleware/exceptions.py", line 65, in __call__
-    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 64, in wrapped_app
-    raise exc
-  File "/root/.venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
-    await app(scope, receive, sender)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 756, in __call__
-    await self.middleware_stack(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 776, in app
-    await route.handle(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 297, in handle
-    await self.app(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 77, in app
-    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 64, in wrapped_app
-    raise exc
-  File "/root/.venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
-    await app(scope, receive, sender)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 72, in app
-    response = await func(request)
-               ^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/fastapi/routing.py", line 278, in app
-    raw_response = await run_endpoint_function(
-                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/fastapi/routing.py", line 191, in run_endpoint_function
-    return await dependant.call(**values)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/app/backend/server.py", line 1270, in get_letras_de_factura
-    rows = await conn.fetch("""
-           ^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/asyncpg/connection.py", line 694, in fetch
-    return await self._execute(
-           ^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/asyncpg/connection.py", line 1873, in _execute
-    result, _ = await self.__execute(
-                ^^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/asyncpg/connection.py", line 1970, in __execute
-    result, stmt = await self._do_execute(
-                   ^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/asyncpg/connection.py", line 2021, in _do_execute
-    stmt = await self._get_statement(
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/asyncpg/connection.py", line 443, in _get_statement
-    statement = await self._protocol.prepare(
-                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "asyncpg/protocol/protocol.pyx", line 165, in prepare
-asyncpg.exceptions.UndefinedColumnError: column l.moneda_id does not exist
-ERROR:    Exception in ASGI application
-Traceback (most recent call last):
-  File "/root/.venv/lib/python3.11/site-packages/uvicorn/protocols/http/h11_impl.py", line 408, in run_asgi
-    result = await app(  # type: ignore[func-returns-value]
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/uvicorn/middleware/proxy_headers.py", line 84, in __call__
-    return await self.app(scope, receive, send)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/fastapi/applications.py", line 1054, in __call__
-    await super().__call__(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/applications.py", line 123, in __call__
-    await self.middleware_stack(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/middleware/errors.py", line 186, in __call__
-    raise exc
-  File "/root/.venv/lib/python3.11/site-packages/starlette/middleware/errors.py", line 164, in __call__
-    await self.app(scope, receive, _send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/middleware/cors.py", line 85, in __call__
-    await self.app(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/middleware/exceptions.py", line 65, in __call__
-    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 64, in wrapped_app
-    raise exc
-  File "/root/.venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
-    await app(scope, receive, sender)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 756, in __call__
-    await self.middleware_stack(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 776, in app
-    await route.handle(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 297, in handle
-    await self.app(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 77, in app
-    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 64, in wrapped_app
-    raise exc
-  File "/root/.venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
-    await app(scope, receive, sender)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 72, in app
-    response = await func(request)
-               ^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/fastapi/routing.py", line 278, in app
-    raw_response = await run_endpoint_function(
-                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/fastapi/routing.py", line 191, in run_endpoint_function
-    return await dependant.call(**values)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/app/backend/server.py", line 1270, in get_letras_de_factura
-    rows = await conn.fetch("""
-           ^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/asyncpg/connection.py", line 694, in fetch
-    return await self._execute(
-           ^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/asyncpg/connection.py", line 1873, in _execute
-    result, _ = await self.__execute(
-                ^^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/asyncpg/connection.py", line 1970, in __execute
-    result, stmt = await self._do_execute(
-                   ^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/asyncpg/connection.py", line 2021, in _do_execute
-    stmt = await self._get_statement(
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/asyncpg/connection.py", line 443, in _get_statement
-    statement = await self._protocol.prepare(
-                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "asyncpg/protocol/protocol.pyx", line 165, in prepare
-asyncpg.exceptions.UndefinedColumnError: column l.moneda_id does not exist
+    1.  Check backend logs for the specific error: ==> /var/log/supervisor/backend.err.log <==
+2026-01-30 07:42:17,062 - server - INFO - Finanzas 4.0 API shutdown complete
+INFO:     Application shutdown complete.
+INFO:     Finished server process [1152]
+INFO:     Started server process [1190]
+INFO:     Waiting for application startup.
+2026-01-30 07:42:17,525 - server - INFO - Starting Finanzas 4.0 API...
+2026-01-30 07:42:17,525 - database - INFO - Connecting to PostgreSQL...
+2026-01-30 07:42:18,683 - database - INFO - PostgreSQL connection pool created successfully
+2026-01-30 07:42:24,351 - database - INFO - Schema finanzas2 and all tables created successfully
+2026-01-30 07:42:24,906 - server - INFO - Seed data already exists, skipping...
+2026-01-30 07:42:25,044 - server - INFO - Finanzas 4.0 API started successfully
+INFO:     Application startup complete.
 WARNING:  WatchFiles detected changes in 'server.py'. Reloading...
 INFO:     Shutting down
 INFO:     Waiting for application shutdown.
-2026-01-30 07:29:36,094 - database - INFO - PostgreSQL connection pool closed
-2026-01-30 07:29:36,094 - server - INFO - Finanzas 4.0 API shutdown complete
+2026-01-30 07:43:10,470 - database - INFO - PostgreSQL connection pool closed
+2026-01-30 07:43:10,470 - server - INFO - Finanzas 4.0 API shutdown complete
 INFO:     Application shutdown complete.
-INFO:     Finished server process [8110]
-INFO:     Started server process [8795]
+INFO:     Finished server process [1190]
+INFO:     Started server process [1313]
 INFO:     Waiting for application startup.
-2026-01-30 07:29:37,116 - server - INFO - Starting Finanzas 4.0 API...
-2026-01-30 07:29:37,116 - database - INFO - Connecting to PostgreSQL...
-2026-01-30 07:29:38,260 - database - INFO - PostgreSQL connection pool created successfully
-2026-01-30 07:29:43,965 - database - INFO - Schema finanzas2 and all tables created successfully
-2026-01-30 07:29:44,521 - server - INFO - Seed data already exists, skipping...
-2026-01-30 07:29:44,660 - server - INFO - Finanzas 4.0 API started successfully
+2026-01-30 07:43:11,141 - server - INFO - Starting Finanzas 4.0 API...
+2026-01-30 07:43:11,141 - database - INFO - Connecting to PostgreSQL...
+2026-01-30 07:43:12,369 - database - INFO - PostgreSQL connection pool created successfully
+2026-01-30 07:43:18,080 - database - INFO - Schema finanzas2 and all tables created successfully
+2026-01-30 07:43:18,634 - server - INFO - Seed data already exists, skipping...
+2026-01-30 07:43:18,772 - server - INFO - Finanzas 4.0 API started successfully
+INFO:     Application startup complete.
+2026-01-30 07:43:18,915 - database - INFO - PostgreSQL connection pool closed
+2026-01-30 07:43:18,915 - server - INFO - Finanzas 4.0 API shutdown complete
+ERROR:    Traceback (most recent call last):
+  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 741, in lifespan
+    await receive()
+  File "/root/.venv/lib/python3.11/site-packages/uvicorn/lifespan/on.py", line 137, in receive
+    return await self.receive_queue.get()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/asyncio/queues.py", line 158, in get
+    await getter
+asyncio.exceptions.CancelledError
+
+INFO:     Stopping reloader process [46]
+INFO:     Will watch for changes in these directories: ['/app/backend']
+INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
+INFO:     Started reloader process [1322] using WatchFiles
+INFO:     Started server process [1324]
+INFO:     Waiting for application startup.
+2026-01-30 07:43:19,594 - server - INFO - Starting Finanzas 4.0 API...
+2026-01-30 07:43:19,594 - database - INFO - Connecting to PostgreSQL...
+2026-01-30 07:43:20,741 - database - INFO - PostgreSQL connection pool created successfully
+2026-01-30 07:43:26,416 - database - INFO - Schema finanzas2 and all tables created successfully
+2026-01-30 07:43:26,969 - server - INFO - Seed data already exists, skipping...
+2026-01-30 07:43:27,107 - server - INFO - Finanzas 4.0 API started successfully
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+2026-01-30 07:45:53,676 - database - INFO - PostgreSQL connection pool closed
+2026-01-30 07:45:53,676 - server - INFO - Finanzas 4.0 API shutdown complete
+INFO:     Application shutdown complete.
+INFO:     Finished server process [1324]
+INFO:     Started server process [1998]
+INFO:     Waiting for application startup.
+2026-01-30 07:45:54,354 - server - INFO - Starting Finanzas 4.0 API...
+2026-01-30 07:45:54,354 - database - INFO - Connecting to PostgreSQL...
+2026-01-30 07:45:55,505 - database - INFO - PostgreSQL connection pool created successfully
+2026-01-30 07:46:01,197 - database - INFO - Schema finanzas2 and all tables created successfully
+2026-01-30 07:46:01,794 - server - INFO - Seed data already exists, skipping...
+2026-01-30 07:46:01,945 - server - INFO - Finanzas 4.0 API started successfully
+INFO:     Application startup complete.
+INFO:     Will watch for changes in these directories: ['/app/backend']
+INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
+INFO:     Started reloader process [48] using WatchFiles
+INFO:     Started server process [86]
+INFO:     Waiting for application startup.
+2026-01-30 09:08:40,730 - server - INFO - Starting Finanzas 4.0 API...
+2026-01-30 09:08:40,730 - database - INFO - Connecting to PostgreSQL...
+2026-01-30 09:08:41,880 - database - INFO - PostgreSQL connection pool created successfully
+2026-01-30 09:08:47,599 - database - INFO - Schema finanzas2 and all tables created successfully
+2026-01-30 09:08:48,158 - server - INFO - Seed data already exists, skipping...
+2026-01-30 09:08:48,320 - server - INFO - Finanzas 4.0 API started successfully
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'models.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+2026-01-30 09:11:06,096 - database - INFO - PostgreSQL connection pool closed
+2026-01-30 09:11:06,096 - server - INFO - Finanzas 4.0 API shutdown complete
+INFO:     Application shutdown complete.
+INFO:     Finished server process [86]
+INFO:     Started server process [303]
+INFO:     Waiting for application startup.
+2026-01-30 09:11:06,998 - server - INFO - Starting Finanzas 4.0 API...
+2026-01-30 09:11:06,998 - database - INFO - Connecting to PostgreSQL...
+2026-01-30 09:11:08,147 - database - INFO - PostgreSQL connection pool created successfully
+2026-01-30 09:11:13,798 - database - INFO - Schema finanzas2 and all tables created successfully
+2026-01-30 09:11:14,351 - server - INFO - Seed data already exists, skipping...
+2026-01-30 09:11:14,489 - server - INFO - Finanzas 4.0 API started successfully
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+2026-01-30 09:11:33,967 - database - INFO - PostgreSQL connection pool closed
+2026-01-30 09:11:33,967 - server - INFO - Finanzas 4.0 API shutdown complete
+INFO:     Application shutdown complete.
+INFO:     Finished server process [303]
+INFO:     Started server process [341]
+INFO:     Waiting for application startup.
+2026-01-30 09:11:34,594 - server - INFO - Starting Finanzas 4.0 API...
+2026-01-30 09:11:34,594 - database - INFO - Connecting to PostgreSQL...
+2026-01-30 09:11:35,741 - database - INFO - PostgreSQL connection pool created successfully
+2026-01-30 09:11:41,418 - database - INFO - Schema finanzas2 and all tables created successfully
+2026-01-30 09:11:41,971 - server - INFO - Seed data already exists, skipping...
+2026-01-30 09:11:42,109 - server - INFO - Finanzas 4.0 API started successfully
+INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+2026-01-30 09:14:33,895 - database - INFO - PostgreSQL connection pool closed
+2026-01-30 09:14:33,895 - server - INFO - Finanzas 4.0 API shutdown complete
+INFO:     Application shutdown complete.
+INFO:     Finished server process [341]
+INFO:     Stopping reloader process [48]
+INFO:     Will watch for changes in these directories: ['/app/backend']
+INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
+INFO:     Started reloader process [467] using WatchFiles
+INFO:     Started server process [469]
+INFO:     Waiting for application startup.
+2026-01-30 09:14:34,620 - server - INFO - Starting Finanzas 4.0 API...
+2026-01-30 09:14:34,620 - database - INFO - Connecting to PostgreSQL...
+2026-01-30 09:14:35,777 - database - INFO - PostgreSQL connection pool created successfully
+2026-01-30 09:14:41,460 - database - INFO - Schema finanzas2 and all tables created successfully
+2026-01-30 09:14:42,013 - server - INFO - Seed data already exists, skipping...
+2026-01-30 09:14:42,151 - server - INFO - Finanzas 4.0 API started successfully
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+2026-01-30 09:16:22,908 - database - INFO - PostgreSQL connection pool closed
+2026-01-30 09:16:22,908 - server - INFO - Finanzas 4.0 API shutdown complete
+INFO:     Application shutdown complete.
+INFO:     Finished server process [469]
+INFO:     Started server process [927]
+INFO:     Waiting for application startup.
+2026-01-30 09:16:23,576 - server - INFO - Starting Finanzas 4.0 API...
+2026-01-30 09:16:23,576 - database - INFO - Connecting to PostgreSQL...
+2026-01-30 09:16:24,729 - database - INFO - PostgreSQL connection pool created successfully
+2026-01-30 09:16:30,406 - database - INFO - Schema finanzas2 and all tables created successfully
+2026-01-30 09:16:30,960 - server - INFO - Seed data already exists, skipping...
+2026-01-30 09:16:31,099 - server - INFO - Finanzas 4.0 API started successfully
 INFO:     Application startup complete.
 INFO:     Will watch for changes in these directories: ['/app/backend']
 INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
 INFO:     Started reloader process [46] using WatchFiles
 INFO:     Started server process [90]
 INFO:     Waiting for application startup.
-2026-01-30 07:36:54,740 - server - INFO - Starting Finanzas 4.0 API...
-2026-01-30 07:36:54,740 - database - INFO - Connecting to PostgreSQL...
-2026-01-30 07:36:55,891 - database - INFO - PostgreSQL connection pool created successfully
+2026-01-30 12:25:50,426 - server - INFO - Starting Finanzas 4.0 API...
+2026-01-30 12:25:50,426 - database - INFO - Connecting to PostgreSQL...
+2026-01-30 12:25:51,596 - database - INFO - PostgreSQL connection pool created successfully
+2026-01-30 12:25:57,542 - database - INFO - Schema finanzas2 and all tables created successfully
+2026-01-30 12:25:58,115 - server - INFO - Seed data already exists, skipping...
+2026-01-30 12:25:58,252 - server - INFO - Finanzas 4.0 API started successfully
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+2026-01-30 12:36:53,072 - database - INFO - PostgreSQL connection pool closed
+2026-01-30 12:36:53,072 - server - INFO - Finanzas 4.0 API shutdown complete
+INFO:     Application shutdown complete.
+INFO:     Finished server process [90]
+INFO:     Started server process [707]
+INFO:     Waiting for application startup.
+2026-01-30 12:36:53,965 - server - INFO - Starting Finanzas 4.0 API...
+2026-01-30 12:36:53,965 - database - INFO - Connecting to PostgreSQL...
+2026-01-30 12:36:55,115 - database - INFO - PostgreSQL connection pool created successfully
+2026-01-30 12:37:00,835 - database - INFO - Schema finanzas2 and all tables created successfully
+2026-01-30 12:37:01,392 - server - INFO - Seed data already exists, skipping...
+2026-01-30 12:37:01,531 - server - INFO - Finanzas 4.0 API started successfully
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+2026-01-30 12:38:07,258 - database - INFO - PostgreSQL connection pool closed
+2026-01-30 12:38:07,259 - server - INFO - Finanzas 4.0 API shutdown complete
+INFO:     Application shutdown complete.
+INFO:     Finished server process [707]
+INFO:     Started server process [945]
+INFO:     Waiting for application startup.
+2026-01-30 12:38:07,966 - server - INFO - Starting Finanzas 4.0 API...
+2026-01-30 12:38:07,966 - database - INFO - Connecting to PostgreSQL...
+2026-01-30 12:38:09,116 - database - INFO - PostgreSQL connection pool created successfully
+2026-01-30 12:38:14,914 - database - INFO - Schema finanzas2 and all tables created successfully
+2026-01-30 12:38:15,466 - server - INFO - Seed data already exists, skipping...
+2026-01-30 12:38:15,604 - server - INFO - Finanzas 4.0 API started successfully
+INFO:     Application startup complete.
+INFO:     Will watch for changes in these directories: ['/app/backend']
+INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
+INFO:     Started reloader process [42] using WatchFiles
+INFO:     Started server process [81]
+INFO:     Waiting for application startup.
+2026-01-30 13:18:03,373 - server - INFO - Starting Finanzas 4.0 API...
+2026-01-30 13:18:03,373 - database - INFO - Connecting to PostgreSQL...
+2026-01-30 13:18:04,529 - database - INFO - PostgreSQL connection pool created successfully
 
 ==> /var/log/supervisor/backend.out.log <==
-INFO:     10.64.129.10:42586 - "GET /api/facturas-proveedor/7/pagos HTTP/1.1" 200 OK
-INFO:     10.64.129.7:33630 - "GET /api/facturas-proveedor/7/pagos HTTP/1.1" 200 OK
-INFO:     10.64.129.13:33238 - "GET /api/facturas-proveedor/6/letras HTTP/1.1" 500 Internal Server Error
-INFO:     10.64.136.226:42220 - "GET /api/facturas-proveedor/7/pagos HTTP/1.1" 200 OK
-INFO:     10.64.135.173:45822 - "GET /api/facturas-proveedor/6/letras HTTP/1.1" 500 Internal Server Error
-INFO:     10.64.138.62:55520 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.138.62:55516 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.129.9:51030 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
-INFO:     10.64.131.7:52986 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
-INFO:     10.64.138.62:55508 - "GET /api/centros-costo HTTP/1.1" 200 OK
-INFO:     10.64.138.62:55534 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.131.34:41464 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.129.7:40530 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.131.34:41438 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
-INFO:     10.64.136.245:53108 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
-INFO:     10.64.136.226:34616 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.136.245:53120 - "GET /api/centros-costo HTTP/1.1" 200 OK
-INFO:     10.64.129.9:51030 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.136.226:34622 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
-INFO:     10.64.136.245:53128 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.129.9:51036 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
-INFO:     10.64.131.34:41452 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
-INFO:     10.64.129.7:40530 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
-INFO:     10.64.131.204:40054 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
-INFO:     10.64.131.202:55562 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
-INFO:     10.64.131.206:40184 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.131.206:40176 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.131.203:56808 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.131.203:56814 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
-INFO:     10.64.131.204:40048 - "GET /api/centros-costo HTTP/1.1" 200 OK
-INFO:     10.64.131.206:40160 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.131.202:55572 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
-INFO:     10.64.138.62:45806 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
-INFO:     10.64.131.7:49934 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.131.34:44260 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.138.62:45822 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.131.34:44272 - "GET /api/centros-costo HTTP/1.1" 200 OK
-INFO:     10.64.131.7:49938 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.138.62:45838 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
-INFO:     10.64.131.205:36158 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
-INFO:     10.64.131.34:44272 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
-INFO:     10.64.131.7:49938 - "GET /api/facturas-proveedor/6/letras HTTP/1.1" 500 Internal Server Error
-INFO:     10.64.131.205:41444 - "GET /api/facturas-proveedor/6/letras HTTP/1.1" 500 Internal Server Error
-INFO:     10.64.131.203:35918 - "GET /api/facturas-proveedor/7/pagos HTTP/1.1" 200 OK
-INFO:     10.64.135.173:54414 - "GET /api/facturas-proveedor/6/letras HTTP/1.1" 200 OK
-INFO:     10.64.129.9:34630 - "GET /api/facturas-proveedor/7/pagos HTTP/1.1" 200 OK
-INFO:     10.64.129.10:57458 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
-INFO:     10.64.129.13:47180 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.131.204:47480 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.129.9:34636 - "GET /api/centros-costo HTTP/1.1" 200 OK
-INFO:     10.64.131.205:46242 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.131.202:49400 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
-INFO:     10.64.129.13:47178 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.131.204:47490 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
-INFO:     10.64.131.203:38776 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.131.206:32922 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.131.204:47480 - "GET /api/centros-costo HTTP/1.1" 200 OK
-INFO:     10.64.131.202:49406 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.131.205:46242 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
-INFO:     10.64.131.203:38792 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.135.173:50240 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
-INFO:     10.64.131.206:32914 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
-INFO:     10.64.131.204:47480 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
-INFO:     10.64.131.205:46242 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
-INFO:     10.64.131.204:47480 - "GET /api/facturas-proveedor/6/letras HTTP/1.1" 200 OK
-INFO:     10.64.131.205:60836 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.131.204:35984 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
-INFO:     10.64.131.204:35998 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
-INFO:     10.64.131.203:35424 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.131.204:35978 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.131.203:35452 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.131.206:50722 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.131.205:60838 - "GET /api/centros-costo HTTP/1.1" 200 OK
-INFO:     10.64.129.7:49934 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
-INFO:     10.64.129.10:58626 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
-INFO:     10.64.135.173:57052 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.129.13:42556 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.129.10:58632 - "GET /api/centros-costo HTTP/1.1" 200 OK
-INFO:     10.64.129.9:46070 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.131.202:46856 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
-INFO:     10.64.131.203:35440 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
-INFO:     10.64.135.173:57052 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
-INFO:     10.64.129.7:49934 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
-INFO:     10.64.129.7:59372 - "GET /api/facturas-proveedor?estado=pendiente HTTP/1.1" 200 OK
-INFO:     10.64.136.226:55178 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.135.173:55014 - "GET /api/letras HTTP/1.1" 200 OK
-INFO:     10.64.131.7:43084 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
-INFO:     10.64.131.7:43096 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.135.173:55024 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
-INFO:     10.64.138.62:44044 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.129.13:60812 - "GET /api/centros-costo HTTP/1.1" 200 OK
-INFO:     10.64.138.62:44058 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.131.34:50850 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.131.7:43084 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
-INFO:     10.64.131.34:50846 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
-INFO:     10.64.129.9:55400 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.136.245:55028 - "GET /api/centros-costo HTTP/1.1" 200 OK
-INFO:     10.64.135.173:55024 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
-INFO:     10.64.129.9:55402 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.136.226:53058 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.129.7:33634 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.131.7:43082 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
-INFO:     10.64.129.10:34798 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
-INFO:     10.64.129.13:60812 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
-INFO:     10.64.129.13:60812 - "GET /api/facturas-proveedor/7/pagos HTTP/1.1" 200 OK
-INFO:     10.64.131.206:51306 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
-INFO:     10.64.131.205:58554 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.131.204:52402 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.131.202:54384 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.131.206:51290 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.131.205:58538 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
-INFO:     10.64.131.202:54380 - "GET /api/centros-costo HTTP/1.1" 200 OK
-INFO:     10.64.131.203:56338 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
-INFO:     10.64.129.7:57062 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.129.10:34192 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.135.173:54326 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.129.13:38912 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.129.9:58050 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
-INFO:     10.64.129.10:34198 - "GET /api/centros-costo HTTP/1.1" 200 OK
-INFO:     10.64.131.205:58546 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
-INFO:     10.64.129.13:38912 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
-INFO:     10.64.131.204:52390 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
-INFO:     10.64.135.173:54326 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
-INFO:     10.64.135.173:54326 - "GET /api/facturas-proveedor/6/letras HTTP/1.1" 200 OK
-INFO:     10.64.136.226:33474 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.129.13:38912 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.129.10:39436 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
-INFO:     10.64.129.13:38912 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.129.7:36282 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.129.9:48136 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
-INFO:     10.64.136.226:33474 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.129.10:39444 - "GET /api/centros-costo HTTP/1.1" 200 OK
-INFO:     10.64.135.173:54326 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
-INFO:     10.64.136.245:45810 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.129.10:39436 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
-INFO:     10.64.129.9:48122 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
-INFO:     10.64.135.173:54326 - "GET /api/cxc HTTP/1.1" 200 OK
-INFO:     10.64.136.226:33474 - "GET /api/ventas-pos?estado=pendiente HTTP/1.1" 200 OK
-INFO:     10.64.129.7:36282 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.129.13:38912 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.129.13:42330 - "GET /api/centros-costo HTTP/1.1" 200 OK
-INFO:     10.64.135.173:54326 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
-INFO:     10.64.136.226:33474 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
-INFO:     10.64.129.10:39436 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.129.9:48122 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.136.245:45810 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
-INFO:     10.64.129.10:39444 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
-INFO:     10.64.129.7:51104 - "GET /api/facturas-proveedor/7/pagos HTTP/1.1" 200 OK
-INFO:     10.64.136.245:38014 - "POST /api/facturas-proveedor/6/deshacer-canje HTTP/1.1" 200 OK
-INFO:     10.64.131.204:51126 - "GET /api/facturas-proveedor/6 HTTP/1.1" 200 OK
-INFO:     10.64.138.62:56458 - "GET /api/letras HTTP/1.1" 200 OK
-INFO:     10.64.138.62:58996 - "GET /api/centros-costo HTTP/1.1" 200 OK
-INFO:     10.64.131.7:38640 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
-INFO:     10.64.138.62:59010 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.131.34:34394 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
-INFO:     10.64.138.62:58976 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.131.34:34378 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.131.34:34400 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.131.7:38634 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
-INFO:     10.64.129.10:47358 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
-INFO:     10.64.136.226:52774 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.138.62:58988 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
-INFO:     10.64.131.7:38640 - "GET /api/centros-costo HTTP/1.1" 200 OK
-INFO:     10.64.129.9:41702 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.129.13:49422 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.131.7:38648 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
-INFO:     10.64.129.9:41700 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.135.173:36246 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
-INFO:     10.64.135.173:36252 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
-INFO:     10.64.129.13:38502 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
-INFO:     10.64.129.13:38510 - "GET /api/centros-costo HTTP/1.1" 200 OK
-INFO:     10.64.135.173:53854 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.135.173:53858 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.129.9:43534 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
-INFO:     10.64.129.7:41792 - "GET /api/gastos HTTP/1.1" 200 OK
-INFO:     10.64.129.7:41798 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.136.226:41530 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.129.13:38510 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
-INFO:     10.64.136.245:37788 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
-INFO:     10.64.129.9:58132 - "POST /api/pagos HTTP/1.1" 200 OK
-INFO:     10.64.129.9:58132 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.129.10:57300 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.135.173:53396 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
-INFO:     10.64.129.13:52186 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.135.173:53400 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.129.7:51270 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
-INFO:     10.64.129.13:52170 - "GET /api/centros-costo HTTP/1.1" 200 OK
-INFO:     10.64.136.245:60126 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
-INFO:     10.64.129.10:57314 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
-INFO:     10.64.136.245:60118 - "POST /api/pagos HTTP/1.1" 200 OK
-INFO:     10.64.129.9:58132 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
-INFO:     10.64.136.245:60118 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
-INFO:     10.64.129.7:51270 - "GET /api/centros-costo HTTP/1.1" 200 OK
-INFO:     10.64.129.9:56322 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.136.226:52682 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.135.173:53400 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.136.226:52680 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.135.173:53396 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
-INFO:     10.64.129.13:52170 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
-INFO:     10.64.129.7:51270 - "GET /api/facturas-proveedor/6/pagos HTTP/1.1" 200 OK.
-    2.  Review ,  to ensure  is present where async operations are performed.
-    3.  Attempt to reproduce the error, possibly by using the  which first triggered it.
+INFO:     10.64.131.7:41352 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.7:41348 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.138.62:37008 - "GET /api/monedas HTTP/1.1" 200 OK
+INFO:     10.64.131.34:33700 - "GET /api/inventario HTTP/1.1" 200 OK
+INFO:     10.64.131.7:41362 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
+INFO:     10.64.136.226:53842 - "GET /api/monedas HTTP/1.1" 200 OK
+INFO:     10.64.135.173:49340 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.135.173:49348 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.136.245:40540 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
+INFO:     10.64.131.203:35178 - "GET /api/inventario HTTP/1.1" 200 OK
+INFO:     10.64.131.202:54712 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.204:49200 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.131.206:38356 - "GET /api/monedas HTTP/1.1" 200 OK
+INFO:     10.64.131.205:59692 - "GET /api/inventario HTTP/1.1" 200 OK
+INFO:     10.64.131.205:59676 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
+INFO:     10.64.131.7:49510 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.131.34:46734 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.138.62:60040 - "GET /api/monedas HTTP/1.1" 200 OK
+INFO:     10.64.131.34:46750 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
+INFO:     10.64.138.62:50776 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.138.62:57258 - "GET /api/inventario HTTP/1.1" 200 OK
+INFO:     10.64.138.62:57260 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.34:58346 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.131.34:58336 - "GET /api/monedas HTTP/1.1" 200 OK
+INFO:     10.64.131.7:60326 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
+INFO:     10.64.138.62:45694 - "GET /api/dashboard/kpis HTTP/1.1" 200 OK
+INFO:     10.64.138.62:55670 - "GET /api/monedas HTTP/1.1" 200 OK
+INFO:     10.64.131.34:36178 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.131.7:51418 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
+INFO:     10.64.131.34:36192 - "GET /api/inventario HTTP/1.1" 200 OK
+INFO:     10.64.131.7:51426 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
+INFO:     10.64.138.62:55684 - "GET /api/centros-costo HTTP/1.1" 200 OK
+INFO:     10.64.131.34:36200 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.138.62:55670 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.131.7:51426 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.138.62:55692 - "GET /api/monedas HTTP/1.1" 200 OK
+INFO:     10.64.131.34:36190 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
+INFO:     10.64.138.62:45694 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
+INFO:     10.64.131.7:51410 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
+INFO:     10.64.131.7:52838 - "GET /api/monedas HTTP/1.1" 200 OK
+INFO:     10.64.138.62:57192 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.34:56584 - "GET /api/inventario HTTP/1.1" 200 OK
+INFO:     10.64.138.62:57186 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.131.7:52856 - "GET /api/monedas HTTP/1.1" 200 OK
+INFO:     10.64.131.34:56586 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.131.7:52834 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
+INFO:     10.64.131.7:52872 - "GET /api/inventario HTTP/1.1" 200 OK
+INFO:     10.64.131.7:52846 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
+INFO:     10.64.138.62:57204 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.138.62:47416 - "GET /api/inventario HTTP/1.1" 200 OK
+INFO:     10.64.131.7:51060 - "GET /api/inventario HTTP/1.1" 200 OK
+INFO:     10.64.138.62:47430 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.131.7:51056 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.138.62:47408 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.138.62:47444 - "GET /api/monedas HTTP/1.1" 200 OK
+INFO:     10.64.131.34:38648 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.138.62:47426 - "GET /api/monedas HTTP/1.1" 200 OK
+INFO:     10.64.131.34:38636 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
+INFO:     10.64.131.34:38622 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
+INFO:     10.64.138.62:34952 - "GET /api/inventario HTTP/1.1" 200 OK
+INFO:     10.64.131.7:42788 - "GET /api/monedas HTTP/1.1" 200 OK
+INFO:     10.64.131.34:41328 - "GET /api/inventario HTTP/1.1" 200 OK
+INFO:     10.64.131.34:41356 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.131.34:41326 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.131.34:41342 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.7:42796 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.34:41360 - "GET /api/monedas HTTP/1.1" 200 OK
+INFO:     10.64.131.7:42780 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
+INFO:     10.64.131.34:41366 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
+INFO:     10.64.138.62:43444 - "GET /api/monedas HTTP/1.1" 200 OK
+INFO:     10.64.138.62:43456 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
+INFO:     10.64.131.7:52420 - "GET /api/inventario HTTP/1.1" 200 OK
+INFO:     10.64.131.34:47420 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.131.7:52430 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.138.62:43428 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
+INFO:     10.64.131.7:52418 - "GET /api/centros-costo HTTP/1.1" 200 OK
+INFO:     10.64.138.62:43436 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
+INFO:     10.64.131.34:47412 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
+INFO:     10.64.138.62:53966 - "GET /api/facturas-proveedor/9/letras HTTP/1.1" 200 OK
+INFO:     10.64.138.62:53966 - "GET /api/facturas-proveedor/7/pagos HTTP/1.1" 200 OK
+INFO:     10.64.138.62:58696 - "GET /api/facturas-proveedor/7/pagos HTTP/1.1" 200 OK
+INFO:     10.64.131.7:51132 - "GET /api/monedas HTTP/1.1" 200 OK
+INFO:     10.64.131.7:51156 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
+INFO:     10.64.131.34:37438 - "GET /api/inventario HTTP/1.1" 200 OK
+INFO:     10.64.138.62:49470 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.131.34:37422 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
+INFO:     10.64.138.62:49484 - "GET /api/centros-costo HTTP/1.1" 200 OK
+INFO:     10.64.131.7:51168 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.131.7:51188 - "GET /api/inventario HTTP/1.1" 200 OK
+INFO:     10.64.131.7:51178 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.131.34:37462 - "GET /api/monedas HTTP/1.1" 200 OK
+INFO:     10.64.131.34:37470 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.138.62:49500 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
+INFO:     10.64.131.34:37452 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.7:51128 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
+INFO:     10.64.131.7:51146 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
+INFO:     10.64.131.34:37422 - "GET /api/facturas-proveedor/9/letras HTTP/1.1" 200 OK
+INFO:     10.64.131.202:50028 - "GET /api/inventario HTTP/1.1" 200 OK
+INFO:     10.64.131.206:53204 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.204:39966 - "GET /api/inventario HTTP/1.1" 200 OK
+INFO:     10.64.131.203:33042 - "GET /api/monedas HTTP/1.1" 200 OK
+INFO:     10.64.131.203:33034 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.131.205:45806 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
+INFO:     10.64.131.204:39970 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.205:45806 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.131.202:50028 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.204:39966 - "GET /api/monedas HTTP/1.1" 200 OK
+INFO:     10.64.131.204:39978 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
+INFO:     10.64.131.205:45806 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.136.226:58132 - "GET /api/inventario HTTP/1.1" 200 OK
+INFO:     10.64.129.10:34724 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.129.13:38654 - "GET /api/monedas HTTP/1.1" 200 OK
+INFO:     10.64.136.226:58118 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.129.13:38666 - "GET /api/inventario HTTP/1.1" 200 OK
+INFO:     10.64.129.9:58352 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
+INFO:     10.64.131.7:47128 - "GET /api/monedas HTTP/1.1" 200 OK
+INFO:     10.64.138.62:47632 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.34:54606 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.131.7:47140 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
+INFO:     10.64.138.62:47632 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.7:47140 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.34:54658 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
+INFO:     10.64.131.34:54636 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
+INFO:     10.64.131.34:54624 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
+INFO:     10.64.131.7:47160 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.131.34:54618 - "GET /api/monedas HTTP/1.1" 200 OK
+INFO:     10.64.131.7:47174 - "GET /api/inventario HTTP/1.1" 200 OK
+INFO:     10.64.138.62:51174 - "GET /api/centros-costo HTTP/1.1" 200 OK
+INFO:     10.64.131.34:54646 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.131.7:47150 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
+INFO:     10.64.138.62:56366 - "GET /api/inventario HTTP/1.1" 200 OK
+INFO:     10.64.131.7:57136 - "GET /api/monedas HTTP/1.1" 200 OK
+INFO:     10.64.131.34:49928 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.131.34:49916 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.34:49944 - "GET /api/inventario HTTP/1.1" 200 OK
+INFO:     10.64.138.62:56384 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.138.62:56366 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.131.7:57136 - "GET /api/monedas HTTP/1.1" 200 OK
+INFO:     10.64.131.7:57146 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.7:57146 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.138.62:56376 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
+INFO:     10.64.131.34:49916 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
+INFO:     10.64.138.62:56366 - "GET /api/facturas-proveedor/7/pagos HTTP/1.1" 200 OK
+INFO:     10.64.131.7:41864 - "DELETE /api/pagos/3 HTTP/1.1" 200 OK
+INFO:     10.64.131.34:48388 - "GET /api/facturas-proveedor/7/pagos HTTP/1.1" 200 OK
+INFO:     10.64.138.62:48510 - "GET /api/monedas HTTP/1.1" 200 OK
+INFO:     10.64.131.34:48392 - "GET /api/inventario HTTP/1.1" 200 OK
+INFO:     10.64.138.62:48502 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.131.7:41892 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.131.34:48404 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
+INFO:     10.64.131.7:41864 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
+INFO:     10.64.131.7:41878 - "GET /api/centros-costo HTTP/1.1" 200 OK
+INFO:     10.64.138.62:48488 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
+INFO:     10.64.131.34:48388 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
+INFO:     10.64.138.62:48502 - "GET /api/pagos HTTP/1.1" 200 OK
+INFO:     10.64.131.34:37140 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
+INFO:     10.64.131.34:37148 - "GET /api/monedas HTTP/1.1" 200 OK
+INFO:     10.64.138.62:40420 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.138.62:40422 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
+INFO:     10.64.138.62:40440 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
+INFO:     10.64.131.7:47948 - "GET /api/centros-costo HTTP/1.1" 200 OK
+INFO:     10.64.131.7:47964 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.138.62:40424 - "GET /api/inventario HTTP/1.1" 200 OK
+INFO:     10.64.131.34:37138 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
+INFO:     10.64.131.205:37446 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     10.64.138.62:33822 - "GET /api/facturas-proveedor/7/pagos HTTP/1.1" 200 OK
+INFO:     10.64.131.7:34544 - "DELETE /api/pagos/4 HTTP/1.1" 200 OK
+INFO:     10.64.131.34:45184 - "GET /api/facturas-proveedor/7/pagos HTTP/1.1" 200 OK
+INFO:     10.64.131.7:40430 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.138.62:33830 - "GET /api/monedas HTTP/1.1" 200 OK
+INFO:     10.64.131.7:40444 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
+INFO:     10.64.131.7:40456 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.138.62:33834 - "GET /api/inventario HTTP/1.1" 200 OK
+INFO:     10.64.131.34:45186 - "GET /api/centros-costo HTTP/1.1" 200 OK
+INFO:     10.64.138.62:33832 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
+INFO:     10.64.131.34:45184 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
+INFO:     10.64.131.7:34544 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
+INFO:     10.64.131.7:43394 - "DELETE /api/facturas-proveedor/7 HTTP/1.1" 200 OK
+INFO:     10.64.131.7:43394 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.131.7:43426 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
+INFO:     10.64.138.62:40266 - "GET /api/inventario HTTP/1.1" 200 OK
+INFO:     10.64.131.7:43400 - "GET /api/monedas HTTP/1.1" 200 OK
+INFO:     10.64.131.34:51190 - "GET /api/centros-costo HTTP/1.1" 200 OK
+INFO:     10.64.138.62:40262 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
+INFO:     10.64.131.7:43412 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.138.62:40258 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
+INFO:     10.64.131.34:51176 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
+INFO:     10.64.131.34:42158 - "GET /api/inventario HTTP/1.1" 200 OK
+INFO:     10.64.131.7:33108 - "GET /api/monedas HTTP/1.1" 200 OK
+INFO:     10.64.138.62:34524 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.138.62:34540 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.34:42146 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
+INFO:     10.64.131.7:45616 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.131.7:38912 - "PUT /api/terceros/1 HTTP/1.1" 200 OK
+INFO:     10.64.131.7:38912 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.138.62:49940 - "GET /api/inventario HTTP/1.1" 200 OK
+INFO:     10.64.131.34:45386 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.131.34:45402 - "GET /api/monedas HTTP/1.1" 200 OK
+INFO:     10.64.138.62:49938 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
+INFO:     10.64.131.7:38912 - "GET /api/empresas HTTP/1.1" 200 OK.
+    2.  Review  and  to ensure  is present at the top level.
+    3.  Although the agent fixed transaction-related race conditions, this initial error was never addressed and could indicate a different underlying problem.
   - **Why fix this issue and what will be achieved with the fix?** This could be a critical backend failure point. Fixing it ensures long-term stability.
   - **Status:** NOT STARTED
   - **Is recurring issue?** Y (Carried over from a previous fork)
@@ -471,440 +463,440 @@ INFO:     10.64.129.7:51270 - "GET /api/facturas-proveedor/6/pagos HTTP/1.1" 200
   - **Blocked on other issue:** None
 
 **In progress Task List**:
-- **Task 1: Complete User's UI/UX Request Batch**
-  - **Where to resume:** Start with the visual improvements (badges/tables), then implement filters, fix the responsive row issue, and finally implement the manual editing of letras.
-  - **What will be achieved with this?** A more polished, user-friendly, and powerful interface for managing supplier invoices.
-  - **Status:** IN PROGRESS
-  - **Should Test frontend/backend/both after fix?** frontend
-  - **Blocked on something:** None
+- None.
 
 **Upcoming and Future Tasks**
 -   **Upcoming Tasks:**
     -   **P0: Odoo Integration:** Implement the data fetching from Odoo in  to populate the  component.
-    -   **P1: Purchase Orders (OC):** Implement OC creation and its conversion to a Supplier Invoice.
+    -   **P1: Payroll Module:** Implement the payroll module (, ).
 -   **Future Tasks:**
-    -   Implement the Gastos (Expenses) module logic.
-    -   Implement the Payroll module (, ).
     -   Implement the Budgets module () and reports.
     -   Implement the Bank Reconciliation module (Excel import).
     -   Implement remaining financial reports (Cash Flow, Income Statement).
+    -   Refactor  into module-based routers.
 
 **Completed work in this session**
--   **Feature: Invoice Item Details:** Implemented a full-featured item details section in the invoice form, connected to  for item data, with auto-calculation of totals and a read-only unit field.
--   **Feature: Invoice List Actions:** Added inline modals and logic for paying invoices, generating letras (bills of exchange), viewing related payments/letras, and undoing these actions. The invoice state (, , , ) now correctly controls available actions.
--   **Feature: CRUD for Catalogs:** Implemented full CRUD pages for , , and , replacing the old placeholders.
--   **UI/UX Overhaul:**
-    -   Created reusable  and  components and integrated them into the invoice form for a better user experience.
-    -   Implemented on-the-fly provider creation from the invoice form.
-    -   Removed arrows from number inputs and restyled selects.
--   **Bug Fix: Responsive Sidebar:** Fixed two major bugs: added a hamburger menu for mobile and fixed the issue preventing the collapsed desktop sidebar from being expanded.
+-   **Feature: Expenses (Gastos) Module:** Implemented a complete CRUD module for expenses, including a form that enforces the creation of single or multiple payments that must sum to the expense total.
+-   **Feature: Purchase Orders (OC) Module:** Implemented a complete CRUD module for purchase orders, including functionality to generate a supplier invoice directly from an OC.
+-   **Feature: Global Company Context:** Added a top header bar with a company selector, using React Context to manage the selected company globally across the application.
+-   **Feature: Inline Editing for OCs:** Added the ability to edit and delete purchase orders directly from the list view.
+-   **Critical Bug Fix: Payment Validation:** Added frontend and backend validation to prevent users from paying an amount greater than the invoice's pending balance.
+-   **UI/UX Overhaul (Facturas & OC):**
+    -   Refined invoice list filters to be more intuitive (searchable provider, single date field).
+    -   Redesigned table actions to use compact icons with tooltips.
+    -   Implemented a multi-column, responsive layout for the OC creation modal.
+    -   Set IGV Incluido to be checked by default in the OC form.
+    -   Added a Print function to the OC details view.
+-   **Bug Fix: Sidebar:** Resolved an issue where the collapsed sidebar could not be expanded.
+-   **Bug Fix: Responsive Table Rows:** Fixed a CSS issue causing table rows to become excessively thick on smaller screens.
+-   **Backend Refinement:** Fixed a recurring transactional issue where data was being queried before the creation transaction was committed. This was resolved for both the Gastos and OC modules.
 
 **Earlier issues found/mentioned but not fixed**
 - **Issue 1: Ignored Backend 'asyncio' Error**
   - **Debug checklist:**
     1.  Check backend logs: ==> /var/log/supervisor/backend.err.log <==
-    raise exc
-  File "/root/.venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
-    await app(scope, receive, sender)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 756, in __call__
-    await self.middleware_stack(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 776, in app
-    await route.handle(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 297, in handle
-    await self.app(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 77, in app
-    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 64, in wrapped_app
-    raise exc
-  File "/root/.venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
-    await app(scope, receive, sender)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 72, in app
-    response = await func(request)
-               ^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/fastapi/routing.py", line 278, in app
-    raw_response = await run_endpoint_function(
-                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/fastapi/routing.py", line 191, in run_endpoint_function
-    return await dependant.call(**values)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/app/backend/server.py", line 1270, in get_letras_de_factura
-    rows = await conn.fetch("""
-           ^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/asyncpg/connection.py", line 694, in fetch
-    return await self._execute(
-           ^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/asyncpg/connection.py", line 1873, in _execute
-    result, _ = await self.__execute(
-                ^^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/asyncpg/connection.py", line 1970, in __execute
-    result, stmt = await self._do_execute(
-                   ^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/asyncpg/connection.py", line 2021, in _do_execute
-    stmt = await self._get_statement(
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/asyncpg/connection.py", line 443, in _get_statement
-    statement = await self._protocol.prepare(
-                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "asyncpg/protocol/protocol.pyx", line 165, in prepare
-asyncpg.exceptions.UndefinedColumnError: column l.moneda_id does not exist
-ERROR:    Exception in ASGI application
-Traceback (most recent call last):
-  File "/root/.venv/lib/python3.11/site-packages/uvicorn/protocols/http/h11_impl.py", line 408, in run_asgi
-    result = await app(  # type: ignore[func-returns-value]
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/uvicorn/middleware/proxy_headers.py", line 84, in __call__
-    return await self.app(scope, receive, send)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/fastapi/applications.py", line 1054, in __call__
-    await super().__call__(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/applications.py", line 123, in __call__
-    await self.middleware_stack(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/middleware/errors.py", line 186, in __call__
-    raise exc
-  File "/root/.venv/lib/python3.11/site-packages/starlette/middleware/errors.py", line 164, in __call__
-    await self.app(scope, receive, _send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/middleware/cors.py", line 93, in __call__
-    await self.simple_response(scope, receive, send, request_headers=headers)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/middleware/cors.py", line 148, in simple_response
-    await self.app(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/middleware/exceptions.py", line 65, in __call__
-    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 64, in wrapped_app
-    raise exc
-  File "/root/.venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
-    await app(scope, receive, sender)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 756, in __call__
-    await self.middleware_stack(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 776, in app
-    await route.handle(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 297, in handle
-    await self.app(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 77, in app
-    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 64, in wrapped_app
-    raise exc
-  File "/root/.venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
-    await app(scope, receive, sender)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 72, in app
-    response = await func(request)
-               ^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/fastapi/routing.py", line 278, in app
-    raw_response = await run_endpoint_function(
-                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/fastapi/routing.py", line 191, in run_endpoint_function
-    return await dependant.call(**values)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/app/backend/server.py", line 1270, in get_letras_de_factura
-    rows = await conn.fetch("""
-           ^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/asyncpg/connection.py", line 694, in fetch
-    return await self._execute(
-           ^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/asyncpg/connection.py", line 1873, in _execute
-    result, _ = await self.__execute(
-                ^^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/asyncpg/connection.py", line 1970, in __execute
-    result, stmt = await self._do_execute(
-                   ^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/asyncpg/connection.py", line 2021, in _do_execute
-    stmt = await self._get_statement(
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/asyncpg/connection.py", line 443, in _get_statement
-    statement = await self._protocol.prepare(
-                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "asyncpg/protocol/protocol.pyx", line 165, in prepare
-asyncpg.exceptions.UndefinedColumnError: column l.moneda_id does not exist
-ERROR:    Exception in ASGI application
-Traceback (most recent call last):
-  File "/root/.venv/lib/python3.11/site-packages/uvicorn/protocols/http/h11_impl.py", line 408, in run_asgi
-    result = await app(  # type: ignore[func-returns-value]
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/uvicorn/middleware/proxy_headers.py", line 84, in __call__
-    return await self.app(scope, receive, send)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/fastapi/applications.py", line 1054, in __call__
-    await super().__call__(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/applications.py", line 123, in __call__
-    await self.middleware_stack(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/middleware/errors.py", line 186, in __call__
-    raise exc
-  File "/root/.venv/lib/python3.11/site-packages/starlette/middleware/errors.py", line 164, in __call__
-    await self.app(scope, receive, _send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/middleware/cors.py", line 85, in __call__
-    await self.app(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/middleware/exceptions.py", line 65, in __call__
-    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 64, in wrapped_app
-    raise exc
-  File "/root/.venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
-    await app(scope, receive, sender)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 756, in __call__
-    await self.middleware_stack(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 776, in app
-    await route.handle(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 297, in handle
-    await self.app(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 77, in app
-    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 64, in wrapped_app
-    raise exc
-  File "/root/.venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
-    await app(scope, receive, sender)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 72, in app
-    response = await func(request)
-               ^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/fastapi/routing.py", line 278, in app
-    raw_response = await run_endpoint_function(
-                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/fastapi/routing.py", line 191, in run_endpoint_function
-    return await dependant.call(**values)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/app/backend/server.py", line 1270, in get_letras_de_factura
-    rows = await conn.fetch("""
-           ^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/asyncpg/connection.py", line 694, in fetch
-    return await self._execute(
-           ^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/asyncpg/connection.py", line 1873, in _execute
-    result, _ = await self.__execute(
-                ^^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/asyncpg/connection.py", line 1970, in __execute
-    result, stmt = await self._do_execute(
-                   ^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/asyncpg/connection.py", line 2021, in _do_execute
-    stmt = await self._get_statement(
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/asyncpg/connection.py", line 443, in _get_statement
-    statement = await self._protocol.prepare(
-                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "asyncpg/protocol/protocol.pyx", line 165, in prepare
-asyncpg.exceptions.UndefinedColumnError: column l.moneda_id does not exist
+2026-01-30 07:42:17,062 - server - INFO - Finanzas 4.0 API shutdown complete
+INFO:     Application shutdown complete.
+INFO:     Finished server process [1152]
+INFO:     Started server process [1190]
+INFO:     Waiting for application startup.
+2026-01-30 07:42:17,525 - server - INFO - Starting Finanzas 4.0 API...
+2026-01-30 07:42:17,525 - database - INFO - Connecting to PostgreSQL...
+2026-01-30 07:42:18,683 - database - INFO - PostgreSQL connection pool created successfully
+2026-01-30 07:42:24,351 - database - INFO - Schema finanzas2 and all tables created successfully
+2026-01-30 07:42:24,906 - server - INFO - Seed data already exists, skipping...
+2026-01-30 07:42:25,044 - server - INFO - Finanzas 4.0 API started successfully
+INFO:     Application startup complete.
 WARNING:  WatchFiles detected changes in 'server.py'. Reloading...
 INFO:     Shutting down
 INFO:     Waiting for application shutdown.
-2026-01-30 07:29:36,094 - database - INFO - PostgreSQL connection pool closed
-2026-01-30 07:29:36,094 - server - INFO - Finanzas 4.0 API shutdown complete
+2026-01-30 07:43:10,470 - database - INFO - PostgreSQL connection pool closed
+2026-01-30 07:43:10,470 - server - INFO - Finanzas 4.0 API shutdown complete
 INFO:     Application shutdown complete.
-INFO:     Finished server process [8110]
-INFO:     Started server process [8795]
+INFO:     Finished server process [1190]
+INFO:     Started server process [1313]
 INFO:     Waiting for application startup.
-2026-01-30 07:29:37,116 - server - INFO - Starting Finanzas 4.0 API...
-2026-01-30 07:29:37,116 - database - INFO - Connecting to PostgreSQL...
-2026-01-30 07:29:38,260 - database - INFO - PostgreSQL connection pool created successfully
-2026-01-30 07:29:43,965 - database - INFO - Schema finanzas2 and all tables created successfully
-2026-01-30 07:29:44,521 - server - INFO - Seed data already exists, skipping...
-2026-01-30 07:29:44,660 - server - INFO - Finanzas 4.0 API started successfully
+2026-01-30 07:43:11,141 - server - INFO - Starting Finanzas 4.0 API...
+2026-01-30 07:43:11,141 - database - INFO - Connecting to PostgreSQL...
+2026-01-30 07:43:12,369 - database - INFO - PostgreSQL connection pool created successfully
+2026-01-30 07:43:18,080 - database - INFO - Schema finanzas2 and all tables created successfully
+2026-01-30 07:43:18,634 - server - INFO - Seed data already exists, skipping...
+2026-01-30 07:43:18,772 - server - INFO - Finanzas 4.0 API started successfully
+INFO:     Application startup complete.
+2026-01-30 07:43:18,915 - database - INFO - PostgreSQL connection pool closed
+2026-01-30 07:43:18,915 - server - INFO - Finanzas 4.0 API shutdown complete
+ERROR:    Traceback (most recent call last):
+  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 741, in lifespan
+    await receive()
+  File "/root/.venv/lib/python3.11/site-packages/uvicorn/lifespan/on.py", line 137, in receive
+    return await self.receive_queue.get()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/asyncio/queues.py", line 158, in get
+    await getter
+asyncio.exceptions.CancelledError
+
+INFO:     Stopping reloader process [46]
+INFO:     Will watch for changes in these directories: ['/app/backend']
+INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
+INFO:     Started reloader process [1322] using WatchFiles
+INFO:     Started server process [1324]
+INFO:     Waiting for application startup.
+2026-01-30 07:43:19,594 - server - INFO - Starting Finanzas 4.0 API...
+2026-01-30 07:43:19,594 - database - INFO - Connecting to PostgreSQL...
+2026-01-30 07:43:20,741 - database - INFO - PostgreSQL connection pool created successfully
+2026-01-30 07:43:26,416 - database - INFO - Schema finanzas2 and all tables created successfully
+2026-01-30 07:43:26,969 - server - INFO - Seed data already exists, skipping...
+2026-01-30 07:43:27,107 - server - INFO - Finanzas 4.0 API started successfully
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+2026-01-30 07:45:53,676 - database - INFO - PostgreSQL connection pool closed
+2026-01-30 07:45:53,676 - server - INFO - Finanzas 4.0 API shutdown complete
+INFO:     Application shutdown complete.
+INFO:     Finished server process [1324]
+INFO:     Started server process [1998]
+INFO:     Waiting for application startup.
+2026-01-30 07:45:54,354 - server - INFO - Starting Finanzas 4.0 API...
+2026-01-30 07:45:54,354 - database - INFO - Connecting to PostgreSQL...
+2026-01-30 07:45:55,505 - database - INFO - PostgreSQL connection pool created successfully
+2026-01-30 07:46:01,197 - database - INFO - Schema finanzas2 and all tables created successfully
+2026-01-30 07:46:01,794 - server - INFO - Seed data already exists, skipping...
+2026-01-30 07:46:01,945 - server - INFO - Finanzas 4.0 API started successfully
+INFO:     Application startup complete.
+INFO:     Will watch for changes in these directories: ['/app/backend']
+INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
+INFO:     Started reloader process [48] using WatchFiles
+INFO:     Started server process [86]
+INFO:     Waiting for application startup.
+2026-01-30 09:08:40,730 - server - INFO - Starting Finanzas 4.0 API...
+2026-01-30 09:08:40,730 - database - INFO - Connecting to PostgreSQL...
+2026-01-30 09:08:41,880 - database - INFO - PostgreSQL connection pool created successfully
+2026-01-30 09:08:47,599 - database - INFO - Schema finanzas2 and all tables created successfully
+2026-01-30 09:08:48,158 - server - INFO - Seed data already exists, skipping...
+2026-01-30 09:08:48,320 - server - INFO - Finanzas 4.0 API started successfully
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'models.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+2026-01-30 09:11:06,096 - database - INFO - PostgreSQL connection pool closed
+2026-01-30 09:11:06,096 - server - INFO - Finanzas 4.0 API shutdown complete
+INFO:     Application shutdown complete.
+INFO:     Finished server process [86]
+INFO:     Started server process [303]
+INFO:     Waiting for application startup.
+2026-01-30 09:11:06,998 - server - INFO - Starting Finanzas 4.0 API...
+2026-01-30 09:11:06,998 - database - INFO - Connecting to PostgreSQL...
+2026-01-30 09:11:08,147 - database - INFO - PostgreSQL connection pool created successfully
+2026-01-30 09:11:13,798 - database - INFO - Schema finanzas2 and all tables created successfully
+2026-01-30 09:11:14,351 - server - INFO - Seed data already exists, skipping...
+2026-01-30 09:11:14,489 - server - INFO - Finanzas 4.0 API started successfully
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+2026-01-30 09:11:33,967 - database - INFO - PostgreSQL connection pool closed
+2026-01-30 09:11:33,967 - server - INFO - Finanzas 4.0 API shutdown complete
+INFO:     Application shutdown complete.
+INFO:     Finished server process [303]
+INFO:     Started server process [341]
+INFO:     Waiting for application startup.
+2026-01-30 09:11:34,594 - server - INFO - Starting Finanzas 4.0 API...
+2026-01-30 09:11:34,594 - database - INFO - Connecting to PostgreSQL...
+2026-01-30 09:11:35,741 - database - INFO - PostgreSQL connection pool created successfully
+2026-01-30 09:11:41,418 - database - INFO - Schema finanzas2 and all tables created successfully
+2026-01-30 09:11:41,971 - server - INFO - Seed data already exists, skipping...
+2026-01-30 09:11:42,109 - server - INFO - Finanzas 4.0 API started successfully
+INFO:     Application startup complete.
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+2026-01-30 09:14:33,895 - database - INFO - PostgreSQL connection pool closed
+2026-01-30 09:14:33,895 - server - INFO - Finanzas 4.0 API shutdown complete
+INFO:     Application shutdown complete.
+INFO:     Finished server process [341]
+INFO:     Stopping reloader process [48]
+INFO:     Will watch for changes in these directories: ['/app/backend']
+INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
+INFO:     Started reloader process [467] using WatchFiles
+INFO:     Started server process [469]
+INFO:     Waiting for application startup.
+2026-01-30 09:14:34,620 - server - INFO - Starting Finanzas 4.0 API...
+2026-01-30 09:14:34,620 - database - INFO - Connecting to PostgreSQL...
+2026-01-30 09:14:35,777 - database - INFO - PostgreSQL connection pool created successfully
+2026-01-30 09:14:41,460 - database - INFO - Schema finanzas2 and all tables created successfully
+2026-01-30 09:14:42,013 - server - INFO - Seed data already exists, skipping...
+2026-01-30 09:14:42,151 - server - INFO - Finanzas 4.0 API started successfully
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+2026-01-30 09:16:22,908 - database - INFO - PostgreSQL connection pool closed
+2026-01-30 09:16:22,908 - server - INFO - Finanzas 4.0 API shutdown complete
+INFO:     Application shutdown complete.
+INFO:     Finished server process [469]
+INFO:     Started server process [927]
+INFO:     Waiting for application startup.
+2026-01-30 09:16:23,576 - server - INFO - Starting Finanzas 4.0 API...
+2026-01-30 09:16:23,576 - database - INFO - Connecting to PostgreSQL...
+2026-01-30 09:16:24,729 - database - INFO - PostgreSQL connection pool created successfully
+2026-01-30 09:16:30,406 - database - INFO - Schema finanzas2 and all tables created successfully
+2026-01-30 09:16:30,960 - server - INFO - Seed data already exists, skipping...
+2026-01-30 09:16:31,099 - server - INFO - Finanzas 4.0 API started successfully
 INFO:     Application startup complete.
 INFO:     Will watch for changes in these directories: ['/app/backend']
 INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
 INFO:     Started reloader process [46] using WatchFiles
 INFO:     Started server process [90]
 INFO:     Waiting for application startup.
-2026-01-30 07:36:54,740 - server - INFO - Starting Finanzas 4.0 API...
-2026-01-30 07:36:54,740 - database - INFO - Connecting to PostgreSQL...
-2026-01-30 07:36:55,891 - database - INFO - PostgreSQL connection pool created successfully
+2026-01-30 12:25:50,426 - server - INFO - Starting Finanzas 4.0 API...
+2026-01-30 12:25:50,426 - database - INFO - Connecting to PostgreSQL...
+2026-01-30 12:25:51,596 - database - INFO - PostgreSQL connection pool created successfully
+2026-01-30 12:25:57,542 - database - INFO - Schema finanzas2 and all tables created successfully
+2026-01-30 12:25:58,115 - server - INFO - Seed data already exists, skipping...
+2026-01-30 12:25:58,252 - server - INFO - Finanzas 4.0 API started successfully
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+2026-01-30 12:36:53,072 - database - INFO - PostgreSQL connection pool closed
+2026-01-30 12:36:53,072 - server - INFO - Finanzas 4.0 API shutdown complete
+INFO:     Application shutdown complete.
+INFO:     Finished server process [90]
+INFO:     Started server process [707]
+INFO:     Waiting for application startup.
+2026-01-30 12:36:53,965 - server - INFO - Starting Finanzas 4.0 API...
+2026-01-30 12:36:53,965 - database - INFO - Connecting to PostgreSQL...
+2026-01-30 12:36:55,115 - database - INFO - PostgreSQL connection pool created successfully
+2026-01-30 12:37:00,835 - database - INFO - Schema finanzas2 and all tables created successfully
+2026-01-30 12:37:01,392 - server - INFO - Seed data already exists, skipping...
+2026-01-30 12:37:01,531 - server - INFO - Finanzas 4.0 API started successfully
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+2026-01-30 12:38:07,258 - database - INFO - PostgreSQL connection pool closed
+2026-01-30 12:38:07,259 - server - INFO - Finanzas 4.0 API shutdown complete
+INFO:     Application shutdown complete.
+INFO:     Finished server process [707]
+INFO:     Started server process [945]
+INFO:     Waiting for application startup.
+2026-01-30 12:38:07,966 - server - INFO - Starting Finanzas 4.0 API...
+2026-01-30 12:38:07,966 - database - INFO - Connecting to PostgreSQL...
+2026-01-30 12:38:09,116 - database - INFO - PostgreSQL connection pool created successfully
+2026-01-30 12:38:14,914 - database - INFO - Schema finanzas2 and all tables created successfully
+2026-01-30 12:38:15,466 - server - INFO - Seed data already exists, skipping...
+2026-01-30 12:38:15,604 - server - INFO - Finanzas 4.0 API started successfully
+INFO:     Application startup complete.
+INFO:     Will watch for changes in these directories: ['/app/backend']
+INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
+INFO:     Started reloader process [42] using WatchFiles
+INFO:     Started server process [81]
+INFO:     Waiting for application startup.
+2026-01-30 13:18:03,373 - server - INFO - Starting Finanzas 4.0 API...
+2026-01-30 13:18:03,373 - database - INFO - Connecting to PostgreSQL...
+2026-01-30 13:18:04,529 - database - INFO - PostgreSQL connection pool created successfully
 
 ==> /var/log/supervisor/backend.out.log <==
-INFO:     10.64.129.10:42586 - "GET /api/facturas-proveedor/7/pagos HTTP/1.1" 200 OK
-INFO:     10.64.129.7:33630 - "GET /api/facturas-proveedor/7/pagos HTTP/1.1" 200 OK
-INFO:     10.64.129.13:33238 - "GET /api/facturas-proveedor/6/letras HTTP/1.1" 500 Internal Server Error
-INFO:     10.64.136.226:42220 - "GET /api/facturas-proveedor/7/pagos HTTP/1.1" 200 OK
-INFO:     10.64.135.173:45822 - "GET /api/facturas-proveedor/6/letras HTTP/1.1" 500 Internal Server Error
-INFO:     10.64.138.62:55520 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.138.62:55516 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.129.9:51030 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
-INFO:     10.64.131.7:52986 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
-INFO:     10.64.138.62:55508 - "GET /api/centros-costo HTTP/1.1" 200 OK
-INFO:     10.64.138.62:55534 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.131.34:41464 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.129.7:40530 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.131.34:41438 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
-INFO:     10.64.136.245:53108 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
-INFO:     10.64.136.226:34616 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.136.245:53120 - "GET /api/centros-costo HTTP/1.1" 200 OK
-INFO:     10.64.129.9:51030 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.136.226:34622 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
-INFO:     10.64.136.245:53128 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.129.9:51036 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
-INFO:     10.64.131.34:41452 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
-INFO:     10.64.129.7:40530 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
-INFO:     10.64.131.204:40054 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
-INFO:     10.64.131.202:55562 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
-INFO:     10.64.131.206:40184 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.131.206:40176 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.131.203:56808 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.131.203:56814 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
-INFO:     10.64.131.204:40048 - "GET /api/centros-costo HTTP/1.1" 200 OK
-INFO:     10.64.131.206:40160 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.131.202:55572 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
-INFO:     10.64.138.62:45806 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
-INFO:     10.64.131.7:49934 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.131.34:44260 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.138.62:45822 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.131.34:44272 - "GET /api/centros-costo HTTP/1.1" 200 OK
-INFO:     10.64.131.7:49938 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.138.62:45838 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
-INFO:     10.64.131.205:36158 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
-INFO:     10.64.131.34:44272 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
-INFO:     10.64.131.7:49938 - "GET /api/facturas-proveedor/6/letras HTTP/1.1" 500 Internal Server Error
-INFO:     10.64.131.205:41444 - "GET /api/facturas-proveedor/6/letras HTTP/1.1" 500 Internal Server Error
-INFO:     10.64.131.203:35918 - "GET /api/facturas-proveedor/7/pagos HTTP/1.1" 200 OK
-INFO:     10.64.135.173:54414 - "GET /api/facturas-proveedor/6/letras HTTP/1.1" 200 OK
-INFO:     10.64.129.9:34630 - "GET /api/facturas-proveedor/7/pagos HTTP/1.1" 200 OK
-INFO:     10.64.129.10:57458 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
-INFO:     10.64.129.13:47180 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.131.204:47480 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.129.9:34636 - "GET /api/centros-costo HTTP/1.1" 200 OK
-INFO:     10.64.131.205:46242 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.131.202:49400 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
-INFO:     10.64.129.13:47178 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.131.204:47490 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
-INFO:     10.64.131.203:38776 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.131.206:32922 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.131.204:47480 - "GET /api/centros-costo HTTP/1.1" 200 OK
-INFO:     10.64.131.202:49406 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.131.205:46242 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
-INFO:     10.64.131.203:38792 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.135.173:50240 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
-INFO:     10.64.131.206:32914 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
-INFO:     10.64.131.204:47480 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
-INFO:     10.64.131.205:46242 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
-INFO:     10.64.131.204:47480 - "GET /api/facturas-proveedor/6/letras HTTP/1.1" 200 OK
-INFO:     10.64.131.205:60836 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.131.204:35984 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
-INFO:     10.64.131.204:35998 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
-INFO:     10.64.131.203:35424 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.131.204:35978 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.131.203:35452 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.131.206:50722 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.131.205:60838 - "GET /api/centros-costo HTTP/1.1" 200 OK
-INFO:     10.64.129.7:49934 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
-INFO:     10.64.129.10:58626 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
-INFO:     10.64.135.173:57052 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.129.13:42556 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.129.10:58632 - "GET /api/centros-costo HTTP/1.1" 200 OK
-INFO:     10.64.129.9:46070 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.131.202:46856 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
-INFO:     10.64.131.203:35440 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
-INFO:     10.64.135.173:57052 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
-INFO:     10.64.129.7:49934 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
-INFO:     10.64.129.7:59372 - "GET /api/facturas-proveedor?estado=pendiente HTTP/1.1" 200 OK
-INFO:     10.64.136.226:55178 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.135.173:55014 - "GET /api/letras HTTP/1.1" 200 OK
-INFO:     10.64.131.7:43084 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
-INFO:     10.64.131.7:43096 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.135.173:55024 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
-INFO:     10.64.138.62:44044 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.129.13:60812 - "GET /api/centros-costo HTTP/1.1" 200 OK
-INFO:     10.64.138.62:44058 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.131.34:50850 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.131.7:43084 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
-INFO:     10.64.131.34:50846 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
-INFO:     10.64.129.9:55400 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.136.245:55028 - "GET /api/centros-costo HTTP/1.1" 200 OK
-INFO:     10.64.135.173:55024 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
-INFO:     10.64.129.9:55402 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.136.226:53058 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.129.7:33634 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.131.7:43082 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
-INFO:     10.64.129.10:34798 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
-INFO:     10.64.129.13:60812 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
-INFO:     10.64.129.13:60812 - "GET /api/facturas-proveedor/7/pagos HTTP/1.1" 200 OK
-INFO:     10.64.131.206:51306 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
-INFO:     10.64.131.205:58554 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.131.204:52402 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.131.202:54384 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.131.206:51290 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.131.205:58538 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
-INFO:     10.64.131.202:54380 - "GET /api/centros-costo HTTP/1.1" 200 OK
-INFO:     10.64.131.203:56338 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
-INFO:     10.64.129.7:57062 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.129.10:34192 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.135.173:54326 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.129.13:38912 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.129.9:58050 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
-INFO:     10.64.129.10:34198 - "GET /api/centros-costo HTTP/1.1" 200 OK
-INFO:     10.64.131.205:58546 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
-INFO:     10.64.129.13:38912 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
-INFO:     10.64.131.204:52390 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
-INFO:     10.64.135.173:54326 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
-INFO:     10.64.135.173:54326 - "GET /api/facturas-proveedor/6/letras HTTP/1.1" 200 OK
-INFO:     10.64.136.226:33474 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.129.13:38912 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.129.10:39436 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
-INFO:     10.64.129.13:38912 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.129.7:36282 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.129.9:48136 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
-INFO:     10.64.136.226:33474 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.129.10:39444 - "GET /api/centros-costo HTTP/1.1" 200 OK
-INFO:     10.64.135.173:54326 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
-INFO:     10.64.136.245:45810 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.129.10:39436 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
-INFO:     10.64.129.9:48122 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
-INFO:     10.64.135.173:54326 - "GET /api/cxc HTTP/1.1" 200 OK
-INFO:     10.64.136.226:33474 - "GET /api/ventas-pos?estado=pendiente HTTP/1.1" 200 OK
-INFO:     10.64.129.7:36282 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.129.13:38912 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.129.13:42330 - "GET /api/centros-costo HTTP/1.1" 200 OK
-INFO:     10.64.135.173:54326 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
-INFO:     10.64.136.226:33474 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
-INFO:     10.64.129.10:39436 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.129.9:48122 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.136.245:45810 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
-INFO:     10.64.129.10:39444 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
-INFO:     10.64.129.7:51104 - "GET /api/facturas-proveedor/7/pagos HTTP/1.1" 200 OK
-INFO:     10.64.136.245:38014 - "POST /api/facturas-proveedor/6/deshacer-canje HTTP/1.1" 200 OK
-INFO:     10.64.131.204:51126 - "GET /api/facturas-proveedor/6 HTTP/1.1" 200 OK
-INFO:     10.64.138.62:56458 - "GET /api/letras HTTP/1.1" 200 OK
-INFO:     10.64.138.62:58996 - "GET /api/centros-costo HTTP/1.1" 200 OK
-INFO:     10.64.131.7:38640 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
-INFO:     10.64.138.62:59010 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.131.34:34394 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
-INFO:     10.64.138.62:58976 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.131.34:34378 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.131.34:34400 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.131.7:38634 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
-INFO:     10.64.129.10:47358 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
-INFO:     10.64.136.226:52774 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.138.62:58988 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
-INFO:     10.64.131.7:38640 - "GET /api/centros-costo HTTP/1.1" 200 OK
-INFO:     10.64.129.9:41702 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.129.13:49422 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.131.7:38648 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
-INFO:     10.64.129.9:41700 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.135.173:36246 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
-INFO:     10.64.135.173:36252 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
-INFO:     10.64.129.13:38502 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
-INFO:     10.64.129.13:38510 - "GET /api/centros-costo HTTP/1.1" 200 OK
-INFO:     10.64.135.173:53854 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.135.173:53858 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.129.9:43534 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
-INFO:     10.64.129.7:41792 - "GET /api/gastos HTTP/1.1" 200 OK
-INFO:     10.64.129.7:41798 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.136.226:41530 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.129.13:38510 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
-INFO:     10.64.136.245:37788 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
-INFO:     10.64.129.9:58132 - "POST /api/pagos HTTP/1.1" 200 OK
-INFO:     10.64.129.9:58132 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.129.10:57300 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.135.173:53396 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
-INFO:     10.64.129.13:52186 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.135.173:53400 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.129.7:51270 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
-INFO:     10.64.129.13:52170 - "GET /api/centros-costo HTTP/1.1" 200 OK
-INFO:     10.64.136.245:60126 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
-INFO:     10.64.129.10:57314 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
-INFO:     10.64.136.245:60118 - "POST /api/pagos HTTP/1.1" 200 OK
-INFO:     10.64.129.9:58132 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
-INFO:     10.64.136.245:60118 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
-INFO:     10.64.129.7:51270 - "GET /api/centros-costo HTTP/1.1" 200 OK
-INFO:     10.64.129.9:56322 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.136.226:52682 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.135.173:53400 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.136.226:52680 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.135.173:53396 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
-INFO:     10.64.129.13:52170 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
-INFO:     10.64.129.7:51270 - "GET /api/facturas-proveedor/6/pagos HTTP/1.1" 200 OK.
+INFO:     10.64.131.7:41352 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.7:41348 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.138.62:37008 - "GET /api/monedas HTTP/1.1" 200 OK
+INFO:     10.64.131.34:33700 - "GET /api/inventario HTTP/1.1" 200 OK
+INFO:     10.64.131.7:41362 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
+INFO:     10.64.136.226:53842 - "GET /api/monedas HTTP/1.1" 200 OK
+INFO:     10.64.135.173:49340 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.135.173:49348 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.136.245:40540 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
+INFO:     10.64.131.203:35178 - "GET /api/inventario HTTP/1.1" 200 OK
+INFO:     10.64.131.202:54712 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.204:49200 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.131.206:38356 - "GET /api/monedas HTTP/1.1" 200 OK
+INFO:     10.64.131.205:59692 - "GET /api/inventario HTTP/1.1" 200 OK
+INFO:     10.64.131.205:59676 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
+INFO:     10.64.131.7:49510 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.131.34:46734 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.138.62:60040 - "GET /api/monedas HTTP/1.1" 200 OK
+INFO:     10.64.131.34:46750 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
+INFO:     10.64.138.62:50776 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.138.62:57258 - "GET /api/inventario HTTP/1.1" 200 OK
+INFO:     10.64.138.62:57260 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.34:58346 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.131.34:58336 - "GET /api/monedas HTTP/1.1" 200 OK
+INFO:     10.64.131.7:60326 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
+INFO:     10.64.138.62:45694 - "GET /api/dashboard/kpis HTTP/1.1" 200 OK
+INFO:     10.64.138.62:55670 - "GET /api/monedas HTTP/1.1" 200 OK
+INFO:     10.64.131.34:36178 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.131.7:51418 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
+INFO:     10.64.131.34:36192 - "GET /api/inventario HTTP/1.1" 200 OK
+INFO:     10.64.131.7:51426 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
+INFO:     10.64.138.62:55684 - "GET /api/centros-costo HTTP/1.1" 200 OK
+INFO:     10.64.131.34:36200 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.138.62:55670 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.131.7:51426 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.138.62:55692 - "GET /api/monedas HTTP/1.1" 200 OK
+INFO:     10.64.131.34:36190 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
+INFO:     10.64.138.62:45694 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
+INFO:     10.64.131.7:51410 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
+INFO:     10.64.131.7:52838 - "GET /api/monedas HTTP/1.1" 200 OK
+INFO:     10.64.138.62:57192 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.34:56584 - "GET /api/inventario HTTP/1.1" 200 OK
+INFO:     10.64.138.62:57186 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.131.7:52856 - "GET /api/monedas HTTP/1.1" 200 OK
+INFO:     10.64.131.34:56586 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.131.7:52834 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
+INFO:     10.64.131.7:52872 - "GET /api/inventario HTTP/1.1" 200 OK
+INFO:     10.64.131.7:52846 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
+INFO:     10.64.138.62:57204 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.138.62:47416 - "GET /api/inventario HTTP/1.1" 200 OK
+INFO:     10.64.131.7:51060 - "GET /api/inventario HTTP/1.1" 200 OK
+INFO:     10.64.138.62:47430 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.131.7:51056 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.138.62:47408 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.138.62:47444 - "GET /api/monedas HTTP/1.1" 200 OK
+INFO:     10.64.131.34:38648 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.138.62:47426 - "GET /api/monedas HTTP/1.1" 200 OK
+INFO:     10.64.131.34:38636 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
+INFO:     10.64.131.34:38622 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
+INFO:     10.64.138.62:34952 - "GET /api/inventario HTTP/1.1" 200 OK
+INFO:     10.64.131.7:42788 - "GET /api/monedas HTTP/1.1" 200 OK
+INFO:     10.64.131.34:41328 - "GET /api/inventario HTTP/1.1" 200 OK
+INFO:     10.64.131.34:41356 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.131.34:41326 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.131.34:41342 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.7:42796 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.34:41360 - "GET /api/monedas HTTP/1.1" 200 OK
+INFO:     10.64.131.7:42780 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
+INFO:     10.64.131.34:41366 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
+INFO:     10.64.138.62:43444 - "GET /api/monedas HTTP/1.1" 200 OK
+INFO:     10.64.138.62:43456 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
+INFO:     10.64.131.7:52420 - "GET /api/inventario HTTP/1.1" 200 OK
+INFO:     10.64.131.34:47420 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.131.7:52430 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.138.62:43428 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
+INFO:     10.64.131.7:52418 - "GET /api/centros-costo HTTP/1.1" 200 OK
+INFO:     10.64.138.62:43436 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
+INFO:     10.64.131.34:47412 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
+INFO:     10.64.138.62:53966 - "GET /api/facturas-proveedor/9/letras HTTP/1.1" 200 OK
+INFO:     10.64.138.62:53966 - "GET /api/facturas-proveedor/7/pagos HTTP/1.1" 200 OK
+INFO:     10.64.138.62:58696 - "GET /api/facturas-proveedor/7/pagos HTTP/1.1" 200 OK
+INFO:     10.64.131.7:51132 - "GET /api/monedas HTTP/1.1" 200 OK
+INFO:     10.64.131.7:51156 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
+INFO:     10.64.131.34:37438 - "GET /api/inventario HTTP/1.1" 200 OK
+INFO:     10.64.138.62:49470 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.131.34:37422 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
+INFO:     10.64.138.62:49484 - "GET /api/centros-costo HTTP/1.1" 200 OK
+INFO:     10.64.131.7:51168 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.131.7:51188 - "GET /api/inventario HTTP/1.1" 200 OK
+INFO:     10.64.131.7:51178 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.131.34:37462 - "GET /api/monedas HTTP/1.1" 200 OK
+INFO:     10.64.131.34:37470 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.138.62:49500 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
+INFO:     10.64.131.34:37452 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.7:51128 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
+INFO:     10.64.131.7:51146 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
+INFO:     10.64.131.34:37422 - "GET /api/facturas-proveedor/9/letras HTTP/1.1" 200 OK
+INFO:     10.64.131.202:50028 - "GET /api/inventario HTTP/1.1" 200 OK
+INFO:     10.64.131.206:53204 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.204:39966 - "GET /api/inventario HTTP/1.1" 200 OK
+INFO:     10.64.131.203:33042 - "GET /api/monedas HTTP/1.1" 200 OK
+INFO:     10.64.131.203:33034 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.131.205:45806 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
+INFO:     10.64.131.204:39970 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.205:45806 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.131.202:50028 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.204:39966 - "GET /api/monedas HTTP/1.1" 200 OK
+INFO:     10.64.131.204:39978 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
+INFO:     10.64.131.205:45806 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.136.226:58132 - "GET /api/inventario HTTP/1.1" 200 OK
+INFO:     10.64.129.10:34724 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.129.13:38654 - "GET /api/monedas HTTP/1.1" 200 OK
+INFO:     10.64.136.226:58118 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.129.13:38666 - "GET /api/inventario HTTP/1.1" 200 OK
+INFO:     10.64.129.9:58352 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
+INFO:     10.64.131.7:47128 - "GET /api/monedas HTTP/1.1" 200 OK
+INFO:     10.64.138.62:47632 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.34:54606 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.131.7:47140 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
+INFO:     10.64.138.62:47632 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.7:47140 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.34:54658 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
+INFO:     10.64.131.34:54636 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
+INFO:     10.64.131.34:54624 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
+INFO:     10.64.131.7:47160 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.131.34:54618 - "GET /api/monedas HTTP/1.1" 200 OK
+INFO:     10.64.131.7:47174 - "GET /api/inventario HTTP/1.1" 200 OK
+INFO:     10.64.138.62:51174 - "GET /api/centros-costo HTTP/1.1" 200 OK
+INFO:     10.64.131.34:54646 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.131.7:47150 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
+INFO:     10.64.138.62:56366 - "GET /api/inventario HTTP/1.1" 200 OK
+INFO:     10.64.131.7:57136 - "GET /api/monedas HTTP/1.1" 200 OK
+INFO:     10.64.131.34:49928 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.131.34:49916 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.34:49944 - "GET /api/inventario HTTP/1.1" 200 OK
+INFO:     10.64.138.62:56384 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.138.62:56366 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.131.7:57136 - "GET /api/monedas HTTP/1.1" 200 OK
+INFO:     10.64.131.7:57146 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.7:57146 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.138.62:56376 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
+INFO:     10.64.131.34:49916 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
+INFO:     10.64.138.62:56366 - "GET /api/facturas-proveedor/7/pagos HTTP/1.1" 200 OK
+INFO:     10.64.131.7:41864 - "DELETE /api/pagos/3 HTTP/1.1" 200 OK
+INFO:     10.64.131.34:48388 - "GET /api/facturas-proveedor/7/pagos HTTP/1.1" 200 OK
+INFO:     10.64.138.62:48510 - "GET /api/monedas HTTP/1.1" 200 OK
+INFO:     10.64.131.34:48392 - "GET /api/inventario HTTP/1.1" 200 OK
+INFO:     10.64.138.62:48502 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.131.7:41892 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.131.34:48404 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
+INFO:     10.64.131.7:41864 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
+INFO:     10.64.131.7:41878 - "GET /api/centros-costo HTTP/1.1" 200 OK
+INFO:     10.64.138.62:48488 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
+INFO:     10.64.131.34:48388 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
+INFO:     10.64.138.62:48502 - "GET /api/pagos HTTP/1.1" 200 OK
+INFO:     10.64.131.34:37140 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
+INFO:     10.64.131.34:37148 - "GET /api/monedas HTTP/1.1" 200 OK
+INFO:     10.64.138.62:40420 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.138.62:40422 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
+INFO:     10.64.138.62:40440 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
+INFO:     10.64.131.7:47948 - "GET /api/centros-costo HTTP/1.1" 200 OK
+INFO:     10.64.131.7:47964 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.138.62:40424 - "GET /api/inventario HTTP/1.1" 200 OK
+INFO:     10.64.131.34:37138 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
+INFO:     10.64.131.205:37446 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     10.64.138.62:33822 - "GET /api/facturas-proveedor/7/pagos HTTP/1.1" 200 OK
+INFO:     10.64.131.7:34544 - "DELETE /api/pagos/4 HTTP/1.1" 200 OK
+INFO:     10.64.131.34:45184 - "GET /api/facturas-proveedor/7/pagos HTTP/1.1" 200 OK
+INFO:     10.64.131.7:40430 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.138.62:33830 - "GET /api/monedas HTTP/1.1" 200 OK
+INFO:     10.64.131.7:40444 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
+INFO:     10.64.131.7:40456 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.138.62:33834 - "GET /api/inventario HTTP/1.1" 200 OK
+INFO:     10.64.131.34:45186 - "GET /api/centros-costo HTTP/1.1" 200 OK
+INFO:     10.64.138.62:33832 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
+INFO:     10.64.131.34:45184 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
+INFO:     10.64.131.7:34544 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
+INFO:     10.64.131.7:43394 - "DELETE /api/facturas-proveedor/7 HTTP/1.1" 200 OK
+INFO:     10.64.131.7:43394 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.131.7:43426 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
+INFO:     10.64.138.62:40266 - "GET /api/inventario HTTP/1.1" 200 OK
+INFO:     10.64.131.7:43400 - "GET /api/monedas HTTP/1.1" 200 OK
+INFO:     10.64.131.34:51190 - "GET /api/centros-costo HTTP/1.1" 200 OK
+INFO:     10.64.138.62:40262 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
+INFO:     10.64.131.7:43412 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.138.62:40258 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
+INFO:     10.64.131.34:51176 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
+INFO:     10.64.131.34:42158 - "GET /api/inventario HTTP/1.1" 200 OK
+INFO:     10.64.131.7:33108 - "GET /api/monedas HTTP/1.1" 200 OK
+INFO:     10.64.138.62:34524 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.138.62:34540 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.34:42146 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
+INFO:     10.64.131.7:45616 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.131.7:38912 - "PUT /api/terceros/1 HTTP/1.1" 200 OK
+INFO:     10.64.131.7:38912 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.138.62:49940 - "GET /api/inventario HTTP/1.1" 200 OK
+INFO:     10.64.131.34:45386 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.131.34:45402 - "GET /api/monedas HTTP/1.1" 200 OK
+INFO:     10.64.138.62:49938 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
+INFO:     10.64.131.7:38912 - "GET /api/empresas HTTP/1.1" 200 OK.
     2.  Review  and  for a missing .
   - **Why to solve this issue and what will be achieved with this?** To prevent a potential critical backend failure and ensure application stability.
   - **Should Test frontend/backend/both after fix:** backend
@@ -921,53 +913,57 @@ INFO:     10.64.129.7:51270 - "GET /api/facturas-proveedor/6/pagos HTTP/1.1" 200
 **Key Technical Concepts**
 - **Backend:** FastAPI, PostgreSQL, SQLAlchemy (async).
 - **Frontend:** React, React Router, TailwindCSS, Shadcn/UI.
-- **Key Pattern:** Extensive use of modals for actions (payments, letters, viewing history). Creation of reusable, stateful components like  to enhance UX.
+- **State Management:** React Context () is used for managing the globally selected company.
+- **Key Pattern:** A recurring backend issue was identified and fixed where a  query was executed in a new transaction immediately after an  in a different transaction, causing a not found race condition. The fix was to return the newly created object from within the original transaction.
 
 **key DB schema**
 - **Schema:** 
-- **Tables:** No new tables were created in this session, but the agent worked extensively with , , , , , , and .
+- The agent worked with , , , and . No new tables were created, but existing ones were heavily utilized.
 
 **changes in tech stack**
 - None.
 
 **All files of reference**
-- : The most heavily modified file, containing the invoice list, creation/edit modal, and all related action modals (pay, letras, view history).
-- : Updated with several new endpoints for fetching related payments/letras and undoing actions. Also fixed a bug in an existing query.
-- : Significantly modified to add styles for new components, buttons, responsive behavior, and bug fixes.
-- : New reusable component for dropdowns with search.
-- : New compact version of the searchable select for use in tables.
-- , , : New full CRUD pages.
+- : New file, contains logic for the OC module, including the create/edit modal.
+- : New file, contains logic for the Expenses module.
+- : Modified to include the  and the new  component.
+- : Heavily modified with new styles for , summary cards, responsive fixes, and action buttons.
+- : New component for the application header and company selection.
+- : New file for managing global company state.
+- : Significantly expanded with endpoints for  and , and transaction-related bug fixes.
+- : Expanded with Pydantic models for  and .
 
 **Areas that need refactoring**:
--  is still a monolithic file and is growing very large. It should be broken down into routers by module.
--  is now over 1600 lines long and handles the logic for the main list, the create/edit modal, the payment modal, the letras modal, the view payments modal, and the view letras modal. This component should be broken down into smaller, more manageable sub-components.
+-  has grown even larger (now over 2000 lines) and is a critical candidate for being split into separate router files per module (e.g., , ).
+- The frontend pages  and  are very large and manage multiple complex modals and state. They should be broken down into smaller, more focused components.
 
 **key api endpoints**
-- : Generates bills of exchange from an invoice.
-- : Reverses the generation of letras for an invoice.
-- : Gets all payments for a specific invoice.
-- : Gets all letras for a specific invoice.
-- : Lists items from .
-- : Lists models/cuts from .
+- : Creates a new expense and its associated payments.
+- : Lists all expenses.
+- : Creates a new purchase order.
+- : Lists all purchase orders.
+- : Updates a purchase order.
+- : Generates a supplier invoice from a purchase order.
+- : Endpoint was updated with validation to prevent overpayment.
 
 **Critical Info for New Agent**
-- The core logic for Invoices, Payments, and Letras is surprisingly robust and already implemented. Do not assume it needs to be built from scratch.
-- The  component is the center of the application right now but is extremely large. Be careful when making changes and consider it a prime candidate for refactoring.
-- The  error from the initial handoff is still unresolved and was ignored. It should be investigated to ensure backend stability.
+- The user is highly focused on UI/UX and provides specific visual feedback. Pay close attention to the provided images and aesthetic requests.
+- A recurring backend pattern was fixing race conditions in  endpoints by returning the created object from within the same database transaction instead of re-fetching it. Be mindful of this if creating new CRUD endpoints.
+- The original  error from the first handoff summary has still not been investigated and should be treated as a potential hidden bug.
+- The application now has a global company context. New modules or features should use  to get the  and filter data accordingly.
 
 **documents and test reports created in this job**
 -  (updated multiple times)
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User:** Requested viewing related payments/letras and undoing those actions. **Status: Completed.**
-2.  **User:** Requested visual improvements, filters, responsive fixes, and the ability to edit letras before creation. Also reported the sidebar expansion bug. **Status: IN PROGRESS.**
-3.  **Agent:** Entendido. Voy a trabajar en... (Acknowledged the latest request).
-4.  **Agent:** Started investigating and fixing the sidebar bug.
-5.  **Agent:** Fixed the sidebar bug by editing .
+1.  **User:** Requested the OC module with specific UI from an image. **Status: Completed.**
+2.  **User:** Provided feedback on the OC modal: make IGV included default, make article field larger, use 2 columns for top fields, make the summary prettier, and add a print button. Also requested multi-company support. **Status: Completed.**
+3.  **User:** Provided more feedback on the OC module: select company by default from a header, show the selected article clearly, improve the summary's visual life, and add edit/delete actions to the OC list. **Status: Completed.**
+4.  **User:** Provided final feedback on the OC module: The article search dropdown is hard to see, the selected item isn't clear, the modal should be fullscreen, allow creating a provider on-the-fly, and change the font for numbers. **Status: PENDING.**
 
 **Project Health Check:**
 - **Broken:** A potential unhandled  error exists in the backend. It has not caused a visible failure yet but remains a risk.
-- **Mocked:** The Odoo integration () and modules like Payroll, Budgets, and Reports are still placeholders.
+- **Mocked:** The Odoo integration (), Payroll, Budgets, and Reports modules are still placeholders.
 
 **3rd Party Integrations**
 - **PostgreSQL:** Primary database.
@@ -977,10 +973,10 @@ INFO:     10.64.129.7:51270 - "GET /api/facturas-proveedor/6/pagos HTTP/1.1" 200
 - **Testing agent used after significant changes:** NO
 - **Troubleshoot agent used after agent stuck in loop:** NO
 - **Test files created:** None.
-- **Known regressions:** None in this session, but the pre-existing  error was never addressed.
+- **Known regressions:** None.
 
 **Credentials to test flow:**
 - No application-level login/password has been implemented yet.
 
 **What agent forgot to execute**
-- The agent completely ignored the  error that was explicitly mentioned in the initial handoff summary under  and . No attempt was made to investigate or resolve it.</analysis>
+- The agent completely ignored the  error that was explicitly mentioned in the initial handoff summary and carried over. No attempt was made to investigate or resolve it.</analysis>
