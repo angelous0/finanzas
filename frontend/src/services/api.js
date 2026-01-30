@@ -61,6 +61,13 @@ export const getEmpleados = (search) => api.get('/empleados', { params: { search
 export const getArticulos = (search) => api.get('/articulos', { params: { search } });
 export const createArticulo = (data) => api.post('/articulos', data);
 
+// Inventario (public.prod_inventario)
+export const getInventario = (search) => api.get('/inventario', { params: { search } });
+
+// Modelos/Cortes (public.prod_registros + prod_modelos)
+export const getModelosCortes = (search) => api.get('/modelos-cortes', { params: { search } });
+export const getModelos = (search) => api.get('/modelos', { params: { search } });
+
 // Ordenes de Compra
 export const getOrdenesCompra = (params) => api.get('/ordenes-compra', { params });
 export const getOrdenCompra = (id) => api.get(`/ordenes-compra/${id}`);
