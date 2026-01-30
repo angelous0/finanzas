@@ -1240,6 +1240,80 @@ async def delete_factura_proveedor(id: int):
             
             return {"message": "Factura deleted"}
 
+@api_router.get("/facturas-proveedor/{id}/pagos")
+async def get_pagos_de_factura(id: int):
+    """Get all payments applied to a specific factura"""
+    pool = await get_pool()
+    async with pool.acquire() as conn:
+        await conn.execute("SET search_path TO finanzas2, public")
+        
+        # Get pagos through pago_aplicacion
+        rows = await conn.fetch("""
+            SELECT p.*, pa.monto_aplicado, cf.nombre as cuenta_nombre, m.codigo as moneda_codigo, m.simbolo as moneda_simbolo
+            FROM finanzas2.cont_pago p
+            JOIN finanzas2.cont_pago_aplicacion pa ON pa.pago_id = p.id
+            LEFT JOIN finanzas2.cont_cuenta_financiera cf ON p.cuenta_financiera_id = cf.id
+            LEFT JOIN finanzas2.cont_moneda m ON p.moneda_id = m.id
+            WHERE pa.tipo_documento = 'factura' AND pa.documento_id = $1
+            ORDER BY p.fecha DESC
+        """, id)
+        
+        return [dict(r) for r in rows]
+
+@api_router.get("/facturas-proveedor/{id}/letras")
+async def get_letras_de_factura(id: int):
+    """Get all letras generated from a specific factura"""
+    pool = await get_pool()
+    async with pool.acquire() as conn:
+        await conn.execute("SET search_path TO finanzas2, public")
+        
+        rows = await conn.fetch("""
+            SELECT l.*, m.codigo as moneda_codigo, m.simbolo as moneda_simbolo
+            FROM finanzas2.cont_letra l
+            LEFT JOIN finanzas2.cont_moneda m ON l.moneda_id = m.id
+            WHERE l.factura_id = $1
+            ORDER BY l.fecha_vencimiento ASC
+        """, id)
+        
+        return [dict(r) for r in rows]
+
+@api_router.post("/facturas-proveedor/{id}/deshacer-canje")
+async def deshacer_canje_letras(id: int):
+    """Reverse the canje of letras - delete all letras and set factura back to pendiente"""
+    pool = await get_pool()
+    async with pool.acquire() as conn:
+        await conn.execute("SET search_path TO finanzas2, public")
+        
+        async with conn.transaction():
+            factura = await conn.fetchrow("SELECT * FROM finanzas2.cont_factura_proveedor WHERE id = $1", id)
+            if not factura:
+                raise HTTPException(404, "Factura not found")
+            
+            if factura['estado'] != 'canjeado':
+                raise HTTPException(400, "Factura is not in canjeado state")
+            
+            # Check if any letra has payments
+            pagos_letras = await conn.fetchval("""
+                SELECT COUNT(*) FROM finanzas2.cont_pago_aplicacion pa
+                JOIN finanzas2.cont_letra l ON pa.tipo_documento = 'letra' AND pa.documento_id = l.id
+                WHERE l.factura_id = $1
+            """, id)
+            
+            if pagos_letras > 0:
+                raise HTTPException(400, "Cannot undo canje - some letras have payments. Delete payments first.")
+            
+            # Delete all letras
+            await conn.execute("DELETE FROM finanzas2.cont_letra WHERE factura_id = $1", id)
+            
+            # Update factura back to pendiente
+            await conn.execute("""
+                UPDATE finanzas2.cont_factura_proveedor 
+                SET estado = 'pendiente', updated_at = NOW() 
+                WHERE id = $1
+            """, id)
+            
+            return {"message": "Canje reversed successfully"}
+
 # =====================
 # PAGOS
 # =====================
