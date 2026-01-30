@@ -32,7 +32,7 @@ Create a QuickBooks-like system for treasury, control, and minimal accounting ca
 - `cont_cuenta_financiera` - Financial accounts (bank, cash)
 - `cont_tercero` - Third parties (supplier/client/staff unified)
 
-### 2. Supplier Invoice (Factura Proveedor) ✅ IN PROGRESS
+### 2. Supplier Invoice (Factura Proveedor) ✅ COMPLETE
 **Completed (2026-01-30):**
 - UI modal matching user's screenshot
 - Hide "beneficiario" field when proveedor selected
@@ -43,20 +43,19 @@ Create a QuickBooks-like system for treasury, control, and minimal accounting ca
   - IMPORTE auto-calculation
   - IGV checkbox
   - Add/duplicate/remove article actions
-  
-**Pending:**
-- Create `cont_cxp` record automatically when saving invoice
-- Update invoice status based on payments
+- CxP auto-created when saving invoice ✅
 
-### 3. Accounts Payable (CxP) 🔴 NOT IMPLEMENTED
-- Table `cont_cxp` exists but no business logic
-- Should auto-create when invoice saved
-- Should auto-update based on payments
+### 3. Accounts Payable (CxP) ✅ COMPLETE
+- CxP auto-created when invoice is saved
+- CxP saldo updates when payments are applied
+- CxP estado syncs with invoice (pendiente → parcial → pagado)
 
-### 4. Centralized Payments 🔴 NOT IMPLEMENTED
-- `cont_pago`, `cont_pago_aplicacion` tables exist
-- Partial and multi-method payments logic pending
-- Update invoice status on payment
+### 4. Centralized Payments ✅ COMPLETE
+- Partial payments supported
+- Multi-method payments (transferencia, efectivo, cheque, tarjeta)
+- Auto-updates invoice saldo and estado
+- Auto-updates CxP saldo and estado
+- Tested: 500 invoice → 300 partial → 200 final = pagado
 
 ### 5. Purchase Orders (OC) ✅ SCAFFOLDED
 - `cont_oc`, `cont_oc_linea` tables created
