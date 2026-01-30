@@ -525,8 +525,51 @@ export const FacturasProveedor = () => {
 
   // Editar factura
   const handleEdit = (factura) => {
-    // Por ahora solo abrimos el modal con los datos
-    toast.info('Función de edición en desarrollo');
+    // Only allow editing if factura is in 'pendiente' state
+    if (factura.estado !== 'pendiente') {
+      toast.error('Solo se pueden editar facturas en estado pendiente');
+      return;
+    }
+    
+    // Set the editing factura
+    setEditingFactura(factura);
+    
+    // Load the factura data into the form
+    setFormData({
+      proveedor_id: factura.proveedor_id || '',
+      beneficiario_nombre: factura.beneficiario_nombre || '',
+      moneda_id: factura.moneda_id || '',
+      fecha_factura: factura.fecha_factura ? factura.fecha_factura.split('T')[0] : new Date().toISOString().split('T')[0],
+      fecha_vencimiento: factura.fecha_vencimiento ? factura.fecha_vencimiento.split('T')[0] : '',
+      terminos_dias: factura.terminos_dias || 30,
+      tipo_documento: factura.tipo_documento || 'factura',
+      numero: factura.numero || '',
+      impuestos_incluidos: factura.impuestos_incluidos !== false,
+      notas: factura.notas || '',
+      lineas: factura.lineas && factura.lineas.length > 0 
+        ? factura.lineas.map(l => ({
+            categoria_id: l.categoria_id || '',
+            descripcion: l.descripcion || '',
+            linea_negocio_id: l.linea_negocio_id || '',
+            centro_costo_id: l.centro_costo_id || '',
+            importe: l.importe || 0,
+            igv_aplica: l.igv_aplica !== false
+          }))
+        : [{ categoria_id: '', descripcion: '', linea_negocio_id: '', centro_costo_id: '', importe: 0, igv_aplica: true }],
+      articulos: factura.articulos && factura.articulos.length > 0
+        ? factura.articulos.map(a => ({
+            articulo_id: a.articulo_id || '',
+            modelo_corte_id: a.modelo_corte_id || '',
+            unidad: a.unidad || '',
+            cantidad: a.cantidad || 1,
+            precio: a.precio || 0,
+            linea_negocio_id: a.linea_negocio_id || '',
+            igv_aplica: a.igv_aplica !== false
+          }))
+        : []
+    });
+    
+    setShowModal(true);
   };
 
   // Ver factura - ahora abre el modal de pagos o letras según el estado
