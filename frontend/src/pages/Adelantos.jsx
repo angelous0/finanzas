@@ -614,6 +614,71 @@ export const Adelantos = () => {
           </div>
         </div>
       )}
+
+      {/* Modal Registrar Pago */}
+      {showPagoModal && selectedAdelanto && (
+        <div className="modal-overlay" onClick={() => setShowPagoModal(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '450px' }}>
+            <div className="modal-header">
+              <h2 className="modal-title">Registrar Pago de Adelanto</h2>
+              <button className="modal-close" onClick={() => setShowPagoModal(false)}>
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="modal-body">
+              <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+                <div style={{ fontSize: '0.875rem', color: '#64748b' }}>Monto a Pagar</div>
+                <div style={{ fontSize: '2rem', fontWeight: 700, color: '#1B4D3E', fontFamily: "'JetBrains Mono', monospace" }}>
+                  {formatCurrency(selectedAdelanto.monto)}
+                </div>
+                <div style={{ fontSize: '0.8125rem', color: '#64748b', marginTop: '0.5rem' }}>
+                  {selectedAdelanto.empleado_nombre}
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label required">Cuenta de Salida</label>
+                <select
+                  className="form-input form-select"
+                  value={pagoData.cuenta_financiera_id}
+                  onChange={(e) => setPagoData(prev => ({ ...prev, cuenta_financiera_id: e.target.value }))}
+                >
+                  <option value="">Seleccionar cuenta...</option>
+                  {cuentas.map(cuenta => (
+                    <option key={cuenta.id} value={cuenta.id}>
+                      {cuenta.nombre} - {cuenta.banco || 'Caja'}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Medio de Pago</label>
+                <select
+                  className="form-input form-select"
+                  value={pagoData.medio_pago}
+                  onChange={(e) => setPagoData(prev => ({ ...prev, medio_pago: e.target.value }))}
+                >
+                  <option value="efectivo">Efectivo</option>
+                  <option value="transferencia">Transferencia</option>
+                  <option value="cheque">Cheque</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="modal-footer">
+              <button className="btn btn-outline" onClick={() => setShowPagoModal(false)}>
+                Cancelar
+              </button>
+              <button className="btn btn-primary" onClick={handlePagar}>
+                <DollarSign size={16} />
+                Confirmar Pago
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
