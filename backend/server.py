@@ -1084,7 +1084,30 @@ async def create_factura_proveedor(data: FacturaProveedorCreate):
                 VALUES ($1, $2, $3, $3, $4, 'pendiente')
             """, factura_id, data.proveedor_id, total, fecha_vencimiento)
             
-            return await get_factura_proveedor(factura_id)
+            # Get the created factura with relations within the same transaction
+            row = await conn.fetchrow("""
+                SELECT fp.*, t.nombre as proveedor_nombre, m.codigo as moneda_codigo, m.simbolo as moneda_simbolo
+                FROM finanzas2.cont_factura_proveedor fp
+                LEFT JOIN finanzas2.cont_tercero t ON fp.proveedor_id = t.id
+                LEFT JOIN finanzas2.cont_moneda m ON fp.moneda_id = m.id
+                WHERE fp.id = $1
+            """, factura_id)
+            
+            if not row:
+                raise HTTPException(404, "Factura not found after creation")
+            
+            fp_dict = dict(row)
+            lineas = await conn.fetch("""
+                SELECT fpl.*, c.nombre as categoria_nombre, ln.nombre as linea_negocio_nombre, cc.nombre as centro_costo_nombre
+                FROM finanzas2.cont_factura_proveedor_linea fpl
+                LEFT JOIN finanzas2.cont_categoria c ON fpl.categoria_id = c.id
+                LEFT JOIN finanzas2.cont_linea_negocio ln ON fpl.linea_negocio_id = ln.id
+                LEFT JOIN finanzas2.cont_centro_costo cc ON fpl.centro_costo_id = cc.id
+                WHERE fpl.factura_id = $1 ORDER BY fpl.id
+            """, factura_id)
+            fp_dict['lineas'] = [dict(l) for l in lineas]
+            
+            return fp_dict
 
 @api_router.put("/facturas-proveedor/{id}", response_model=FacturaProveedor)
 async def update_factura_proveedor(id: int, data: FacturaProveedorUpdate):
