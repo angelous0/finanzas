@@ -102,7 +102,23 @@ export const ConciliacionBancaria = () => {
     }
   }, [cuentaSeleccionada, fechaDesde, fechaHasta]);
 
-  const handleImportExcel = async () => {
+  const handlePreviewExcel = async () => {
+    if (!uploadFile) return;
+    
+    try {
+      setImporting(true);
+      const result = await previsualizarExcelBanco(uploadFile, bancoSeleccionado);
+      setPreviewData(result.data.preview);
+      setShowImportModal(false);
+      setShowPreviewModal(true);
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Error al previsualizar Excel');
+    } finally {
+      setImporting(false);
+    }
+  };
+
+  const handleConfirmImport = async () => {
     if (!uploadFile || !cuentaSeleccionada) return;
     
     try {
@@ -110,21 +126,26 @@ export const ConciliacionBancaria = () => {
       const result = await importarExcelBanco(uploadFile, cuentaSeleccionada, bancoSeleccionado);
       const data = result.data;
       
-      // Build detailed message
       let msg = '';
       if (data.imported > 0) msg += `${data.imported} nuevos`;
       if (data.updated > 0) msg += `${msg ? ', ' : ''}${data.updated} actualizados`;
       if (data.skipped > 0) msg += `${msg ? ', ' : ''}${data.skipped} omitidos (ya conciliados)`;
       
       toast.success(msg || 'Importación completada');
-      setShowImportModal(false);
+      setShowPreviewModal(false);
       setUploadFile(null);
+      setPreviewData(null);
       loadMovimientos();
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Error al importar Excel');
     } finally {
       setImporting(false);
     }
+  };
+
+  const handleImportExcel = async () => {
+    // Show preview first
+    handlePreviewExcel();
   };
 
   const handleSelectBanco = (id) => {
