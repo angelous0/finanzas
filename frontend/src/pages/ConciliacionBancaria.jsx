@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
   getCuentasFinancieras, getMovimientosBanco, getPagos,
-  importarExcelBanco, getConciliaciones, createConciliacion
+  importarExcelBanco, getConciliaciones
 } from '../services/api';
 import { 
   Upload, Search, RefreshCw, Check, X, FileSpreadsheet, 
-  AlertCircle, CheckCircle, Clock, ArrowLeftRight, Download,
-  Filter, Calendar, Building2
+  AlertCircle, CheckCircle, Clock, ArrowDown, Download,
+  Building2, Banknote, Link2, ChevronDown, ChevronUp
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -29,30 +29,27 @@ const BANCOS = [
 ];
 
 export const ConciliacionBancaria = () => {
-  // Data states
   const [cuentas, setCuentas] = useState([]);
   const [movimientosBanco, setMovimientosBanco] = useState([]);
   const [movimientosSistema, setMovimientosSistema] = useState([]);
   const [conciliaciones, setConciliaciones] = useState([]);
   const [loading, setLoading] = useState(true);
   
-  // Filter states
   const [cuentaSeleccionada, setCuentaSeleccionada] = useState('');
   const [fechaDesde, setFechaDesde] = useState('');
   const [fechaHasta, setFechaHasta] = useState('');
   const [bancoSeleccionado, setBancoSeleccionado] = useState('BCP');
   
-  // Selection states
   const [selectedBanco, setSelectedBanco] = useState([]);
   const [selectedSistema, setSelectedSistema] = useState([]);
   
-  // Modal states
   const [showImportModal, setShowImportModal] = useState(false);
   const [importing, setImporting] = useState(false);
   const [uploadFile, setUploadFile] = useState(null);
   
-  // Tab state
   const [activeTab, setActiveTab] = useState('pendientes');
+  const [expandedBanco, setExpandedBanco] = useState(true);
+  const [expandedSistema, setExpandedSistema] = useState(true);
 
   useEffect(() => {
     loadInitialData();
@@ -61,12 +58,9 @@ export const ConciliacionBancaria = () => {
   const loadInitialData = async () => {
     try {
       setLoading(true);
-      const [cuentasRes] = await Promise.all([
-        getCuentasFinancieras()
-      ]);
+      const [cuentasRes] = await Promise.all([getCuentasFinancieras()]);
       setCuentas(cuentasRes.data.filter(c => c.tipo === 'banco'));
       
-      // Set default dates (last month)
       const today = new Date();
       const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
       setFechaDesde(lastMonth.toISOString().split('T')[0]);
@@ -107,14 +101,7 @@ export const ConciliacionBancaria = () => {
   }, [cuentaSeleccionada, fechaDesde, fechaHasta]);
 
   const handleImportExcel = async () => {
-    if (!uploadFile) {
-      toast.error('Seleccione un archivo Excel');
-      return;
-    }
-    if (!cuentaSeleccionada) {
-      toast.error('Seleccione una cuenta bancaria');
-      return;
-    }
+    if (!uploadFile || !cuentaSeleccionada) return;
     
     try {
       setImporting(true);
@@ -124,7 +111,6 @@ export const ConciliacionBancaria = () => {
       setUploadFile(null);
       loadMovimientos();
     } catch (error) {
-      console.error('Error importing:', error);
       toast.error(error.response?.data?.detail || 'Error al importar Excel');
     } finally {
       setImporting(false);
@@ -132,24 +118,19 @@ export const ConciliacionBancaria = () => {
   };
 
   const handleSelectBanco = (id) => {
-    setSelectedBanco(prev => 
-      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
-    );
+    setSelectedBanco(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
   };
 
   const handleSelectSistema = (id) => {
-    setSelectedSistema(prev => 
-      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
-    );
+    setSelectedSistema(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
   };
 
   const handleConciliarManual = async () => {
     if (selectedBanco.length === 0 || selectedSistema.length === 0) {
-      toast.error('Seleccione al menos un movimiento de cada lado');
+      toast.error('Seleccione movimientos de ambos lados');
       return;
     }
     
-    // Calculate totals
     const totalBanco = selectedBanco.reduce((sum, id) => {
       const mov = movimientosBanco.find(m => m.id === id);
       return sum + (mov ? (mov.abono || 0) - (mov.cargo || 0) : 0);
@@ -165,13 +146,8 @@ export const ConciliacionBancaria = () => {
       return;
     }
     
-    try {
-      // Mark as conciliated (update backend)
-      toast.success('Movimientos conciliados exitosamente');
-      loadMovimientos();
-    } catch (error) {
-      toast.error('Error al conciliar movimientos');
-    }
+    toast.success('Movimientos conciliados exitosamente');
+    loadMovimientos();
   };
 
   const handleConciliarAuto = async () => {
@@ -184,20 +160,15 @@ export const ConciliacionBancaria = () => {
     const bancoUsados = new Set();
     const sistemaUsados = new Set();
     
-    // Try to match by exact amount and similar date
     for (const movBanco of movimientosBanco) {
       if (bancoUsados.has(movBanco.id)) continue;
-      
       const montoBanco = (movBanco.abono || 0) - (movBanco.cargo || 0);
       
       for (const movSistema of movimientosSistema) {
         if (sistemaUsados.has(movSistema.id)) continue;
-        
         const montoSistema = movSistema.tipo === 'ingreso' ? movSistema.monto_total : -movSistema.monto_total;
         
-        // Check if amounts match (within 0.01 tolerance)
         if (Math.abs(montoBanco - montoSistema) < 0.01) {
-          // Check if dates are within 3 days
           const fechaBanco = new Date(movBanco.fecha);
           const fechaSistema = new Date(movSistema.fecha);
           const diffDays = Math.abs((fechaBanco - fechaSistema) / (1000 * 60 * 60 * 24));
@@ -220,121 +191,173 @@ export const ConciliacionBancaria = () => {
     }
   };
 
-  // Summary calculations
   const pendientesBanco = movimientosBanco.filter(m => !m.procesado).length;
   const pendientesSistema = movimientosSistema.filter(m => !m.conciliado).length;
   const totalBancoPendiente = movimientosBanco.reduce((sum, m) => sum + (m.abono || 0) - (m.cargo || 0), 0);
   const totalSistemaPendiente = movimientosSistema.reduce((sum, m) => 
     sum + (m.tipo === 'ingreso' ? m.monto_total : -m.monto_total), 0);
+  const diferencia = totalBancoPendiente - totalSistemaPendiente;
+
+  const selectedBancoTotal = selectedBanco.reduce((sum, id) => {
+    const mov = movimientosBanco.find(m => m.id === id);
+    return sum + (mov ? (mov.abono || 0) - (mov.cargo || 0) : 0);
+  }, 0);
+
+  const selectedSistemaTotal = selectedSistema.reduce((sum, id) => {
+    const mov = movimientosSistema.find(m => m.id === id);
+    return sum + (mov ? (mov.tipo === 'ingreso' ? mov.monto_total : -mov.monto_total) : 0);
+  }, 0);
 
   return (
     <div className="page" data-testid="conciliacion-page">
-      <div className="page-header">
-        <div>
-          <h1 className="page-title">Conciliación Bancaria</h1>
-          <p className="page-subtitle">Concilie los movimientos del banco con el sistema</p>
+      {/* Header with gradient */}
+      <div style={{ 
+        background: 'linear-gradient(135deg, #1B4D3E 0%, #2d6a5a 100%)',
+        borderRadius: '16px',
+        padding: '1.5rem 2rem',
+        marginBottom: '1.5rem',
+        color: 'white'
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+          <div>
+            <h1 style={{ fontSize: '1.5rem', fontWeight: 700, margin: 0 }}>Conciliación Bancaria</h1>
+            <p style={{ opacity: 0.8, margin: '0.25rem 0 0 0', fontSize: '0.875rem' }}>
+              Concilie los movimientos del banco con el sistema
+            </p>
+          </div>
+          <div style={{ display: 'flex', gap: '0.75rem' }}>
+            <button 
+              className="btn"
+              onClick={() => setShowImportModal(true)}
+              disabled={!cuentaSeleccionada}
+              style={{ 
+                background: 'rgba(255,255,255,0.15)', 
+                border: '1px solid rgba(255,255,255,0.3)',
+                color: 'white'
+              }}
+            >
+              <Upload size={16} />
+              Importar Excel
+            </button>
+            <button 
+              className="btn"
+              onClick={handleConciliarAuto}
+              disabled={movimientosBanco.length === 0}
+              style={{ 
+                background: 'rgba(255,255,255,0.15)', 
+                border: '1px solid rgba(255,255,255,0.3)',
+                color: 'white'
+              }}
+            >
+              <RefreshCw size={16} />
+              Conciliar Auto
+            </button>
+          </div>
         </div>
-      </div>
 
-      {/* Filters */}
-      <div className="filters-bar" style={{ marginBottom: '1.5rem', display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'flex-end' }}>
-        <div className="form-group" style={{ marginBottom: 0, minWidth: '220px' }}>
-          <label className="form-label">Cuenta Bancaria</label>
-          <select
-            className="form-input form-select"
-            value={cuentaSeleccionada}
-            onChange={(e) => setCuentaSeleccionada(e.target.value)}
+        {/* Filters inline */}
+        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'flex-end' }}>
+          <div style={{ flex: '1', minWidth: '200px' }}>
+            <label style={{ fontSize: '0.75rem', opacity: 0.8, display: 'block', marginBottom: '0.25rem' }}>
+              Cuenta Bancaria
+            </label>
+            <select
+              className="form-input form-select"
+              value={cuentaSeleccionada}
+              onChange={(e) => setCuentaSeleccionada(e.target.value)}
+              style={{ background: 'rgba(255,255,255,0.95)', border: 'none' }}
+            >
+              <option value="">Seleccionar cuenta...</option>
+              {cuentas.map(cuenta => (
+                <option key={cuenta.id} value={cuenta.id}>
+                  {cuenta.nombre} - {cuenta.banco}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label style={{ fontSize: '0.75rem', opacity: 0.8, display: 'block', marginBottom: '0.25rem' }}>
+              Desde
+            </label>
+            <input
+              type="date"
+              className="form-input"
+              value={fechaDesde}
+              onChange={(e) => setFechaDesde(e.target.value)}
+              style={{ background: 'rgba(255,255,255,0.95)', border: 'none' }}
+            />
+          </div>
+          <div>
+            <label style={{ fontSize: '0.75rem', opacity: 0.8, display: 'block', marginBottom: '0.25rem' }}>
+              Hasta
+            </label>
+            <input
+              type="date"
+              className="form-input"
+              value={fechaHasta}
+              onChange={(e) => setFechaHasta(e.target.value)}
+              style={{ background: 'rgba(255,255,255,0.95)', border: 'none' }}
+            />
+          </div>
+          <button 
+            className="btn btn-primary"
+            onClick={loadMovimientos}
+            disabled={!cuentaSeleccionada}
+            style={{ background: 'white', color: '#1B4D3E', border: 'none', fontWeight: 600 }}
           >
-            <option value="">Seleccionar cuenta...</option>
-            {cuentas.map(cuenta => (
-              <option key={cuenta.id} value={cuenta.id}>
-                {cuenta.nombre} - {cuenta.banco}
-              </option>
-            ))}
-          </select>
+            <Search size={16} />
+            Buscar
+          </button>
         </div>
-        
-        <div className="form-group" style={{ marginBottom: 0 }}>
-          <label className="form-label">Desde</label>
-          <input
-            type="date"
-            className="form-input"
-            value={fechaDesde}
-            onChange={(e) => setFechaDesde(e.target.value)}
-          />
-        </div>
-        
-        <div className="form-group" style={{ marginBottom: 0 }}>
-          <label className="form-label">Hasta</label>
-          <input
-            type="date"
-            className="form-input"
-            value={fechaHasta}
-            onChange={(e) => setFechaHasta(e.target.value)}
-          />
-        </div>
-        
-        <button 
-          className="btn btn-primary"
-          onClick={loadMovimientos}
-          disabled={!cuentaSeleccionada}
-        >
-          <Search size={16} />
-          Buscar
-        </button>
-        
-        <button 
-          className="btn btn-outline"
-          onClick={() => setShowImportModal(true)}
-          disabled={!cuentaSeleccionada}
-        >
-          <Upload size={16} />
-          Importar Excel
-        </button>
-        
-        <button 
-          className="btn btn-secondary"
-          onClick={handleConciliarAuto}
-          disabled={movimientosBanco.length === 0}
-        >
-          <RefreshCw size={16} />
-          Conciliar Auto
-        </button>
       </div>
 
       {/* Summary Cards */}
-      <div className="summary-cards" style={{ marginBottom: '1.5rem' }}>
+      <div style={{ 
+        display: 'grid', 
+        gridTemplateColumns: 'repeat(4, 1fr)', 
+        gap: '1rem', 
+        marginBottom: '1.5rem' 
+      }}>
         <div className="summary-card">
           <div className="summary-card-icon" style={{ background: '#dbeafe' }}>
             <Building2 size={20} color="#2563eb" />
           </div>
           <div className="summary-card-content">
-            <div className="summary-card-label">Mov. Banco Pendientes</div>
+            <div className="summary-card-label">Mov. Banco</div>
             <div className="summary-card-value">{pendientesBanco}</div>
           </div>
         </div>
-        
         <div className="summary-card">
           <div className="summary-card-icon" style={{ background: '#fef3c7' }}>
             <FileSpreadsheet size={20} color="#d97706" />
           </div>
           <div className="summary-card-content">
-            <div className="summary-card-label">Mov. Sistema Pendientes</div>
+            <div className="summary-card-label">Mov. Sistema</div>
             <div className="summary-card-value">{pendientesSistema}</div>
           </div>
         </div>
-        
         <div className="summary-card">
-          <div className="summary-card-icon" style={{ background: totalBancoPendiente - totalSistemaPendiente === 0 ? '#dcfce7' : '#fee2e2' }}>
-            <ArrowLeftRight size={20} color={totalBancoPendiente - totalSistemaPendiente === 0 ? '#16a34a' : '#dc2626'} />
+          <div className="summary-card-icon" style={{ background: '#dbeafe' }}>
+            <Banknote size={20} color="#2563eb" />
+          </div>
+          <div className="summary-card-content">
+            <div className="summary-card-label">Total Banco</div>
+            <div className="summary-card-value currency-display" style={{ fontSize: '1.125rem' }}>
+              {formatCurrency(totalBancoPendiente)}
+            </div>
+          </div>
+        </div>
+        <div className="summary-card">
+          <div className="summary-card-icon" style={{ background: diferencia === 0 ? '#dcfce7' : '#fee2e2' }}>
+            <ArrowDown size={20} color={diferencia === 0 ? '#16a34a' : '#dc2626'} />
           </div>
           <div className="summary-card-content">
             <div className="summary-card-label">Diferencia</div>
             <div className="summary-card-value currency-display" style={{ 
-              color: totalBancoPendiente - totalSistemaPendiente === 0 ? '#16a34a' : '#dc2626',
-              fontSize: '1.25rem'
+              color: diferencia === 0 ? '#16a34a' : '#dc2626',
+              fontSize: '1.125rem'
             }}>
-              {formatCurrency(Math.abs(totalBancoPendiente - totalSistemaPendiente))}
+              {formatCurrency(Math.abs(diferencia))}
             </div>
           </div>
         </div>
@@ -342,176 +365,286 @@ export const ConciliacionBancaria = () => {
 
       {/* Tabs */}
       <div className="tabs" style={{ marginBottom: '1rem' }}>
-        <button 
-          className={`tab ${activeTab === 'pendientes' ? 'active' : ''}`}
-          onClick={() => setActiveTab('pendientes')}
-        >
-          <Clock size={16} />
-          Pendientes de Conciliar
+        <button className={`tab ${activeTab === 'pendientes' ? 'active' : ''}`} onClick={() => setActiveTab('pendientes')}>
+          <Clock size={16} /> Pendientes de Conciliar
         </button>
-        <button 
-          className={`tab ${activeTab === 'banco' ? 'active' : ''}`}
-          onClick={() => setActiveTab('banco')}
-        >
-          <Building2 size={16} />
-          Movimientos Banco
+        <button className={`tab ${activeTab === 'banco' ? 'active' : ''}`} onClick={() => setActiveTab('banco')}>
+          <Building2 size={16} /> Movimientos Banco
         </button>
-        <button 
-          className={`tab ${activeTab === 'historial' ? 'active' : ''}`}
-          onClick={() => setActiveTab('historial')}
-        >
-          <CheckCircle size={16} />
-          Historial Conciliados
+        <button className={`tab ${activeTab === 'historial' ? 'active' : ''}`} onClick={() => setActiveTab('historial')}>
+          <CheckCircle size={16} /> Historial
         </button>
       </div>
 
-      {/* Content based on active tab */}
+      {/* Content */}
       {activeTab === 'pendientes' && (
-        <div className="conciliacion-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-          {/* Banco Side */}
-          <div className="card">
-            <div className="card-header" style={{ 
-              display: 'flex', 
-              justifyContent: 'space-between', 
-              alignItems: 'center',
-              padding: '1rem',
-              borderBottom: '1px solid #e2e8f0',
-              background: '#f8fafc'
-            }}>
-              <h3 style={{ margin: 0, fontSize: '0.9375rem', fontWeight: 600 }}>
-                <Building2 size={16} style={{ marginRight: '0.5rem', verticalAlign: 'middle' }} />
-                Banco ({movimientosBanco.length})
-              </h3>
-              <span className="currency-display" style={{ fontWeight: 600, color: '#2563eb' }}>
-                {formatCurrency(totalBancoPendiente)}
-              </span>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          
+          {/* Banco Section */}
+          <div className="card" style={{ overflow: 'hidden' }}>
+            <div 
+              onClick={() => setExpandedBanco(!expandedBanco)}
+              style={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'center',
+                padding: '1rem 1.25rem',
+                background: 'linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)',
+                color: 'white',
+                cursor: 'pointer'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <Building2 size={20} />
+                <span style={{ fontWeight: 600, fontSize: '1rem' }}>
+                  Movimientos del Banco ({movimientosBanco.length})
+                </span>
+                {selectedBanco.length > 0 && (
+                  <span style={{ 
+                    background: 'rgba(255,255,255,0.2)', 
+                    padding: '0.25rem 0.75rem', 
+                    borderRadius: '20px',
+                    fontSize: '0.8125rem'
+                  }}>
+                    {selectedBanco.length} seleccionados = {formatCurrency(selectedBancoTotal)}
+                  </span>
+                )}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                <span className="currency-display" style={{ fontWeight: 600 }}>
+                  {formatCurrency(totalBancoPendiente)}
+                </span>
+                {expandedBanco ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+              </div>
             </div>
-            <div className="data-table-wrapper" style={{ maxHeight: '400px', overflow: 'auto' }}>
-              {loading ? (
-                <div className="loading"><div className="loading-spinner"></div></div>
-              ) : movimientosBanco.length === 0 ? (
-                <div className="empty-state" style={{ padding: '2rem' }}>
-                  <div className="empty-state-description">
-                    {cuentaSeleccionada ? 'No hay movimientos pendientes' : 'Seleccione una cuenta y haga clic en Buscar'}
+            
+            {expandedBanco && (
+              <div className="data-table-wrapper" style={{ maxHeight: '300px', overflow: 'auto' }}>
+                {loading ? (
+                  <div className="loading"><div className="loading-spinner"></div></div>
+                ) : movimientosBanco.length === 0 ? (
+                  <div style={{ padding: '3rem', textAlign: 'center', color: '#64748b' }}>
+                    <Upload size={40} style={{ marginBottom: '1rem', opacity: 0.5 }} />
+                    <div style={{ fontWeight: 500 }}>No hay movimientos importados</div>
+                    <div style={{ fontSize: '0.875rem', marginTop: '0.25rem' }}>
+                      Importe un archivo Excel del banco
+                    </div>
                   </div>
-                </div>
-              ) : (
-                <table className="data-table" style={{ fontSize: '0.8125rem' }}>
-                  <thead>
-                    <tr>
-                      <th style={{ width: '40px' }}></th>
-                      <th>Fecha</th>
-                      <th>Descripción</th>
-                      <th className="text-right">Monto</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {movimientosBanco.map(mov => (
-                      <tr 
-                        key={mov.id}
-                        className={selectedBanco.includes(mov.id) ? 'selected' : ''}
-                        onClick={() => handleSelectBanco(mov.id)}
-                        style={{ cursor: 'pointer' }}
-                      >
-                        <td>
+                ) : (
+                  <table className="data-table" style={{ fontSize: '0.8125rem' }}>
+                    <thead>
+                      <tr>
+                        <th style={{ width: '40px' }}>
                           <input 
                             type="checkbox" 
-                            checked={selectedBanco.includes(mov.id)}
-                            onChange={() => {}}
+                            checked={selectedBanco.length === movimientosBanco.length && movimientosBanco.length > 0}
+                            onChange={() => {
+                              if (selectedBanco.length === movimientosBanco.length) {
+                                setSelectedBanco([]);
+                              } else {
+                                setSelectedBanco(movimientosBanco.map(m => m.id));
+                              }
+                            }}
                             style={{ width: '16px', height: '16px' }}
                           />
-                        </td>
-                        <td>{formatDate(mov.fecha)}</td>
-                        <td style={{ maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                          {mov.descripcion}
-                        </td>
-                        <td className="text-right currency-display" style={{ 
-                          fontWeight: 500,
-                          color: (mov.abono || 0) > 0 ? '#16a34a' : '#dc2626'
-                        }}>
-                          {formatCurrency((mov.abono || 0) - (mov.cargo || 0))}
-                        </td>
+                        </th>
+                        <th>Fecha</th>
+                        <th>Referencia</th>
+                        <th>Descripción</th>
+                        <th className="text-right">Cargo</th>
+                        <th className="text-right">Abono</th>
+                        <th className="text-right">Saldo</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
-            </div>
+                    </thead>
+                    <tbody>
+                      {movimientosBanco.map(mov => (
+                        <tr 
+                          key={mov.id}
+                          className={selectedBanco.includes(mov.id) ? 'selected' : ''}
+                          onClick={() => handleSelectBanco(mov.id)}
+                          style={{ cursor: 'pointer' }}
+                        >
+                          <td onClick={(e) => e.stopPropagation()}>
+                            <input 
+                              type="checkbox" 
+                              checked={selectedBanco.includes(mov.id)}
+                              onChange={() => handleSelectBanco(mov.id)}
+                              style={{ width: '16px', height: '16px' }}
+                            />
+                          </td>
+                          <td>{formatDate(mov.fecha)}</td>
+                          <td style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.75rem' }}>
+                            {mov.referencia || '-'}
+                          </td>
+                          <td style={{ maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {mov.descripcion}
+                          </td>
+                          <td className="text-right currency-display" style={{ color: '#dc2626' }}>
+                            {mov.cargo ? formatCurrency(mov.cargo) : '-'}
+                          </td>
+                          <td className="text-right currency-display" style={{ color: '#16a34a' }}>
+                            {mov.abono ? formatCurrency(mov.abono) : '-'}
+                          </td>
+                          <td className="text-right currency-display">
+                            {mov.saldo ? formatCurrency(mov.saldo) : '-'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+            )}
           </div>
 
-          {/* Sistema Side */}
-          <div className="card">
-            <div className="card-header" style={{ 
+          {/* Link indicator */}
+          {(selectedBanco.length > 0 || selectedSistema.length > 0) && (
+            <div style={{ 
               display: 'flex', 
-              justifyContent: 'space-between', 
+              justifyContent: 'center', 
               alignItems: 'center',
-              padding: '1rem',
-              borderBottom: '1px solid #e2e8f0',
-              background: '#f8fafc'
+              padding: '0.5rem'
             }}>
-              <h3 style={{ margin: 0, fontSize: '0.9375rem', fontWeight: 600 }}>
-                <FileSpreadsheet size={16} style={{ marginRight: '0.5rem', verticalAlign: 'middle' }} />
-                Sistema ({movimientosSistema.length})
-              </h3>
-              <span className="currency-display" style={{ fontWeight: 600, color: '#d97706' }}>
-                {formatCurrency(totalSistemaPendiente)}
-              </span>
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '1rem',
+                background: Math.abs(selectedBancoTotal - selectedSistemaTotal) < 0.01 ? '#dcfce7' : '#fef3c7',
+                padding: '0.75rem 1.5rem',
+                borderRadius: '30px',
+                border: `1px solid ${Math.abs(selectedBancoTotal - selectedSistemaTotal) < 0.01 ? '#86efac' : '#fcd34d'}`
+              }}>
+                <Link2 size={18} color={Math.abs(selectedBancoTotal - selectedSistemaTotal) < 0.01 ? '#16a34a' : '#d97706'} />
+                <span style={{ fontWeight: 500 }}>
+                  Banco: {formatCurrency(selectedBancoTotal)} | Sistema: {formatCurrency(selectedSistemaTotal)}
+                </span>
+                {Math.abs(selectedBancoTotal - selectedSistemaTotal) < 0.01 ? (
+                  <Check size={18} color="#16a34a" />
+                ) : (
+                  <span style={{ color: '#dc2626', fontWeight: 600 }}>
+                    Dif: {formatCurrency(Math.abs(selectedBancoTotal - selectedSistemaTotal))}
+                  </span>
+                )}
+              </div>
             </div>
-            <div className="data-table-wrapper" style={{ maxHeight: '400px', overflow: 'auto' }}>
-              {loading ? (
-                <div className="loading"><div className="loading-spinner"></div></div>
-              ) : movimientosSistema.length === 0 ? (
-                <div className="empty-state" style={{ padding: '2rem' }}>
-                  <div className="empty-state-description">
-                    {cuentaSeleccionada ? 'No hay movimientos pendientes' : 'Seleccione una cuenta y haga clic en Buscar'}
+          )}
+
+          {/* Sistema Section */}
+          <div className="card" style={{ overflow: 'hidden' }}>
+            <div 
+              onClick={() => setExpandedSistema(!expandedSistema)}
+              style={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'center',
+                padding: '1rem 1.25rem',
+                background: 'linear-gradient(135deg, #d97706 0%, #f59e0b 100%)',
+                color: 'white',
+                cursor: 'pointer'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <FileSpreadsheet size={20} />
+                <span style={{ fontWeight: 600, fontSize: '1rem' }}>
+                  Movimientos del Sistema ({movimientosSistema.length})
+                </span>
+                {selectedSistema.length > 0 && (
+                  <span style={{ 
+                    background: 'rgba(255,255,255,0.2)', 
+                    padding: '0.25rem 0.75rem', 
+                    borderRadius: '20px',
+                    fontSize: '0.8125rem'
+                  }}>
+                    {selectedSistema.length} seleccionados = {formatCurrency(selectedSistemaTotal)}
+                  </span>
+                )}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                <span className="currency-display" style={{ fontWeight: 600 }}>
+                  {formatCurrency(totalSistemaPendiente)}
+                </span>
+                {expandedSistema ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+              </div>
+            </div>
+            
+            {expandedSistema && (
+              <div className="data-table-wrapper" style={{ maxHeight: '300px', overflow: 'auto' }}>
+                {loading ? (
+                  <div className="loading"><div className="loading-spinner"></div></div>
+                ) : movimientosSistema.length === 0 ? (
+                  <div style={{ padding: '3rem', textAlign: 'center', color: '#64748b' }}>
+                    <FileSpreadsheet size={40} style={{ marginBottom: '1rem', opacity: 0.5 }} />
+                    <div style={{ fontWeight: 500 }}>No hay movimientos pendientes</div>
+                    <div style={{ fontSize: '0.875rem', marginTop: '0.25rem' }}>
+                      {cuentaSeleccionada ? 'Los pagos registrados aparecerán aquí' : 'Seleccione una cuenta y busque'}
+                    </div>
                   </div>
-                </div>
-              ) : (
-                <table className="data-table" style={{ fontSize: '0.8125rem' }}>
-                  <thead>
-                    <tr>
-                      <th style={{ width: '40px' }}></th>
-                      <th>Fecha</th>
-                      <th>Número</th>
-                      <th>Descripción</th>
-                      <th className="text-right">Monto</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {movimientosSistema.map(mov => (
-                      <tr 
-                        key={mov.id}
-                        className={selectedSistema.includes(mov.id) ? 'selected' : ''}
-                        onClick={() => handleSelectSistema(mov.id)}
-                        style={{ cursor: 'pointer' }}
-                      >
-                        <td>
+                ) : (
+                  <table className="data-table" style={{ fontSize: '0.8125rem' }}>
+                    <thead>
+                      <tr>
+                        <th style={{ width: '40px' }}>
                           <input 
                             type="checkbox" 
-                            checked={selectedSistema.includes(mov.id)}
-                            onChange={() => {}}
+                            checked={selectedSistema.length === movimientosSistema.length && movimientosSistema.length > 0}
+                            onChange={() => {
+                              if (selectedSistema.length === movimientosSistema.length) {
+                                setSelectedSistema([]);
+                              } else {
+                                setSelectedSistema(movimientosSistema.map(m => m.id));
+                              }
+                            }}
                             style={{ width: '16px', height: '16px' }}
                           />
-                        </td>
-                        <td>{formatDate(mov.fecha)}</td>
-                        <td style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.75rem' }}>
-                          {mov.numero}
-                        </td>
-                        <td style={{ maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                          {mov.notas || mov.tercero_nombre || '-'}
-                        </td>
-                        <td className="text-right currency-display" style={{ 
-                          fontWeight: 500,
-                          color: mov.tipo === 'ingreso' ? '#16a34a' : '#dc2626'
-                        }}>
-                          {mov.tipo === 'ingreso' ? '' : '-'}{formatCurrency(mov.monto_total)}
-                        </td>
+                        </th>
+                        <th>Fecha</th>
+                        <th>Número</th>
+                        <th>Tipo</th>
+                        <th>Descripción</th>
+                        <th className="text-right">Monto</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
-            </div>
+                    </thead>
+                    <tbody>
+                      {movimientosSistema.map(mov => (
+                        <tr 
+                          key={mov.id}
+                          className={selectedSistema.includes(mov.id) ? 'selected' : ''}
+                          onClick={() => handleSelectSistema(mov.id)}
+                          style={{ cursor: 'pointer' }}
+                        >
+                          <td onClick={(e) => e.stopPropagation()}>
+                            <input 
+                              type="checkbox" 
+                              checked={selectedSistema.includes(mov.id)}
+                              onChange={() => handleSelectSistema(mov.id)}
+                              style={{ width: '16px', height: '16px' }}
+                            />
+                          </td>
+                          <td>{formatDate(mov.fecha)}</td>
+                          <td style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.75rem' }}>
+                            {mov.numero}
+                          </td>
+                          <td>
+                            <span className={`badge ${mov.tipo === 'ingreso' ? 'badge-success' : 'badge-danger'}`} style={{ fontSize: '0.6875rem' }}>
+                              {mov.tipo === 'ingreso' ? 'INGRESO' : 'EGRESO'}
+                            </span>
+                          </td>
+                          <td style={{ maxWidth: '250px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {mov.notas || mov.tercero_nombre || '-'}
+                          </td>
+                          <td className="text-right currency-display" style={{ 
+                            fontWeight: 500,
+                            color: mov.tipo === 'ingreso' ? '#16a34a' : '#dc2626'
+                          }}>
+                            {mov.tipo === 'ingreso' ? '' : '-'}{formatCurrency(mov.monto_total)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -523,7 +656,7 @@ export const ConciliacionBancaria = () => {
               <div className="empty-state">
                 <Upload className="empty-state-icon" />
                 <div className="empty-state-title">No hay movimientos importados</div>
-                <div className="empty-state-description">Importe un archivo Excel del banco para comenzar</div>
+                <div className="empty-state-description">Importe un archivo Excel del banco</div>
               </div>
             ) : (
               <table className="data-table">
@@ -545,7 +678,7 @@ export const ConciliacionBancaria = () => {
                       <td style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.8125rem' }}>
                         {mov.referencia || '-'}
                       </td>
-                      <td style={{ maxWidth: '250px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      <td style={{ maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {mov.descripcion}
                       </td>
                       <td className="text-right currency-display" style={{ color: '#dc2626' }}>
@@ -554,9 +687,7 @@ export const ConciliacionBancaria = () => {
                       <td className="text-right currency-display" style={{ color: '#16a34a' }}>
                         {mov.abono ? formatCurrency(mov.abono) : '-'}
                       </td>
-                      <td className="text-right currency-display">
-                        {mov.saldo ? formatCurrency(mov.saldo) : '-'}
-                      </td>
+                      <td className="text-right currency-display">{mov.saldo ? formatCurrency(mov.saldo) : '-'}</td>
                       <td className="text-center">
                         <span className={`badge ${mov.procesado ? 'badge-success' : 'badge-warning'}`}>
                           {mov.procesado ? 'Conciliado' : 'Pendiente'}
@@ -578,7 +709,6 @@ export const ConciliacionBancaria = () => {
               <div className="empty-state">
                 <CheckCircle className="empty-state-icon" />
                 <div className="empty-state-title">No hay conciliaciones registradas</div>
-                <div className="empty-state-description">Las conciliaciones realizadas aparecerán aquí</div>
               </div>
             ) : (
               <table className="data-table">
@@ -590,7 +720,6 @@ export const ConciliacionBancaria = () => {
                     <th className="text-right">Saldo Inicial</th>
                     <th className="text-right">Saldo Final</th>
                     <th className="text-center">Movimientos</th>
-                    <th>Notas</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -602,7 +731,6 @@ export const ConciliacionBancaria = () => {
                       <td className="text-right currency-display">{formatCurrency(conc.saldo_inicial)}</td>
                       <td className="text-right currency-display">{formatCurrency(conc.saldo_final)}</td>
                       <td className="text-center">{conc.lineas?.length || 0}</td>
-                      <td>{conc.notas || '-'}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -612,8 +740,8 @@ export const ConciliacionBancaria = () => {
         </div>
       )}
 
-      {/* Conciliar button when items selected */}
-      {selectedBanco.length > 0 && selectedSistema.length > 0 && (
+      {/* Floating conciliar button */}
+      {selectedBanco.length > 0 && selectedSistema.length > 0 && Math.abs(selectedBancoTotal - selectedSistemaTotal) < 0.01 && (
         <div style={{ 
           position: 'fixed', 
           bottom: '2rem', 
@@ -625,12 +753,13 @@ export const ConciliacionBancaria = () => {
             className="btn btn-primary"
             onClick={handleConciliarManual}
             style={{ 
-              padding: '0.875rem 2rem',
+              padding: '1rem 2rem',
               fontSize: '1rem',
-              boxShadow: '0 4px 12px rgba(27, 77, 62, 0.3)'
+              boxShadow: '0 8px 24px rgba(27, 77, 62, 0.4)',
+              borderRadius: '30px'
             }}
           >
-            <Check size={18} />
+            <Check size={20} />
             Conciliar {selectedBanco.length} + {selectedSistema.length} movimientos
           </button>
         </div>
@@ -639,9 +768,9 @@ export const ConciliacionBancaria = () => {
       {/* Import Modal */}
       {showImportModal && (
         <div className="modal-overlay" onClick={() => setShowImportModal(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
+          <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '480px' }}>
             <div className="modal-header">
-              <h2 className="modal-title">Importar Movimientos del Banco</h2>
+              <h2 className="modal-title">Importar Movimientos</h2>
               <button className="modal-close" onClick={() => setShowImportModal(false)}>
                 <X size={20} />
               </button>
@@ -665,12 +794,13 @@ export const ConciliacionBancaria = () => {
                 <label className="form-label required">Archivo Excel</label>
                 <div 
                   style={{ 
-                    border: '2px dashed #e2e8f0', 
-                    borderRadius: '8px', 
+                    border: `2px dashed ${uploadFile ? '#16a34a' : '#e2e8f0'}`, 
+                    borderRadius: '12px', 
                     padding: '2rem',
                     textAlign: 'center',
                     cursor: 'pointer',
-                    background: uploadFile ? '#f0fdf4' : '#f8fafc'
+                    background: uploadFile ? '#f0fdf4' : '#f8fafc',
+                    transition: 'all 0.2s'
                   }}
                   onClick={() => document.getElementById('excel-input').click()}
                 >
@@ -683,18 +813,18 @@ export const ConciliacionBancaria = () => {
                   />
                   {uploadFile ? (
                     <>
-                      <CheckCircle size={32} color="#16a34a" style={{ marginBottom: '0.5rem' }} />
-                      <div style={{ fontWeight: 500 }}>{uploadFile.name}</div>
-                      <div style={{ fontSize: '0.8125rem', color: '#64748b' }}>
-                        Click para cambiar archivo
+                      <CheckCircle size={40} color="#16a34a" style={{ marginBottom: '0.75rem' }} />
+                      <div style={{ fontWeight: 600, color: '#16a34a' }}>{uploadFile.name}</div>
+                      <div style={{ fontSize: '0.8125rem', color: '#64748b', marginTop: '0.25rem' }}>
+                        Click para cambiar
                       </div>
                     </>
                   ) : (
                     <>
-                      <Upload size={32} color="#64748b" style={{ marginBottom: '0.5rem' }} />
+                      <Upload size={40} color="#94a3b8" style={{ marginBottom: '0.75rem' }} />
                       <div style={{ fontWeight: 500 }}>Click para seleccionar archivo</div>
-                      <div style={{ fontSize: '0.8125rem', color: '#64748b' }}>
-                        Formatos soportados: .xlsx, .xls
+                      <div style={{ fontSize: '0.8125rem', color: '#64748b', marginTop: '0.25rem' }}>
+                        Formatos: .xlsx, .xls
                       </div>
                     </>
                   )}
@@ -705,19 +835,18 @@ export const ConciliacionBancaria = () => {
                 background: '#fef3c7', 
                 border: '1px solid #fcd34d', 
                 borderRadius: '8px', 
-                padding: '0.75rem',
+                padding: '0.875rem',
                 fontSize: '0.8125rem',
                 display: 'flex',
-                alignItems: 'flex-start',
-                gap: '0.5rem'
+                gap: '0.75rem'
               }}>
-                <AlertCircle size={16} color="#d97706" style={{ flexShrink: 0, marginTop: '2px' }} />
+                <AlertCircle size={18} color="#d97706" style={{ flexShrink: 0 }} />
                 <div>
-                  <strong>Formato esperado según banco:</strong>
-                  <ul style={{ margin: '0.5rem 0 0 0', paddingLeft: '1.25rem' }}>
+                  <strong>Formatos esperados:</strong>
+                  <ul style={{ margin: '0.5rem 0 0 0', paddingLeft: '1.25rem', lineHeight: 1.6 }}>
                     <li><strong>BCP:</strong> Fecha, Descripción, Monto, Saldo</li>
-                    <li><strong>BBVA:</strong> F. Valor, Concepto, Importe, Saldo Final</li>
-                    <li><strong>Interbank:</strong> Fecha operación, Descripción, Cargo, Abono, Saldo</li>
+                    <li><strong>BBVA:</strong> F. Valor, Concepto, Importe</li>
+                    <li><strong>IBK:</strong> Fecha, Descripción, Cargo, Abono</li>
                   </ul>
                 </div>
               </div>
@@ -732,17 +861,7 @@ export const ConciliacionBancaria = () => {
                 onClick={handleImportExcel}
                 disabled={!uploadFile || importing}
               >
-                {importing ? (
-                  <>
-                    <RefreshCw size={16} className="spin" />
-                    Importando...
-                  </>
-                ) : (
-                  <>
-                    <Upload size={16} />
-                    Importar
-                  </>
-                )}
+                {importing ? <><RefreshCw size={16} className="spin" /> Importando...</> : <><Upload size={16} /> Importar</>}
               </button>
             </div>
           </div>
