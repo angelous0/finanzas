@@ -563,7 +563,8 @@ export const Adelantos = () => {
                   />
                 </div>
 
-                {/* Payment Section */}
+                {/* Payment Section - Only for new adelantos */}
+                {!editingId && (
                 <div style={{ 
                   background: '#f8fafc', 
                   border: '1px solid #e2e8f0', 
