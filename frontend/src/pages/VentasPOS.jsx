@@ -3,8 +3,9 @@ import {
   getVentasPOS, syncVentasPOS, confirmarVentaPOS, 
   marcarCreditoVentaPOS, descartarVentaPOS 
 } from '../services/api';
-import { RefreshCw, Check, CreditCard, X, Filter, ShoppingCart } from 'lucide-react';
+import { RefreshCw, Check, CreditCard, X, Filter, ShoppingCart, Download } from 'lucide-react';
 import { toast } from 'sonner';
+import * as XLSX from 'xlsx';
 
 const formatCurrency = (value, symbol = 'S/') => {
   return `${symbol} ${Number(value || 0).toLocaleString('es-PE', { minimumFractionDigits: 2 })}`;
