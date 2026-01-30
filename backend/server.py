@@ -1372,7 +1372,9 @@ async def generate_pago_number(conn, tipo: str) -> str:
 async def list_pagos(
     tipo: Optional[str] = None,
     fecha_desde: Optional[date] = None,
-    fecha_hasta: Optional[date] = None
+    fecha_hasta: Optional[date] = None,
+    cuenta_financiera_id: Optional[int] = None,
+    conciliado: Optional[bool] = None
 ):
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -1393,6 +1395,14 @@ async def list_pagos(
         if fecha_hasta:
             conditions.append(f"p.fecha <= ${idx}")
             params.append(fecha_hasta)
+            idx += 1
+        if cuenta_financiera_id:
+            conditions.append(f"p.cuenta_financiera_id = ${idx}")
+            params.append(cuenta_financiera_id)
+            idx += 1
+        if conciliado is not None:
+            conditions.append(f"COALESCE(p.conciliado, false) = ${idx}")
+            params.append(conciliado)
             idx += 1
         
         query = f"""
