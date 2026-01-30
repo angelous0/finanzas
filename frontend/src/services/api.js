@@ -103,6 +103,7 @@ export const deshacerCanjeLetras = (facturaId) => api.post(`/facturas-proveedor/
 export const getGastos = (params) => api.get('/gastos', { params });
 export const getGasto = (id) => api.get(`/gastos/${id}`);
 export const createGasto = (data) => api.post('/gastos', data);
+export const deleteGasto = (id) => api.delete(`/gastos/${id}`);
 
 // Adelantos
 export const getAdelantos = (params) => api.get('/adelantos', { params });
