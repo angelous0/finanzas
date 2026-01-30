@@ -617,8 +617,13 @@ export const FacturasProveedor = () => {
   const totales = calcularTotales();
   const monedaActual = monedas.find(m => m.id === parseInt(formData.moneda_id));
 
+  // Filter by numero in frontend (case-insensitive)
+  const facturasFiltradas = filtroNumero 
+    ? facturas.filter(f => f.numero?.toLowerCase().includes(filtroNumero.toLowerCase()))
+    : facturas;
+
   // Calcular totales para la lista
-  const totalPendiente = facturas.filter(f => f.estado === 'pendiente' || f.estado === 'parcial')
+  const totalPendiente = facturasFiltradas.filter(f => f.estado === 'pendiente' || f.estado === 'parcial')
     .reduce((sum, f) => sum + parseFloat(f.saldo_pendiente || 0), 0);
 
   return (
