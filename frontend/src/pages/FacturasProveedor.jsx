@@ -108,7 +108,7 @@ export const FacturasProveedor = () => {
 
   useEffect(() => {
     loadData();
-  }, [filtroEstado, filtroProveedorId, filtroFechaDesde, filtroFechaHasta]);
+  }, [filtroEstado, filtroProveedorId, filtroFecha]);
 
   // Calculate fecha_vencimiento when fecha_factura or terminos change
   useEffect(() => {
