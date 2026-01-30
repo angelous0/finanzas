@@ -72,6 +72,9 @@ function App() {
         />
         
         <main className="main-content">
+          {/* Top Bar with empresa selector */}
+          <TopBar />
+          
           {/* Mobile hamburger button */}
           <button 
             className="mobile-menu-btn"
