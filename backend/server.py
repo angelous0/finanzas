@@ -1920,8 +1920,25 @@ async def create_gasto(data: GastoCreate):
                 VALUES ($1, 'gasto', $2, $3)
             """, pago_id, gasto_id, total)
             
-            # Get full gasto
-            return await get_gasto(gasto_id)
+            # Get full gasto data within transaction
+            row = await conn.fetchrow("""
+                SELECT g.*, t.nombre as proveedor_nombre, m.codigo as moneda_codigo
+                FROM finanzas2.cont_gasto g
+                LEFT JOIN finanzas2.cont_tercero t ON g.proveedor_id = t.id
+                LEFT JOIN finanzas2.cont_moneda m ON g.moneda_id = m.id
+                WHERE g.id = $1
+            """, gasto_id)
+            
+            gasto_dict = dict(row)
+            lineas_rows = await conn.fetch("""
+                SELECT gl.*, c.nombre as categoria_nombre
+                FROM finanzas2.cont_gasto_linea gl
+                LEFT JOIN finanzas2.cont_categoria c ON gl.categoria_id = c.id
+                WHERE gl.gasto_id = $1 ORDER BY gl.id
+            """, gasto_id)
+            gasto_dict['lineas'] = [dict(l) for l in lineas_rows]
+            
+            return gasto_dict
 
 async def get_gasto(id: int) -> dict:
     pool = await get_pool()
