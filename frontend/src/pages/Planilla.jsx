@@ -96,13 +96,13 @@ export const Planilla = () => {
       notas: ''
     });
     
-    // Initialize detalles with all empleados
+    // Initialize detalles with all empleados and their pending advances
     setDetalles(empleados.map(emp => ({
       empleado_id: emp.id,
       empleado_nombre: emp.nombre,
-      salario_base: 0,
+      salario_base: emp.salario_base || 0,
       bonificaciones: 0,
-      adelantos: 0,
+      adelantos: getAdelantosPorEmpleado(emp.id),
       otros_descuentos: 0
     })));
     
