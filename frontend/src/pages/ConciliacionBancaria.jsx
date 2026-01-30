@@ -544,11 +544,10 @@ export const ConciliacionBancaria = () => {
                           />
                         </th>
                         <th>Fecha</th>
-                        <th>Referencia</th>
+                        <th>Banco</th>
+                        <th>Nro Operación</th>
                         <th>Descripción</th>
-                        <th className="text-right">Cargo</th>
-                        <th className="text-right">Abono</th>
-                        <th className="text-right">Saldo</th>
+                        <th className="text-right">Monto</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -568,20 +567,18 @@ export const ConciliacionBancaria = () => {
                             />
                           </td>
                           <td>{formatDate(mov.fecha)}</td>
+                          <td>{mov.banco_excel || mov.banco || '-'}</td>
                           <td style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.75rem' }}>
                             {mov.referencia || '-'}
                           </td>
                           <td style={{ maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             {mov.descripcion}
                           </td>
-                          <td className="text-right currency-display" style={{ color: '#dc2626' }}>
-                            {mov.cargo ? formatCurrency(mov.cargo) : '-'}
-                          </td>
-                          <td className="text-right currency-display" style={{ color: '#16a34a' }}>
-                            {mov.abono ? formatCurrency(mov.abono) : '-'}
-                          </td>
-                          <td className="text-right currency-display">
-                            {mov.saldo ? formatCurrency(mov.saldo) : '-'}
+                          <td className="text-right currency-display" style={{ 
+                            color: mov.monto < 0 ? '#dc2626' : '#16a34a',
+                            fontWeight: 500
+                          }}>
+                            {formatCurrency(mov.monto, mov.monto < 0 ? '-S/' : 'S/')}
                           </td>
                         </tr>
                       ))}
