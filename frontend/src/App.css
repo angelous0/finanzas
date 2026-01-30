@@ -1493,48 +1493,47 @@ input[type="number"] {
     padding: 1rem;
   }
   
-  /* Fix: Table rows should not grow in height */
-  .data-table td {
+  /* Filters responsive */
+  .filters-bar {
+    flex-wrap: wrap;
+  }
+  
+  .filter-group {
+    flex: 1 1 calc(50% - 0.5rem);
+    min-width: 120px;
+  }
+  
+  .filter-group .form-input,
+  .filter-group .searchable-select {
+    width: 100% !important;
+  }
+  
+  /* Table responsive - NO row height changes */
+  .data-table td,
+  .data-table th {
+    padding: 0.5rem 0.75rem;
     white-space: nowrap;
   }
   
-  .data-table td:nth-child(3) {
-    white-space: normal;
-    max-width: 150px;
-  }
-  
-  /* Fix: Buttons wrap should not make row taller */
-  .data-table td:last-child > div {
+  /* Actions stay in one row */
+  .actions-row {
     flex-wrap: nowrap;
   }
   
-  .data-table .btn-sm {
-    padding: 0.25rem 0.5rem;
-    font-size: 0.7rem;
+  .action-btn {
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
   }
   
-  .data-table .btn-sm svg {
-    width: 12px;
-    height: 12px;
-  }
-  
-  /* Hide button text on mobile, show only icon */
-  .data-table .btn-sm span {
-    display: none;
+  .action-btn svg {
+    width: 14px;
+    height: 14px;
   }
   
   /* Hide mobile menu button when menu is open */
   .app-layout.mobile-menu-open .mobile-menu-btn {
     display: none;
-  }
-  
-  /* Filters bar responsive */
-  .filters-bar {
-    flex-direction: column;
-  }
-  
-  .filters-bar .form-group {
-    flex: 1 1 100% !important;
   }
 }
 
