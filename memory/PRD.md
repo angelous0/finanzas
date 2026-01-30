@@ -59,6 +59,7 @@ Create a QuickBooks-like system for treasury, control, and minimal accounting ca
 - Multi-method payments (transferencia, efectivo, cheque, tarjeta)
 - Auto-updates invoice saldo and estado
 - Auto-updates CxP saldo and estado
+- **Validation: Cannot pay more than pending balance** ✅
 - Tested: 500 invoice → 300 partial → 200 final = pagado
 
 ### 5. Purchase Orders (OC) ✅ SCAFFOLDED
