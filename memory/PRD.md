@@ -1,106 +1,134 @@
-# Finanzas 4.0 - PRD (Product Requirements Document)
+# Finanzas 4.0 - Product Requirements Document
 
-## Problema Original
-Sistema financiero tipo QuickBooks para PYME llamado "Finanzas 4.0" con PostgreSQL. 
-- Schema: `finanzas2` (separado del esquema público)
-- Prefijo tablas: `cont_`
-- Integración con Odoo para Ventas POS (2 empresas: Ambission y Proyecto Moda)
-- Referencia a inventario existente en `public.prod_inventario`
+## Original Problem Statement
+Create a QuickBooks-like system for treasury, control, and minimal accounting called "Finanzas 4.0" using PostgreSQL.
 
-## User Personas
-1. **Contador/Administrador**: Gestiona facturas, pagos, CxP, CxC
-2. **Gerente Financiero**: Revisa KPIs, presupuestos, balance general
-3. **Asistente Operativo**: Registra gastos, adelantos, planilla
+## Database Configuration
+- **PostgreSQL**: `postgres://admin:admin@72.60.241.216:9090/datos?sslmode=disable`
+- **Schema**: `finanzas2` for all new objects
+- **Table prefix**: `cont_` (e.g., `cont_factura_proveedor`)
+- **External tables referenced**: `public.prod_inventario`, `public.prod_registros`, `public.prod_modelos`
 
-## Requisitos Core (Estáticos)
+## Odoo Credentials
+- **Empresa Ambission**: URL: `https://ambission.app-gestion.net`, DB: `ambission`, User: `admin_ambission@ambission.com`, Pass: `ambission123`
+- **Empresa Proyecto Moda**: URL: `https://ambission.app-gestion.net`, DB: `ambission`, User: `proyectomoda@ambission.com`, Pass: `proyectomoda123`
 
-### Catálogos Base
-- [x] Empresas
-- [x] Monedas (PEN, USD)
-- [x] Categorías (ingreso/egreso) jerárquicas
-- [x] Centros de Costo
-- [x] Líneas de Negocio
-- [x] Cuentas Financieras (bancos/cajas)
-- [x] Terceros unificados (cliente/proveedor/personal)
+## Tech Stack
+- **Backend**: FastAPI + PostgreSQL (asyncpg) + SQLAlchemy
+- **Frontend**: React + TailwindCSS + Shadcn/UI
+- **UI Components**: `/app/frontend/src/components/ui/`
 
-### Módulos Transaccionales
-- [x] Órdenes de Compra (OC) con conversión a Factura
-- [x] Facturas Proveedor con tabla Excel inline
-- [x] CxP automático al guardar factura
-- [x] Pagos centralizados multi-medio y parciales
-- [x] Letras (canje desde factura)
-- [x] Gastos con pago obligatorio
-- [x] Planilla básica con adelantos
-- [x] Ventas POS desde Odoo (sync XML-RPC)
-- [x] CxC desde ventas a crédito
+---
 
-### Reportes
-- [x] Dashboard con KPIs
-- [x] Balance General operativo
-- [ ] Estado de Resultados
-- [ ] Flujo de Caja
-- [ ] Presupuesto vs Real
-- [ ] Conciliación Bancaria
+## Modules & Status
 
-## Lo Implementado (Diciembre 2025)
+### 1. Base Catalogs ✅ SCAFFOLDED
+- `cont_empresa` - Company info
+- `cont_moneda` - Currencies (PEN, USD)
+- `cont_tipo_cambio` - Exchange rates
+- `cont_categoria` - Categories (income/expense)
+- `cont_centro_costo` - Cost centers
+- `cont_linea_negocio` - Business lines
+- `cont_cuenta_financiera` - Financial accounts (bank, cash)
+- `cont_tercero` - Third parties (supplier/client/staff unified)
 
-### Backend (FastAPI + PostgreSQL)
-- Schema `finanzas2` con 25+ tablas
-- API REST completa con CRUD para todos los módulos
-- Conexión a PostgreSQL externo: `postgres://admin:admin@72.60.241.216:9090/datos`
-- Servicio Odoo XML-RPC para sync de ventas POS
-- Seed data: 1 empresa, monedas, categorías, cuentas, 1 proveedor
+### 2. Supplier Invoice (Factura Proveedor) ✅ IN PROGRESS
+**Completed (2026-01-30):**
+- UI modal matching user's screenshot
+- Hide "beneficiario" field when proveedor selected
+- "Detalles del artículo" section with:
+  - ARTÍCULO dropdown from `public.prod_inventario`
+  - MODELO/CORTE dropdown from `public.prod_registros` + `prod_modelos`
+  - Auto-fill UND and PRECIO from inventory
+  - IMPORTE auto-calculation
+  - IGV checkbox
+  - Add/duplicate/remove article actions
+  
+**Pending:**
+- Create `cont_cxp` record automatically when saving invoice
+- Update invoice status based on payments
 
-### Frontend (React + Shadcn UI)
-- Sidebar fijo con navegación jerárquica
-- Dashboard con 8 KPIs financieros
-- Páginas completas:
-  - Facturas Proveedor (Excel inline)
-  - Órdenes de Compra
-  - Gastos (con pago obligatorio)
-  - Letras (generar y pagar)
-  - Pagar Facturas (multi-medio)
-  - CxP y CxC
-  - Cuentas Bancarias
-  - Movimientos/Pagos
-  - Proveedores
-  - Empleados
-  - Categorías
-  - Balance General
-- Ventas POS con sync desde Odoo
+### 3. Accounts Payable (CxP) 🔴 NOT IMPLEMENTED
+- Table `cont_cxp` exists but no business logic
+- Should auto-create when invoice saved
+- Should auto-update based on payments
 
-### Integraciones
-- PostgreSQL externo ✅
-- Odoo XML-RPC (2 empresas) ✅
-- Referencia a `public.prod_inventario` (preparado)
+### 4. Centralized Payments 🔴 NOT IMPLEMENTED
+- `cont_pago`, `cont_pago_aplicacion` tables exist
+- Partial and multi-method payments logic pending
+- Update invoice status on payment
 
-## Backlog Priorizado
+### 5. Purchase Orders (OC) ✅ SCAFFOLDED
+- `cont_oc`, `cont_oc_linea` tables created
+- Basic CRUD endpoints exist
+- Print functionality pending
+- Conversion to invoice pending
 
-### P0 - Crítico (Próximas iteraciones)
-- [ ] Completar Planilla (generar quincena, pagar, descuento adelantos)
-- [ ] Completar Presupuestos (crear, aprobar, comparar vs real)
-- [ ] Conciliación Bancaria (importar Excel BCP/BBVA/Interbank)
+### 6. Bills of Exchange (Letras) 🔴 NOT IMPLEMENTED
+- `cont_letra` table exists
+- Generate from invoices pending
+- Change invoice status to "CANJEADO" pending
 
-### P1 - Alto
-- [ ] Impresión de OC (layout bonito)
-- [ ] Módulo completo de Adelantos a empleados
-- [ ] Estado de Resultados detallado
-- [ ] Flujo de Caja con gráficos
+### 7. Expenses (Gastos) 🔴 NOT IMPLEMENTED
+- `cont_gasto` table exists
+- Force immediate payment on creation pending
 
-### P2 - Medio
-- [ ] Gestión de Artículos local + link a inventario
-- [ ] Historial de tipo de cambio
-- [ ] Notificaciones de vencimiento (letras, CxP)
-- [ ] Exportación a Excel de reportes
+### 8. Payroll 🔴 NOT IMPLEMENTED
+- `cont_adelanto_empleado`, `cont_planilla` tables exist
+- Employee management pending
+- Payroll calculation pending
 
-### P3 - Bajo
-- [ ] Multi-empresa (cambiar empresa activa)
-- [ ] Auditoría de cambios
-- [ ] Roles y permisos de usuario
-- [ ] Integración con SUNAT (facturación electrónica)
+### 9. POS Sales (Ventas POS) 🔴 NOT IMPLEMENTED
+- Odoo integration pending
+- `odoo_service.py` has placeholder code
 
-## Próximas Acciones
-1. Completar páginas placeholder (Adelantos, Planillas, Presupuestos)
-2. Implementar Conciliación Bancaria con importación Excel
-3. Agregar gráficos al Dashboard
-4. Probar sync real con Odoo (credenciales proporcionadas)
+### 10. Budgets 🔴 NOT IMPLEMENTED
+- `cont_presupuesto` table exists
+- Budget vs actual reporting pending
+
+### 11. Bank Reconciliation 🔴 NOT IMPLEMENTED
+- Excel import pending
+- Reconciliation logic pending
+
+### 12. Reports 🔴 NOT IMPLEMENTED
+- Cash Flow report pending
+- Income Statement pending
+- Balance Sheet pending
+
+---
+
+## Key Files
+- `/app/backend/server.py` - All API endpoints (monolithic, needs refactoring)
+- `/app/backend/models.py` - SQLAlchemy models
+- `/app/backend/database.py` - DB connection
+- `/app/frontend/src/pages/FacturasProveedor.jsx` - Supplier invoice page
+- `/app/frontend/src/services/api.js` - API client functions
+
+## API Endpoints Added (2026-01-30)
+- `GET /api/inventario` - List items from `public.prod_inventario`
+- `GET /api/modelos-cortes` - List modelos/cortes from `public.prod_registros`
+- `GET /api/modelos` - List models from `public.prod_modelos`
+
+---
+
+## Priority Backlog
+
+### P0 (Critical)
+1. Implement CxP auto-creation on invoice save
+2. Implement payment application logic
+
+### P1 (High)
+3. Odoo integration for POS sales
+4. Complete CRUD for base catalogs
+5. OC to Invoice conversion
+
+### P2 (Medium)
+6. Bills of Exchange (Letras) module
+7. Expenses module with immediate payment
+8. Payroll module
+
+### P3 (Low)
+9. Budgets vs Actual
+10. Bank Reconciliation
+11. Financial Reports
+12. Refactor server.py into multiple routers
