@@ -108,6 +108,8 @@ export const deleteGasto = (id) => api.delete(`/gastos/${id}`);
 // Adelantos
 export const getAdelantos = (params) => api.get('/adelantos', { params });
 export const createAdelanto = (data) => api.post('/adelantos', data);
+export const updateAdelanto = (id, data) => api.put(`/adelantos/${id}`, data);
+export const deleteAdelanto = (id) => api.delete(`/adelantos/${id}`);
 export const pagarAdelanto = (id, cuentaFinancieraId, medioPago = 'efectivo') => 
   api.post(`/adelantos/${id}/pagar?cuenta_financiera_id=${cuentaFinancieraId}&medio_pago=${medioPago}`);
 
@@ -115,6 +117,7 @@ export const pagarAdelanto = (id, cuentaFinancieraId, medioPago = 'efectivo') =>
 export const getPlanillas = () => api.get('/planillas');
 export const getPlanilla = (id) => api.get(`/planillas/${id}`);
 export const createPlanilla = (data) => api.post('/planillas', data);
+export const deletePlanilla = (id) => api.delete(`/planillas/${id}`);
 export const pagarPlanilla = (id, cuentaFinancieraId) => 
   api.post(`/planillas/${id}/pagar?cuenta_financiera_id=${cuentaFinancieraId}`);
 
