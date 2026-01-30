@@ -196,7 +196,7 @@ export const VentasPOS = () => {
           >
             <option value="">Todas las empresas</option>
             <option value="1">Ambission</option>
-            <option value="2">Proyecto Moda</option>
+            <option value="3">Proyecto Moda</option>
           </select>
           <input
             type="date"
