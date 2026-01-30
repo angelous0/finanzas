@@ -92,6 +92,7 @@ export default function OrdenesCompra() {
   
   // State for articulo search
   const [articuloSearchTerm, setArticuloSearchTerm] = useState({});
+  const [articuloDropdownOpen, setArticuloDropdownOpen] = useState({});
 
   useEffect(() => {
     loadData();
