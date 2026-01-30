@@ -2002,7 +2002,7 @@ async def create_adelanto(data: AdelantoCreate):
                     VALUES ($1, 'egreso', $2, $3, $4, $5)
                     RETURNING id
                 """, pago_numero, data.fecha, data.cuenta_financiera_id, data.monto, 
-                    f"Adelanto a empleado")
+                    "Adelanto a empleado")
                 pago_id = pago['id']
                 
                 await conn.execute("""
