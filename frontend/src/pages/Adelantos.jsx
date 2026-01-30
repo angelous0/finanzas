@@ -229,7 +229,18 @@ export const Adelantos = () => {
         </div>
         <button 
           className="btn btn-primary"
-          onClick={() => setShowModal(true)}
+          onClick={() => {
+            setFormData({
+              empleado_id: '',
+              monto: '',
+              fecha: new Date().toISOString().split('T')[0],
+              motivo: '',
+              pagar: true,
+              cuenta_financiera_id: cuentas.length > 0 ? String(cuentas[0].id) : '',
+              medio_pago: 'efectivo'
+            });
+            setShowModal(true);
+          }}
           data-testid="nuevo-adelanto-btn"
           disabled={empleados.length === 0}
         >
