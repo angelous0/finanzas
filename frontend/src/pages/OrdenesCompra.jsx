@@ -461,31 +461,29 @@ export default function OrdenesCompra() {
         </div>
       </div>
 
-      {/* Modal Nueva/Editar OC */}
+      {/* Modal Nueva/Editar OC - FULLSCREEN */}
       {showModal && (
-        <div className="modal-overlay" onClick={() => { setShowModal(false); setEditingOC(null); }}>
-          <div className="modal modal-xl" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '1200px' }}>
-            <div className="modal-header" style={{ borderBottom: '1px solid #e2e8f0' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                <button type="button" className="btn btn-ghost btn-sm" onClick={() => { setShowModal(false); setEditingOC(null); }} style={{ padding: '0.25rem' }}>
-                  <ArrowLeft size={20} />
-                </button>
-                <div>
-                  <h2 className="modal-title" style={{ margin: 0 }}>
-                    {editingOC ? `Editar OC ${editingOC.numero}` : 'Nueva Orden de Compra'}
-                  </h2>
-                </div>
-              </div>
-              <button type="button" className="btn btn-primary" onClick={handleSubmit}>
-                <FileCheck size={16} />
-                {editingOC ? 'Actualizar' : 'Guardar'}
+        <div className="modal-fullscreen">
+          <div className="modal-fullscreen-header">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <button type="button" className="btn btn-ghost" onClick={() => { setShowModal(false); setEditingOC(null); }}>
+                <ArrowLeft size={20} />
               </button>
+              <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 600 }}>
+                {editingOC ? `Editar OC ${editingOC.numero}` : 'Nueva Orden de Compra'}
+              </h2>
             </div>
-            
+            <button type="button" className="btn btn-primary" onClick={handleSubmit}>
+              <FileCheck size={16} />
+              {editingOC ? 'Actualizar' : 'Guardar'}
+            </button>
+          </div>
+          
+          <div className="modal-fullscreen-body">
             <form onSubmit={handleSubmit}>
-              <div className="modal-body" style={{ display: 'flex', gap: '1.5rem', padding: '1.5rem' }}>
+              <div style={{ display: 'flex', gap: '2rem', height: '100%' }}>
                 {/* Left Column - Form */}
-                <div style={{ flex: 1 }}>
+                <div style={{ flex: 1, overflowY: 'auto' }}>
                   {/* Row 1: Empresa + N° Orden | Fecha + Moneda */}
                   <div className="oc-section">
                     <div className="form-grid form-grid-4">
@@ -508,9 +506,9 @@ export default function OrdenesCompra() {
                         <input
                           type="text"
                           className="form-input"
-                          value="(Automático)"
+                          value={editingOC?.numero || "(Automático)"}
                           disabled
-                          style={{ background: '#f8fafc', color: '#94a3b8' }}
+                          style={{ background: '#f8fafc', color: '#64748b' }}
                         />
                       </div>
                       <div className="form-group">
@@ -552,6 +550,9 @@ export default function OrdenesCompra() {
                           searchPlaceholder="Buscar proveedor..."
                           displayKey="nombre"
                           valueKey="id"
+                          allowCreate={true}
+                          onCreateNew={handleCreateProveedor}
+                          createLabel="+ Crear nuevo proveedor"
                         />
                       </div>
                       <div className="form-group">
@@ -616,9 +617,9 @@ export default function OrdenesCompra() {
                   </div>
 
                   {/* Detalle de Artículos */}
-                  <div className="oc-section" style={{ padding: '1rem 0 0' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', padding: '0 1rem' }}>
-                      <h3 style={{ margin: 0, fontSize: '0.9375rem', fontWeight: 600 }}>Detalle de Artículos</h3>
+                  <div className="oc-section" style={{ padding: '1rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                      <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 600 }}>Detalle de Artículos</h3>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                         <label className="toggle-switch">
                           <input
@@ -635,43 +636,48 @@ export default function OrdenesCompra() {
                       </div>
                     </div>
                     
-                    <div className="items-table-wrapper" style={{ maxHeight: '300px', overflowY: 'auto' }}>
-                      <table className="data-table items-table">
+                    <div className="articulos-table-container">
+                      <table className="articulos-table">
                         <thead>
                           <tr>
-                            <th style={{ width: '40px' }}>#</th>
-                            <th style={{ minWidth: '250px' }}>Artículo</th>
-                            <th style={{ width: '100px' }}>Código</th>
-                            <th style={{ minWidth: '200px' }}>Descripción *</th>
-                            <th style={{ width: '80px' }}>Cant. *</th>
-                            <th style={{ width: '70px' }}>Unidad</th>
-                            <th style={{ width: '100px' }}>P. Unit. *</th>
-                            <th style={{ width: '110px' }}>Subtotal</th>
-                            <th style={{ width: '40px' }}></th>
+                            <th style={{ width: '50px' }}>#</th>
+                            <th style={{ minWidth: '300px' }}>Artículo</th>
+                            <th style={{ width: '120px' }}>Código</th>
+                            <th style={{ minWidth: '250px' }}>Descripción</th>
+                            <th style={{ width: '100px' }}>Cant.</th>
+                            <th style={{ width: '80px' }}>Unidad</th>
+                            <th style={{ width: '120px' }}>P. Unit.</th>
+                            <th style={{ width: '130px' }}>Subtotal</th>
+                            <th style={{ width: '50px' }}></th>
                           </tr>
                         </thead>
                         <tbody>
                           {lineas.map((linea, index) => {
                             const subtotal = (parseFloat(linea.cantidad) || 0) * (parseFloat(linea.precio_unitario) || 0);
+                            const articuloSeleccionado = articulos.find(a => a.id === parseInt(linea.articulo_id));
                             return (
                               <tr key={index}>
-                                <td className="text-center" style={{ color: '#94a3b8' }}>{index + 1}</td>
+                                <td className="text-center">{index + 1}</td>
                                 <td>
-                                  <SearchableSelect
-                                    options={articulos}
-                                    value={linea.articulo_id}
-                                    onChange={(value) => handleSelectArticulo(index, value)}
-                                    placeholder="Buscar artículo..."
-                                    searchPlaceholder="Escriba para buscar..."
-                                    displayKey="nombre"
-                                    valueKey="id"
-                                    renderOption={(a) => (
-                                      <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-                                        <span>{a.nombre}</span>
-                                        {a.codigo && <span style={{ color: '#94a3b8', fontSize: '0.75rem' }}>{a.codigo}</span>}
+                                  <div className="articulo-cell">
+                                    <select
+                                      className="form-input form-select articulo-select"
+                                      value={linea.articulo_id}
+                                      onChange={(e) => handleSelectArticulo(index, e.target.value)}
+                                    >
+                                      <option value="">-- Seleccionar artículo --</option>
+                                      {articulos.map(a => (
+                                        <option key={a.id} value={a.id}>
+                                          {a.codigo ? `[${a.codigo}] ` : ''}{a.nombre}
+                                        </option>
+                                      ))}
+                                    </select>
+                                    {articuloSeleccionado && (
+                                      <div className="articulo-selected-badge">
+                                        {articuloSeleccionado.nombre}
                                       </div>
                                     )}
-                                  />
+                                  </div>
                                 </td>
                                 <td>
                                   <input
@@ -679,7 +685,7 @@ export default function OrdenesCompra() {
                                     className="form-input text-center"
                                     value={linea.codigo}
                                     readOnly
-                                    style={{ fontSize: '0.8125rem', background: '#f8fafc', color: '#64748b' }}
+                                    style={{ background: '#f1f5f9' }}
                                   />
                                 </td>
                                 <td>
@@ -689,7 +695,6 @@ export default function OrdenesCompra() {
                                     value={linea.descripcion}
                                     onChange={(e) => handleLineaChange(index, 'descripcion', e.target.value)}
                                     placeholder="Descripción del artículo"
-                                    style={{ fontSize: '0.8125rem' }}
                                   />
                                 </td>
                                 <td>
@@ -700,7 +705,6 @@ export default function OrdenesCompra() {
                                     className="form-input text-center"
                                     value={linea.cantidad}
                                     onChange={(e) => handleLineaChange(index, 'cantidad', e.target.value)}
-                                    style={{ fontSize: '0.8125rem' }}
                                   />
                                 </td>
                                 <td>
@@ -709,7 +713,7 @@ export default function OrdenesCompra() {
                                     className="form-input text-center"
                                     value={linea.unidad}
                                     readOnly
-                                    style={{ fontSize: '0.8125rem', background: '#f8fafc', color: '#64748b' }}
+                                    style={{ background: '#f1f5f9' }}
                                   />
                                 </td>
                                 <td>
@@ -717,13 +721,12 @@ export default function OrdenesCompra() {
                                     type="number"
                                     step="0.01"
                                     min="0"
-                                    className="form-input text-right"
+                                    className="form-input text-right currency-input"
                                     value={linea.precio_unitario}
                                     onChange={(e) => handleLineaChange(index, 'precio_unitario', e.target.value)}
-                                    style={{ fontSize: '0.8125rem', fontFamily: "'JetBrains Mono', monospace" }}
                                   />
                                 </td>
-                                <td className="text-right" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.8125rem', fontWeight: 500, padding: '0.5rem' }}>
+                                <td className="text-right currency-display">
                                   {formatCurrency(subtotal, monedaActual?.simbolo)}
                                 </td>
                                 <td>
@@ -732,7 +735,6 @@ export default function OrdenesCompra() {
                                       type="button"
                                       className="action-btn action-danger"
                                       onClick={() => handleRemoveLinea(index)}
-                                      style={{ width: '28px', height: '28px' }}
                                     >
                                       <Trash2 size={14} />
                                     </button>
@@ -748,7 +750,7 @@ export default function OrdenesCompra() {
                 </div>
 
                 {/* Right Column - Summary */}
-                <div style={{ width: '280px', flexShrink: 0 }}>
+                <div style={{ width: '320px', flexShrink: 0 }}>
                   <div className="oc-summary-card">
                     <h3 className="summary-title">Resumen</h3>
                     
@@ -761,15 +763,15 @@ export default function OrdenesCompra() {
                     <div className="summary-rows">
                       <div className="summary-row">
                         <span>Subtotal:</span>
-                        <span>{monedaActual?.codigo || 'PEN'} {totales.subtotal.toFixed(2)}</span>
+                        <span className="currency-display">{monedaActual?.codigo || 'PEN'} {totales.subtotal.toFixed(2)}</span>
                       </div>
                       <div className="summary-row">
                         <span>IGV (18%):</span>
-                        <span>{monedaActual?.codigo || 'PEN'} {totales.igv.toFixed(2)}</span>
+                        <span className="currency-display">{monedaActual?.codigo || 'PEN'} {totales.igv.toFixed(2)}</span>
                       </div>
                       <div className="summary-row summary-total">
                         <span>Total:</span>
-                        <span>{monedaActual?.codigo || 'PEN'} {totales.total.toFixed(2)}</span>
+                        <span className="currency-display">{monedaActual?.codigo || 'PEN'} {totales.total.toFixed(2)}</span>
                       </div>
                     </div>
                     
