@@ -465,22 +465,15 @@ export const FacturasProveedor = () => {
     }
     
     try {
-      // Crear cada letra
-      for (const letra of letrasPreview) {
-        await createLetra({
-          factura_proveedor_id: facturaParaLetras.id,
-          numero: `${letrasConfig.prefijo}-${facturaParaLetras.numero}-${String(letra.numero).padStart(2, '0')}`,
-          fecha_emision: letrasConfig.fecha_giro,
-          fecha_vencimiento: letra.fecha_vencimiento,
-          monto: letra.monto,
-          moneda_id: facturaParaLetras.moneda_id || 1,
-          banco_id: parseInt(letrasConfig.banco_id),
-          estado: 'pendiente'
-        });
-      }
-      
-      // Actualizar estado de la factura a CANJEADO
-      await updateFacturaProveedor(facturaParaLetras.id, { estado: 'canjeado' });
+      // Usar la API de generar letras
+      await generarLetras({
+        factura_proveedor_id: facturaParaLetras.id,
+        cantidad: parseInt(letrasConfig.cantidad),
+        intervalo_dias: parseInt(letrasConfig.intervalo_dias),
+        fecha_emision: letrasConfig.fecha_giro,
+        banco_id: parseInt(letrasConfig.banco_id),
+        prefijo: letrasConfig.prefijo
+      });
       
       toast.success(`${letrasPreview.length} letras creadas exitosamente`);
       setShowLetrasModal(false);
