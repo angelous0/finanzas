@@ -996,6 +996,92 @@ export default function OrdenesCompra() {
           </div>
         </div>
       )}
+
+      {/* Modal Crear Nuevo Proveedor */}
+      {showProveedorModal && (
+        <div className="mini-modal-overlay" onClick={() => setShowProveedorModal(false)}>
+          <div className="mini-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="mini-modal-header">
+              <h3 className="mini-modal-title">Crear Nuevo Proveedor</h3>
+              <button className="modal-close" onClick={() => setShowProveedorModal(false)}>
+                <X size={18} />
+              </button>
+            </div>
+            <div className="mini-modal-body">
+              <div className="form-group">
+                <label className="form-label">Nombre / Razón Social *</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  value={newProveedorData.nombre}
+                  onChange={(e) => setNewProveedorData(prev => ({ ...prev, nombre: e.target.value }))}
+                  placeholder="Nombre del proveedor"
+                  autoFocus
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">RUC</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  value={newProveedorData.ruc}
+                  onChange={(e) => setNewProveedorData(prev => ({ ...prev, ruc: e.target.value }))}
+                  placeholder="20XXXXXXXXX"
+                  maxLength={11}
+                />
+              </div>
+              <div className="form-group">
+                <label className="form-label">Dirección</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  value={newProveedorData.direccion}
+                  onChange={(e) => setNewProveedorData(prev => ({ ...prev, direccion: e.target.value }))}
+                  placeholder="Dirección fiscal"
+                />
+              </div>
+              <div className="form-grid form-grid-2">
+                <div className="form-group">
+                  <label className="form-label">Teléfono</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    value={newProveedorData.telefono}
+                    onChange={(e) => setNewProveedorData(prev => ({ ...prev, telefono: e.target.value }))}
+                    placeholder="Teléfono"
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Email</label>
+                  <input
+                    type="email"
+                    className="form-input"
+                    value={newProveedorData.email}
+                    onChange={(e) => setNewProveedorData(prev => ({ ...prev, email: e.target.value }))}
+                    placeholder="correo@ejemplo.com"
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="mini-modal-footer">
+              <button 
+                className="btn btn-outline" 
+                onClick={() => setShowProveedorModal(false)}
+                disabled={creatingProveedor}
+              >
+                Cancelar
+              </button>
+              <button 
+                className="btn btn-primary" 
+                onClick={handleSaveNewProveedor}
+                disabled={creatingProveedor || !newProveedorData.nombre.trim()}
+              >
+                {creatingProveedor ? 'Guardando...' : 'Guardar Proveedor'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
