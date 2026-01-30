@@ -898,11 +898,12 @@ export default function OrdenesCompra() {
                                     placeholder={articuloSeleccionado ? articuloSeleccionado.nombre : 'Buscar artículo...'}
                                     value={articuloSearchTerm[index] || ''}
                                     onChange={(e) => {
+                                      console.log('onChange:', e.target.value, 'articulos:', articulos.length);
                                       setArticuloSearchTerm(prev => ({ ...prev, [index]: e.target.value }));
                                       setArticuloDropdownOpen(prev => ({ ...prev, [index]: true }));
                                     }}
                                     onFocus={() => {
-                                      setArticuloSearchTerm(prev => ({ ...prev, [index]: '' }));
+                                      console.log('onFocus, articulos:', articulos.length);
                                       setArticuloDropdownOpen(prev => ({ ...prev, [index]: true }));
                                     }}
                                     onBlur={() => {
