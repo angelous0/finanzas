@@ -169,6 +169,26 @@ export const Planilla = () => {
     setShowViewModal(true);
   };
 
+  const handleDelete = async (planilla) => {
+    if (planilla.estado === 'pagada') {
+      toast.error('No se puede eliminar una planilla pagada');
+      return;
+    }
+    
+    if (!window.confirm(`¿Eliminar la planilla del período ${planilla.periodo}?`)) {
+      return;
+    }
+    
+    try {
+      await deletePlanilla(planilla.id);
+      toast.success('Planilla eliminada');
+      loadData();
+    } catch (error) {
+      console.error('Error deleting planilla:', error);
+      toast.error(error.response?.data?.detail || 'Error al eliminar');
+    }
+  };
+
   const handleOpenPago = (planilla) => {
     setSelectedPlanilla(planilla);
     setCuentaPagoId(cuentas.length > 0 ? cuentas[0].id : '');
