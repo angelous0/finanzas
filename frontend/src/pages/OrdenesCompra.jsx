@@ -1000,8 +1000,8 @@ export default function OrdenesCompra() {
 
       {/* Modal Crear Nuevo Proveedor */}
       {showProveedorModal && (
-        <div className="mini-modal-overlay" onClick={() => setShowProveedorModal(false)}>
-          <div className="mini-modal" onClick={(e) => e.stopPropagation()}>
+        <div className="mini-modal-overlay" style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10000 }} onClick={() => setShowProveedorModal(false)}>
+          <div className="mini-modal" style={{ background: '#fff', borderRadius: '12px', maxWidth: '450px', width: '100%', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)' }} onClick={(e) => e.stopPropagation()}>
             <div className="mini-modal-header">
               <h3 className="mini-modal-title">Crear Nuevo Proveedor</h3>
               <button className="modal-close" onClick={() => setShowProveedorModal(false)}>
