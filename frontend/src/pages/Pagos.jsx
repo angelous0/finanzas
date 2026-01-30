@@ -1,0 +1,163 @@
+import React, { useState, useEffect } from 'react';
+import { getPagos, deletePago } from '../services/api';
+import { Trash2, DollarSign, TrendingUp, TrendingDown } from 'lucide-react';
+import { toast } from 'sonner';
+
+const formatCurrency = (value, symbol = 'S/') => {
+  return `${symbol} ${Number(value || 0).toLocaleString('es-PE', { minimumFractionDigits: 2 })}`;
+};
+
+const formatDate = (dateStr) => {
+  if (!dateStr) return '';
+  return new Date(dateStr).toLocaleDateString('es-PE');
+};
+
+export const Pagos = () => {
+  const [pagos, setPagos] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filtroTipo, setFiltroTipo] = useState('');
+
+  useEffect(() => {
+    loadData();
+  }, [filtroTipo]);
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      const response = await getPagos({ tipo: filtroTipo || undefined });
+      setPagos(response.data);
+    } catch (error) {
+      console.error('Error loading pagos:', error);
+      toast.error('Error al cargar pagos');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('¿Eliminar este pago? Se revertirán los cambios en saldos.')) return;
+    try {
+      await deletePago(id);
+      toast.success('Pago eliminado y revertido');
+      loadData();
+    } catch (error) {
+      console.error('Error deleting:', error);
+      toast.error(error.response?.data?.detail || 'Error al eliminar pago');
+    }
+  };
+
+  const totalIngresos = pagos.filter(p => p.tipo === 'ingreso').reduce((sum, p) => sum + parseFloat(p.monto_total || 0), 0);
+  const totalEgresos = pagos.filter(p => p.tipo === 'egreso').reduce((sum, p) => sum + parseFloat(p.monto_total || 0), 0);
+
+  return (
+    <div data-testid="pagos-page">
+      <div className="page-header">
+        <div>
+          <h1 className="page-title">Movimientos / Pagos</h1>
+          <p className="page-subtitle">Historial de pagos e ingresos</p>
+        </div>
+      </div>
+
+      <div className="page-content">
+        {/* KPIs */}
+        <div className="kpi-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)', marginBottom: '1rem' }}>
+          <div className="kpi-card">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <TrendingUp size={18} color="#22C55E" />
+              <span className="kpi-label" style={{ marginBottom: 0 }}>Ingresos</span>
+            </div>
+            <div className="kpi-value positive">{formatCurrency(totalIngresos)}</div>
+          </div>
+          <div className="kpi-card">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <TrendingDown size={18} color="#EF4444" />
+              <span className="kpi-label" style={{ marginBottom: 0 }}>Egresos</span>
+            </div>
+            <div className="kpi-value negative">{formatCurrency(totalEgresos)}</div>
+          </div>
+          <div className="kpi-card">
+            <div className="kpi-label">Neto</div>
+            <div className="kpi-value" style={{ color: totalIngresos - totalEgresos >= 0 ? '#22C55E' : '#EF4444' }}>
+              {formatCurrency(totalIngresos - totalEgresos)}
+            </div>
+          </div>
+        </div>
+
+        {/* Filtros */}
+        <div className="filters-bar">
+          <select 
+            className="form-input form-select filter-input"
+            value={filtroTipo}
+            onChange={(e) => setFiltroTipo(e.target.value)}
+          >
+            <option value="">Todos los tipos</option>
+            <option value="ingreso">Ingresos</option>
+            <option value="egreso">Egresos</option>
+          </select>
+        </div>
+
+        {/* Tabla */}
+        <div className="card">
+          <div className="data-table-wrapper">
+            {loading ? (
+              <div className="loading">
+                <div className="loading-spinner"></div>
+              </div>
+            ) : pagos.length === 0 ? (
+              <div className="empty-state">
+                <DollarSign className="empty-state-icon" />
+                <div className="empty-state-title">No hay pagos registrados</div>
+              </div>
+            ) : (
+              <table className="data-table" data-testid="pagos-table">
+                <thead>
+                  <tr>
+                    <th>Número</th>
+                    <th>Fecha</th>
+                    <th>Tipo</th>
+                    <th>Cuenta</th>
+                    <th className="text-right">Monto</th>
+                    <th>Referencia</th>
+                    <th className="text-center">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pagos.map((pago) => (
+                    <tr key={pago.id}>
+                      <td style={{ fontWeight: 500 }}>{pago.numero}</td>
+                      <td>{formatDate(pago.fecha)}</td>
+                      <td>
+                        <span className={`badge ${pago.tipo === 'ingreso' ? 'badge-success' : 'badge-error'}`}>
+                          {pago.tipo}
+                        </span>
+                      </td>
+                      <td>{pago.cuenta_nombre || '-'}</td>
+                      <td className="text-right" style={{ 
+                        fontWeight: 600,
+                        color: pago.tipo === 'ingreso' ? '#22C55E' : '#EF4444'
+                      }}>
+                        {pago.tipo === 'egreso' ? '-' : '+'}{formatCurrency(pago.monto_total)}
+                      </td>
+                      <td>{pago.referencia || '-'}</td>
+                      <td className="text-center">
+                        <button 
+                          className="btn btn-outline btn-sm btn-icon"
+                          onClick={() => handleDelete(pago.id)}
+                          title="Eliminar y revertir"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Pagos;
