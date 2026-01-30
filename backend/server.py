@@ -2859,27 +2859,41 @@ async def previsualizar_excel_banco(
                         monto = float(importe) if not isinstance(importe, str) else float(str(importe).replace(',', ''))
                             
                 elif banco == 'IBK':
-                    # IBK needs to find the actual data header (Fecha operación, etc.)
-                    # Skip metadata rows
-                    if not any(row[:2]):
+                    # IBK format: Nº, Fecha de operación, Fecha de proceso, Nro. de operación, 
+                    #             Movimiento, Descripción, Canal, Cargo, Abono, Saldo contable
+                    # Skip metadata rows (first 13 rows usually) and rows without valid number
+                    if len(row) < 10:
                         continue
                     
-                    # Check if this is data row (has date in first or second column)
-                    fecha = row[0] if len(row) > 0 else row[1] if len(row) > 1 else None
-                    if not fecha:
+                    # Check if it's a data row (should have a number in first column)
+                    try:
+                        nro = int(row[0]) if row[0] and str(row[0]).strip() else None
+                        if not nro:
+                            continue
+                    except (ValueError, TypeError):
                         continue
-                        
-                    descripcion = row[4] if len(row) > 4 else None
-                    referencia = row[3] if len(row) > 3 else None
-                    cargo = row[6] if len(row) > 6 else None
-                    abono = row[7] if len(row) > 7 else None
                     
-                    if cargo:
-                        cargo_val = float(cargo) if not isinstance(cargo, str) else float(str(cargo).replace(',', ''))
-                        monto = -cargo_val
-                    elif abono:
-                        abono_val = float(abono) if not isinstance(abono, str) else float(str(abono).replace(',', ''))
-                        monto = abono_val
+                    fecha = row[1] if len(row) > 1 else None  # Fecha de operación
+                    referencia = row[3] if len(row) > 3 else None  # Nro. de operación
+                    descripcion = row[5] if len(row) > 5 else None  # Descripción
+                    cargo = row[7] if len(row) > 7 else None  # Cargo
+                    abono = row[8] if len(row) > 8 else None  # Abono
+                    
+                    # Calculate monto (negative for cargo, positive for abono)
+                    if cargo and cargo != '' and str(cargo).strip() != 'nan':
+                        try:
+                            cargo_val = float(cargo) if not isinstance(cargo, str) else float(str(cargo).replace(',', ''))
+                            monto = -abs(cargo_val)  # Ensure it's negative
+                        except (ValueError, TypeError):
+                            monto = None
+                    elif abono and abono != '' and str(abono).strip() != 'nan':
+                        try:
+                            abono_val = float(abono) if not isinstance(abono, str) else float(str(abono).replace(',', ''))
+                            monto = abs(abono_val)  # Ensure it's positive
+                        except (ValueError, TypeError):
+                            monto = None
+                    else:
+                        monto = None
                         
                 else:
                     # PERSONALIZADO
