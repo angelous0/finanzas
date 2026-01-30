@@ -89,12 +89,20 @@ export const Adelantos = () => {
       return;
     }
     
+    if (formData.pagar && !formData.cuenta_financiera_id) {
+      toast.error('Seleccione una cuenta financiera para el pago');
+      return;
+    }
+    
     try {
       const payload = {
-        ...formData,
         empleado_id: parseInt(formData.empleado_id),
         monto: parseFloat(formData.monto),
-        cuenta_financiera_id: formData.cuenta_financiera_id ? parseInt(formData.cuenta_financiera_id) : null
+        fecha: formData.fecha,
+        motivo: formData.motivo,
+        pagar: formData.pagar,
+        cuenta_financiera_id: formData.pagar && formData.cuenta_financiera_id ? parseInt(formData.cuenta_financiera_id) : null,
+        medio_pago: formData.medio_pago
       };
       
       await createAdelanto(payload);
