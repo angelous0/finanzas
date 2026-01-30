@@ -799,12 +799,6 @@ export const FacturasProveedor = () => {
     printWindow.focus();
     printWindow.onload = () => printWindow.print();
   };
-      loadData();
-    } catch (error) {
-      console.error('Error deshaciendo canje:', error);
-      toast.error(error.response?.data?.detail || 'Error al deshacer canje');
-    }
-  };
 
   const resetForm = () => {
     const pen = monedas.find(m => m.codigo === 'PEN');
