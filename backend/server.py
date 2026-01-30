@@ -2750,7 +2750,7 @@ async def previsualizar_excel_banco(
         for idx, row in enumerate(ws.iter_rows(min_row=1, max_row=10, values_only=True), 1):
             if row and any(row):
                 row_str = ' '.join([str(c or '') for c in row]).lower()
-                if 'fecha' in row_str or 'f. valor' in row_str:
+                if 'fecha' in row_str or 'f. valor' in row_str or 'f. operación' in row_str:
                     header_row = idx
                     break
         
@@ -2763,35 +2763,47 @@ async def previsualizar_excel_banco(
             fecha = None
             descripcion = None
             referencia = None
-            banco_nombre = None
             monto = None
             
             try:
                 if banco == 'BCP':
+                    # BCP: Nº, Fecha, Fecha valuta, Descripción operación, Monto, Saldo, Sucursal, Operación-Número
                     fecha = row[1] if len(row) > 1 else None
                     descripcion = row[3] if len(row) > 3 else None
                     monto_val = row[4] if len(row) > 4 else None
-                    banco_nombre = row[6] if len(row) > 6 else None
                     referencia = row[7] if len(row) > 7 else None
                     
                     if monto_val:
                         monto = float(monto_val) if not isinstance(monto_val, str) else float(str(monto_val).replace(',', ''))
                             
                 elif banco == 'BBVA':
+                    # BBVA: N°, F. Operación, F. Valor, Código, Nº. Doc., Concepto, Importe, Oficina
+                    # Skip "Saldo Final" rows
+                    concepto = row[5] if len(row) > 5 else None
+                    if concepto and 'saldo final' in str(concepto).lower():
+                        continue
+                    
                     fecha = row[1] if len(row) > 1 else None
-                    descripcion = row[4] if len(row) > 4 else None
-                    referencia = row[3] if len(row) > 3 else None
-                    importe = row[5] if len(row) > 5 else None
-                    banco_nombre = row[6] if len(row) > 6 else None
+                    referencia = row[4] if len(row) > 4 else None
+                    descripcion = row[5] if len(row) > 5 else None
+                    importe = row[6] if len(row) > 6 else None
                     
                     if importe:
                         monto = float(importe) if not isinstance(importe, str) else float(str(importe).replace(',', ''))
                             
                 elif banco == 'IBK':
-                    fecha = row[1] if len(row) > 1 else None
+                    # IBK needs to find the actual data header (Fecha operación, etc.)
+                    # Skip metadata rows
+                    if not any(row[:2]):
+                        continue
+                    
+                    # Check if this is data row (has date in first or second column)
+                    fecha = row[0] if len(row) > 0 else row[1] if len(row) > 1 else None
+                    if not fecha:
+                        continue
+                        
                     descripcion = row[4] if len(row) > 4 else None
                     referencia = row[3] if len(row) > 3 else None
-                    banco_nombre = row[5] if len(row) > 5 else None
                     cargo = row[6] if len(row) > 6 else None
                     abono = row[7] if len(row) > 7 else None
                     
@@ -2807,8 +2819,7 @@ async def previsualizar_excel_banco(
                     fecha = row[0] if len(row) > 0 else None
                     descripcion = row[1] if len(row) > 1 else None
                     referencia = row[2] if len(row) > 2 else None
-                    banco_nombre = row[3] if len(row) > 3 else None
-                    monto = row[4] if len(row) > 4 else None
+                    monto = row[3] if len(row) > 3 else None
                 
                 # Parse date
                 if fecha:
@@ -2829,7 +2840,7 @@ async def previsualizar_excel_banco(
                 
                 preview_data.append({
                     "fecha": fecha,
-                    "banco": str(banco_nombre)[:100] if banco_nombre else banco,
+                    "banco": banco,  # Use selected bank name
                     "referencia": str(referencia)[:200] if referencia else "",
                     "descripcion": str(descripcion)[:500] if descripcion else "",
                     "monto": float(monto) if monto else 0.0
@@ -2839,6 +2850,7 @@ async def previsualizar_excel_banco(
                     break
                     
             except Exception as row_error:
+                logger.warning(f"Error parsing row: {row_error}")
                 continue
         
         return {
