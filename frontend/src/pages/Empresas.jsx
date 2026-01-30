@@ -10,9 +10,8 @@ export const Empresas = () => {
   const [editingId, setEditingId] = useState(null);
   
   const [formData, setFormData] = useState({
+    nombre: '',
     ruc: '',
-    razon_social: '',
-    nombre_comercial: '',
     direccion: '',
     telefono: '',
     email: ''
