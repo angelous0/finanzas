@@ -499,6 +499,13 @@ export default function Gastos() {
                           >
                             <Eye size={15} />
                           </button>
+                          <button 
+                            className="action-btn action-danger"
+                            onClick={() => handleDelete(gasto)}
+                            title="Eliminar"
+                          >
+                            <Trash2 size={15} />
+                          </button>
                         </div>
                       </td>
                     </tr>
