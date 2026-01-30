@@ -17,12 +17,14 @@ const formatDate = (dateStr) => {
 
 const getEstadoAdelanto = (adelanto) => {
   if (adelanto.descontado) return 'descontado';
+  if (adelanto.pagado) return 'pagado';
   return 'pendiente';
 };
 
 const getEstadoBadge = (estado) => {
   const badges = {
     pendiente: 'badge badge-warning',
+    pagado: 'badge badge-info',
     descontado: 'badge badge-success',
     anulado: 'badge badge-danger'
   };
