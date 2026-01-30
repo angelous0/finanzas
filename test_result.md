@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Complete Bank Reconciliation save functionality - Implement endpoint to save reconciled bank movements and system payments"
+user_problem_statement: "Test Bank Reconciliation filtering functionality - Verify that reconciled payments don't appear in Pendientes tab and that Movimientos Banco filter works correctly"
 
 backend:
   - task: "Bank Reconciliation - Save endpoint"
@@ -120,6 +120,18 @@ backend:
         agent: "testing"
         comment: "COMPREHENSIVE TESTING COMPLETED: ✅ Backend API endpoint working correctly - accepts banco_ids and pago_ids as query params, returns success message with counts. ✅ Database updates verified - bank movements marked as procesado=TRUE, payments marked as conciliado=TRUE. ✅ Fixed Pago model to include conciliado field. ✅ All core functionality working as expected. Minor fix applied: Added conciliado field to Pago model in models.py to ensure API returns reconciliation status."
 
+  - task: "Bank Reconciliation - API filtering parameters"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added cuenta_financiera_id and conciliado parameters to /api/pagos endpoint (lines 1376-1377, 1399-1406). This allows filtering payments by account and reconciliation status to fix the bug where reconciled payments were showing in Pendientes tab."
+
 frontend:
   - task: "Bank Reconciliation - Connect save button to backend"
     implemented: true
@@ -135,6 +147,30 @@ frontend:
       - working: "true"
         agent: "testing"
         comment: "Frontend implementation verified through backend API testing. The conciliarMovimientos function correctly formats banco_ids and pago_ids as query parameters and calls POST /api/conciliacion/conciliar endpoint. Integration working as expected."
+
+  - task: "Bank Reconciliation - Pendientes tab filtering"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/ConciliacionBancaria.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Fixed loadMovimientos function (line 90) to filter sistema payments with conciliado: false parameter. This ensures only non-reconciled payments appear in Pendientes tab, fixing the bug where PAG-E-2026-00008 (reconciled payment) was still showing."
+
+  - task: "Bank Reconciliation - Movimientos Banco filter"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/ConciliacionBancaria.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Added filtroBanco state (line 42) and filter buttons in Movimientos Banco tab (lines 481-519). Applied filter logic in table rendering (line 815) to show either pendientes (!m.procesado) or conciliados (m.procesado) bank movements. This fixes the Conciliados filter functionality."
 
 metadata:
   created_by: "main_agent"
