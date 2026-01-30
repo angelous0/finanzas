@@ -701,9 +701,10 @@ export default function OrdenesCompra() {
           
           <div className="modal-fullscreen-body" style={{ flex: 1, overflowY: 'auto', padding: '1.5rem', background: '#f8fafc' }}>
             <form onSubmit={handleSubmit}>
-              <div style={{ display: 'flex', gap: '2rem', height: '100%' }}>
-                {/* Left Column - Form */}
-                <div style={{ flex: 1, overflowY: 'auto' }}>
+              {/* Top Section: Form Fields + Summary Bar */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '1.5rem', marginBottom: '1.5rem' }}>
+                {/* Form Fields */}
+                <div>
                   {/* Row 1: Empresa + N° Orden | Fecha + Moneda */}
                   <div className="oc-section">
                     <div className="form-grid form-grid-4">
@@ -757,9 +758,9 @@ export default function OrdenesCompra() {
                     </div>
                   </div>
 
-                  {/* Row 2: Proveedor + Condición + Días */}
+                  {/* Row 2: Proveedor + Condición + Días + Dirección */}
                   <div className="oc-section">
-                    <div className="form-grid form-grid-3">
+                    <div className="form-grid form-grid-4">
                       <div className="form-group">
                         <label className="form-label">Proveedor *</label>
                         <SearchableSelect
@@ -797,29 +798,13 @@ export default function OrdenesCompra() {
                         </select>
                       </div>
                       <div className="form-group">
-                        <label className="form-label">Días Crédito</label>
-                        <input
-                          type="number"
-                          className="form-input"
-                          value={formData.dias_credito}
-                          onChange={(e) => setFormData({ ...formData, dias_credito: parseInt(e.target.value) || 0 })}
-                          min="0"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Row 3: Dirección + Observaciones */}
-                  <div className="oc-section">
-                    <div className="form-grid form-grid-2">
-                      <div className="form-group">
                         <label className="form-label">Dirección de Entrega</label>
                         <input
                           type="text"
                           className="form-input"
                           value={formData.direccion_entrega}
                           onChange={(e) => setFormData({ ...formData, direccion_entrega: e.target.value })}
-                          placeholder="Dirección de entrega"
+                          placeholder="Dirección"
                         />
                       </div>
                       <div className="form-group">
@@ -829,198 +814,192 @@ export default function OrdenesCompra() {
                           className="form-input"
                           value={formData.notas}
                           onChange={(e) => setFormData({ ...formData, notas: e.target.value })}
-                          placeholder="Notas adicionales"
+                          placeholder="Notas"
                         />
                       </div>
                     </div>
                   </div>
-
-                  {/* Detalle de Artículos */}
-                  <div className="oc-section" style={{ padding: '1rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                      <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 600 }}>Detalle de Artículos</h3>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                        <label className="toggle-switch">
-                          <input
-                            type="checkbox"
-                            checked={igvIncluido}
-                            onChange={(e) => setIgvIncluido(e.target.checked)}
-                          />
-                          <span className="toggle-slider"></span>
-                          <span className="toggle-label">IGV incluido</span>
-                        </label>
-                        <button type="button" className="btn btn-outline btn-sm" onClick={handleAddLinea}>
-                          <Plus size={14} /> Agregar Línea
-                        </button>
-                      </div>
-                    </div>
-                    
-                    <div className="articulos-table-container">
-                      <table className="articulos-table">
-                        <thead>
-                          <tr>
-                            <th style={{ width: '40px' }}>#</th>
-                            <th style={{ minWidth: '280px' }}>Artículo</th>
-                            <th style={{ width: '100px' }}>Código</th>
-                            <th style={{ minWidth: '200px' }}>Descripción</th>
-                            <th style={{ width: '90px' }}>Cant.</th>
-                            <th style={{ width: '70px' }}>Unidad</th>
-                            <th style={{ width: '110px' }}>P. Unit.</th>
-                            <th style={{ width: '120px' }}>Subtotal</th>
-                            <th style={{ width: '45px' }}></th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {lineas.map((linea, index) => {
-                            const subtotal = (parseFloat(linea.cantidad) || 0) * (parseFloat(linea.precio_unitario) || 0);
-                            const articuloSeleccionado = articulos.find(a => String(a.id) === String(linea.articulo_id));
-                            const filteredArts = getFilteredArticulos(index);
-                            
-                            return (
-                              <tr key={index}>
-                                <td className="text-center" style={{ background: '#f8fafc', fontWeight: 500, color: '#64748b' }}>{index + 1}</td>
-                                <td style={{ padding: '0.5rem' }}>
-                                  <div className="articulo-cell">
-                                    {/* Search Input */}
-                                    <div style={{ position: 'relative' }}>
-                                      <Search size={14} style={{ position: 'absolute', left: '0.625rem', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af' }} />
-                                      <input
-                                        type="text"
-                                        className="form-input"
-                                        placeholder="Buscar artículo..."
-                                        value={articuloSearchTerm[index] || ''}
-                                        onChange={(e) => setArticuloSearchTerm(prev => ({ ...prev, [index]: e.target.value }))}
-                                        style={{ paddingLeft: '2rem', fontSize: '0.8125rem' }}
-                                      />
-                                    </div>
-                                    
-                                    {/* Dropdown Select */}
-                                    <select
-                                      className="form-input form-select articulo-select"
-                                      value={linea.articulo_id}
-                                      onChange={(e) => handleSelectArticulo(index, e.target.value)}
-                                      style={{ fontSize: '0.8125rem' }}
-                                    >
-                                      <option value="">-- Seleccionar --</option>
-                                      {filteredArts.map(a => (
-                                        <option key={a.id} value={a.id}>
-                                          {a.codigo ? `[${a.codigo}] ` : ''}{a.nombre}
-                                        </option>
-                                      ))}
-                                    </select>
-                                    
-                                    {/* Selected Badge */}
-                                    {articuloSeleccionado && (
-                                      <div className="articulo-selected-badge">
-                                        <Check size={12} />
-                                        {articuloSeleccionado.nombre}
-                                      </div>
-                                    )}
-                                  </div>
-                                </td>
-                                <td>
-                                  <input
-                                    type="text"
-                                    className="form-input text-center"
-                                    value={linea.codigo}
-                                    readOnly
-                                    style={{ background: '#f1f5f9', fontSize: '0.8125rem' }}
-                                  />
-                                </td>
-                                <td>
-                                  <input
-                                    type="text"
-                                    className="form-input"
-                                    value={linea.descripcion}
-                                    onChange={(e) => handleLineaChange(index, 'descripcion', e.target.value)}
-                                    placeholder="Descripción"
-                                    style={{ fontSize: '0.8125rem' }}
-                                  />
-                                </td>
-                                <td>
-                                  <input
-                                    type="number"
-                                    step="0.01"
-                                    min="0"
-                                    className="form-input text-center"
-                                    value={linea.cantidad}
-                                    onChange={(e) => handleLineaChange(index, 'cantidad', e.target.value)}
-                                    style={{ fontSize: '0.8125rem' }}
-                                  />
-                                </td>
-                                <td>
-                                  <input
-                                    type="text"
-                                    className="form-input text-center"
-                                    value={linea.unidad}
-                                    readOnly
-                                    style={{ background: '#f1f5f9', fontSize: '0.8125rem' }}
-                                  />
-                                </td>
-                                <td>
-                                  <input
-                                    type="number"
-                                    step="0.01"
-                                    min="0"
-                                    className="form-input text-right currency-input"
-                                    value={linea.precio_unitario}
-                                    onChange={(e) => handleLineaChange(index, 'precio_unitario', e.target.value)}
-                                    style={{ fontSize: '0.8125rem' }}
-                                  />
-                                </td>
-                                <td className="text-right currency-display" style={{ fontWeight: 600, color: '#1e293b', fontSize: '0.875rem' }}>
-                                  {formatCurrency(subtotal, monedaActual?.simbolo)}
-                                </td>
-                                <td style={{ background: '#f8fafc' }}>
-                                  {lineas.length > 1 && (
-                                    <button
-                                      type="button"
-                                      className="action-btn action-danger"
-                                      onClick={() => handleRemoveLinea(index)}
-                                    >
-                                      <Trash2 size={14} />
-                                    </button>
-                                  )}
-                                </td>
-                              </tr>
-                            );
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
                 </div>
 
-                {/* Right Column - Summary */}
-                <div style={{ width: '320px', flexShrink: 0 }}>
-                  <div className="oc-summary-card">
-                    <h3 className="summary-title">Resumen</h3>
-                    
-                    {igvIncluido && (
-                      <div className="summary-info-badge">
-                        Precios con IGV incluido
-                      </div>
-                    )}
-                    
-                    <div className="summary-rows">
-                      <div className="summary-row">
-                        <span>Subtotal:</span>
-                        <span className="currency-display">{monedaActual?.codigo || 'PEN'} {totales.subtotal.toFixed(2)}</span>
-                      </div>
-                      <div className="summary-row">
-                        <span>IGV (18%):</span>
-                        <span className="currency-display">{monedaActual?.codigo || 'PEN'} {totales.igv.toFixed(2)}</span>
-                      </div>
-                      <div className="summary-row summary-total">
-                        <span>Total:</span>
-                        <span className="currency-display">{monedaActual?.codigo || 'PEN'} {totales.total.toFixed(2)}</span>
-                      </div>
-                    </div>
-                    
-                    <div className="summary-count">
-                      {cantidadArticulos} artículo(s)
-                    </div>
+                {/* Summary Card - Compact */}
+                <div className="oc-summary-compact">
+                  <div className="summary-compact-title">Resumen</div>
+                  {igvIncluido && <div className="summary-compact-badge">IGV incluido</div>}
+                  <div className="summary-compact-row">
+                    <span>Subtotal:</span>
+                    <span className="currency-display">{monedaActual?.simbolo || 'S/'} {totales.subtotal.toFixed(2)}</span>
                   </div>
+                  <div className="summary-compact-row">
+                    <span>IGV:</span>
+                    <span className="currency-display">{monedaActual?.simbolo || 'S/'} {totales.igv.toFixed(2)}</span>
+                  </div>
+                  <div className="summary-compact-total">
+                    <span>Total:</span>
+                    <span className="currency-display">{monedaActual?.simbolo || 'S/'} {totales.total.toFixed(2)}</span>
+                  </div>
+                  <div className="summary-compact-count">{cantidadArticulos} artículo(s)</div>
+                </div>
+              </div>
+
+              {/* Detalle de Artículos - FULL WIDTH */}
+              <div className="oc-section-fullwidth">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', padding: '0 0.5rem' }}>
+                  <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 600 }}>Detalle de Artículos</h3>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <label className="toggle-switch">
+                      <input
+                        type="checkbox"
+                        checked={igvIncluido}
+                        onChange={(e) => setIgvIncluido(e.target.checked)}
+                      />
+                      <span className="toggle-slider"></span>
+                      <span className="toggle-label">IGV incluido</span>
+                    </label>
+                    <button type="button" className="btn btn-outline btn-sm" onClick={handleAddLinea}>
+                      <Plus size={14} /> Agregar Línea
+                    </button>
+                  </div>
+                </div>
+                
+                <div className="articulos-table-fullwidth">
+                  <table className="articulos-table">
+                    <thead>
+                      <tr>
+                        <th style={{ width: '40px' }}>#</th>
+                        <th style={{ width: '320px' }}>Artículo</th>
+                        <th style={{ width: '100px' }}>Código</th>
+                        <th>Descripción</th>
+                        <th style={{ width: '90px' }}>Cant.</th>
+                        <th style={{ width: '70px' }}>Und.</th>
+                        <th style={{ width: '120px' }}>P. Unit.</th>
+                        <th style={{ width: '130px' }}>Subtotal</th>
+                        <th style={{ width: '50px' }}></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {lineas.map((linea, index) => {
+                        const subtotal = (parseFloat(linea.cantidad) || 0) * (parseFloat(linea.precio_unitario) || 0);
+                        const articuloSeleccionado = articulos.find(a => String(a.id) === String(linea.articulo_id));
+                        const filteredArts = getFilteredArticulos(index);
+                        const isDropdownOpen = articuloSearchTerm[index] !== undefined && articuloSearchTerm[index] !== '';
+                        
+                        return (
+                          <tr key={index}>
+                            <td className="text-center" style={{ background: '#f8fafc', fontWeight: 500, color: '#64748b' }}>{index + 1}</td>
+                            <td style={{ padding: '0.375rem', position: 'relative' }}>
+                              {/* Combo Search Select */}
+                              <div className="articulo-combo-select">
+                                <div className="articulo-combo-trigger">
+                                  <Search size={14} className="combo-search-icon" />
+                                  <input
+                                    type="text"
+                                    className="combo-input"
+                                    placeholder={articuloSeleccionado ? '' : 'Buscar artículo...'}
+                                    value={articuloSearchTerm[index] || (articuloSeleccionado ? articuloSeleccionado.nombre : '')}
+                                    onChange={(e) => setArticuloSearchTerm(prev => ({ ...prev, [index]: e.target.value }))}
+                                    onFocus={() => setArticuloSearchTerm(prev => ({ ...prev, [index]: '' }))}
+                                  />
+                                  <ChevronDown size={14} className="combo-chevron" />
+                                </div>
+                                
+                                {/* Dropdown */}
+                                {(articuloSearchTerm[index] !== undefined) && (
+                                  <div className="articulo-combo-dropdown">
+                                    {filteredArts.length === 0 ? (
+                                      <div className="combo-empty">No se encontraron artículos</div>
+                                    ) : (
+                                      filteredArts.slice(0, 10).map(a => (
+                                        <div
+                                          key={a.id}
+                                          className={`combo-option ${String(a.id) === String(linea.articulo_id) ? 'selected' : ''}`}
+                                          onClick={() => {
+                                            handleSelectArticulo(index, a.id);
+                                            setArticuloSearchTerm(prev => {
+                                              const newState = { ...prev };
+                                              delete newState[index];
+                                              return newState;
+                                            });
+                                          }}
+                                        >
+                                          {a.codigo && <span className="combo-code">[{a.codigo}]</span>}
+                                          <span className="combo-name">{a.nombre}</span>
+                                        </div>
+                                      ))
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            </td>
+                            <td>
+                              <input
+                                type="text"
+                                className="form-input text-center"
+                                value={linea.codigo}
+                                readOnly
+                                style={{ background: '#f1f5f9', fontSize: '0.8125rem' }}
+                              />
+                            </td>
+                            <td>
+                              <input
+                                type="text"
+                                className="form-input"
+                                value={linea.descripcion}
+                                onChange={(e) => handleLineaChange(index, 'descripcion', e.target.value)}
+                                placeholder="Descripción del artículo"
+                                style={{ fontSize: '0.8125rem' }}
+                              />
+                            </td>
+                            <td>
+                              <input
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                className="form-input text-center"
+                                value={linea.cantidad}
+                                onChange={(e) => handleLineaChange(index, 'cantidad', e.target.value)}
+                                style={{ fontSize: '0.8125rem' }}
+                              />
+                            </td>
+                            <td>
+                              <input
+                                type="text"
+                                className="form-input text-center"
+                                value={linea.unidad}
+                                readOnly
+                                style={{ background: '#f1f5f9', fontSize: '0.8125rem' }}
+                              />
+                            </td>
+                            <td>
+                              <input
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                className="form-input text-right currency-input"
+                                value={linea.precio_unitario}
+                                onChange={(e) => handleLineaChange(index, 'precio_unitario', e.target.value)}
+                                style={{ fontSize: '0.8125rem' }}
+                              />
+                            </td>
+                            <td className="text-right currency-display" style={{ fontWeight: 600, color: '#1B4D3E', fontSize: '0.9375rem', padding: '0.5rem 0.75rem' }}>
+                              {formatCurrency(subtotal, monedaActual?.simbolo)}
+                            </td>
+                            <td style={{ background: '#f8fafc', padding: '0.25rem' }}>
+                              {lineas.length > 1 && (
+                                <button
+                                  type="button"
+                                  className="action-btn action-danger"
+                                  onClick={() => handleRemoveLinea(index)}
+                                  style={{ width: '28px', height: '28px' }}
+                                >
+                                  <Trash2 size={14} />
+                                </button>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </form>
