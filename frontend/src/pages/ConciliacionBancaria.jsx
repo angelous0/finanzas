@@ -106,7 +106,15 @@ export const ConciliacionBancaria = () => {
     try {
       setImporting(true);
       const result = await importarExcelBanco(uploadFile, cuentaSeleccionada, bancoSeleccionado);
-      toast.success(`Se importaron ${result.data.imported} movimientos`);
+      const data = result.data;
+      
+      // Build detailed message
+      let msg = '';
+      if (data.imported > 0) msg += `${data.imported} nuevos`;
+      if (data.updated > 0) msg += `${msg ? ', ' : ''}${data.updated} actualizados`;
+      if (data.skipped > 0) msg += `${msg ? ', ' : ''}${data.skipped} omitidos (ya conciliados)`;
+      
+      toast.success(msg || 'Importación completada');
       setShowImportModal(false);
       setUploadFile(null);
       loadMovimientos();
