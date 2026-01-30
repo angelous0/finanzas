@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { 
   getFacturasProveedor, createFacturaProveedor, deleteFacturaProveedor,
   getProveedores, getMonedas, getCategorias, getLineasNegocio, getCentrosCosto,
-  getInventario, getModelosCortes
+  getInventario, getModelosCortes, createTercero
 } from '../services/api';
 import { Plus, Trash2, Search, X, FileText, ChevronDown, ChevronUp, Copy } from 'lucide-react';
 import { toast } from 'sonner';
+import SearchableSelect from '../components/SearchableSelect';
 
 const formatCurrency = (value, symbol = 'S/') => {
   return `${symbol} ${Number(value || 0).toLocaleString('es-PE', { minimumFractionDigits: 2 })}`;
