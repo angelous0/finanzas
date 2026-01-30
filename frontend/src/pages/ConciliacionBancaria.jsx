@@ -477,11 +477,11 @@ export const ConciliacionBancaria = () => {
           </button>
         </div>
 
-        {/* Filter for Movimientos del Banco - Only show in Pendientes tab */}
-        {activeTab === 'pendientes' && (
+        {/* Filter for Movimientos del Banco - Only show in Movimientos Banco tab */}
+        {activeTab === 'banco' && (
           <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
             <span style={{ fontSize: '0.875rem', color: '#64748b', marginRight: '0.5rem', fontWeight: 500 }}>
-              Movimientos Banco:
+              Filtrar:
             </span>
             <button
               onClick={() => setFiltroBanco('pendientes')}
