@@ -38,7 +38,7 @@ const navSections = [
       { icon: Landmark, label: 'Cuentas Bancarias', path: '/cuentas-bancarias' },
       { icon: DollarSign, label: 'Movimientos/Pagos', path: '/pagos' },
       { icon: FileSpreadsheet, label: 'Conciliación Bancaria', path: '/conciliacion' },
-      { icon: Clock, label: 'Historial de Conciliaciones', path: '/historial-conciliaciones' },
+      { icon: Clock, label: 'Historial Conciliación', path: '/historial-conciliaciones' },
     ]
   },
   {

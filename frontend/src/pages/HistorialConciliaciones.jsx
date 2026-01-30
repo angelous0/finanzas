@@ -109,7 +109,7 @@ export const HistorialConciliaciones = () => {
         <div>
           <h1 className="page-title">
             <History size={28} style={{ display: 'inline', marginRight: '0.5rem', verticalAlign: 'middle' }} />
-            Historial de Conciliaciones
+            Historial Conciliación
           </h1>
           <p className="page-subtitle">Vista general de todas las conciliaciones realizadas</p>
         </div>
