@@ -950,6 +950,48 @@ export const FacturasProveedor = () => {
           </div>
         </div>
       )}
+
+      {/* Modal Crear Proveedor */}
+      {showProveedorModal && (
+        <div className="modal-overlay" onClick={() => setShowProveedorModal(false)} style={{ zIndex: 1100 }}>
+          <div 
+            className="modal-content" 
+            onClick={(e) => e.stopPropagation()}
+            style={{ maxWidth: '400px', padding: '1.5rem' }}
+          >
+            <h3 style={{ margin: '0 0 1rem', fontSize: '1.125rem', fontWeight: 600 }}>Crear nuevo proveedor</h3>
+            <div className="form-group" style={{ marginBottom: '1rem' }}>
+              <label className="form-label">Nombre del proveedor</label>
+              <input
+                type="text"
+                className="form-input"
+                placeholder="Razón social o nombre"
+                value={nuevoProveedorNombre}
+                onChange={(e) => setNuevoProveedorNombre(e.target.value)}
+                autoFocus
+                data-testid="nuevo-proveedor-nombre"
+              />
+            </div>
+            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
+              <button 
+                type="button" 
+                className="btn btn-outline" 
+                onClick={() => setShowProveedorModal(false)}
+              >
+                Cancelar
+              </button>
+              <button 
+                type="button" 
+                className="btn btn-primary"
+                onClick={handleSaveNuevoProveedor}
+                data-testid="guardar-proveedor-btn"
+              >
+                Crear proveedor
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
