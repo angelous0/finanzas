@@ -60,7 +60,7 @@ export const FacturasProveedor = () => {
     impuestos_incluidos: true,
     notas: '',
     lineas: [{ categoria_id: '', descripcion: '', linea_negocio_id: '', centro_costo_id: '', importe: 0, igv_aplica: true }],
-    articulos: [{ articulo_id: '', modelo_corte_id: '', unidad: '', cantidad: 1, precio: 0, linea_negocio_id: '', igv_aplica: true }]
+    articulos: []
   });
 
   useEffect(() => {
