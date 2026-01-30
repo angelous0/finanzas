@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   getFacturasProveedor, createFacturaProveedor, updateFacturaProveedor, deleteFacturaProveedor,
   getProveedores, getMonedas, getCategorias, getLineasNegocio, getCentrosCosto,
-  getInventario, getModelosCortes, createTercero, createPago, getCuentasFinancieras, createLetra
+  getInventario, getModelosCortes, createTercero, createPago, getCuentasFinancieras, generarLetras
 } from '../services/api';
 import { Plus, Trash2, Search, X, FileText, ChevronDown, ChevronUp, Copy, Edit2, Eye, DollarSign, FileSpreadsheet } from 'lucide-react';
 import { toast } from 'sonner';
