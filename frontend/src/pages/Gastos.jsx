@@ -1,73 +1,114 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  getGastos, createGasto, getCategorias, getLineasNegocio, 
-  getCentrosCosto, getCuentasFinancieras, getMonedas
-} from '../services/api';
-import { Plus, Trash2, Wallet, X } from 'lucide-react';
+import { Plus, FileText, Trash2, Eye, X, DollarSign } from 'lucide-react';
 import { toast } from 'sonner';
+import { 
+  getGastos, 
+  createGasto, 
+  getProveedores, 
+  getMonedas, 
+  getCategorias,
+  getLineasNegocio,
+  getCentrosCosto,
+  getCuentasFinancieras
+} from '../services/api';
+import SearchableSelect from '../components/SearchableSelect';
 
 const formatCurrency = (value, symbol = 'S/') => {
-  return `${symbol} ${Number(value || 0).toLocaleString('es-PE', { minimumFractionDigits: 2 })}`;
+  const num = parseFloat(value) || 0;
+  return `${symbol} ${num.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 };
 
 const formatDate = (dateStr) => {
-  if (!dateStr) return '';
-  return new Date(dateStr).toLocaleDateString('es-PE');
+  if (!dateStr) return '-';
+  const date = new Date(dateStr + 'T00:00:00');
+  return date.toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' });
 };
 
-export const Gastos = () => {
+const MEDIOS_PAGO = [
+  { value: 'efectivo', label: 'Efectivo' },
+  { value: 'transferencia', label: 'Transferencia' },
+  { value: 'cheque', label: 'Cheque' },
+  { value: 'tarjeta', label: 'Tarjeta' }
+];
+
+export default function Gastos() {
   const [gastos, setGastos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [categorias, setCategorias] = useState([]);
-  const [lineasNegocio, setLineasNegocio] = useState([]);
-  const [centrosCosto, setCentrosCosto] = useState([]);
-  const [cuentasFinancieras, setCuentasFinancieras] = useState([]);
-  const [monedas, setMonedas] = useState([]);
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [selectedGasto, setSelectedGasto] = useState(null);
   
+  // Master data
+  const [proveedores, setProveedores] = useState([]);
+  const [monedas, setMonedas] = useState([]);
+  const [categorias, setCategorias] = useState([]);
+  const [lineas, setLineas] = useState([]);
+  const [centros, setCentros] = useState([]);
+  const [cuentas, setCuentas] = useState([]);
+  
+  // Filters
+  const [filtroFecha, setFiltroFecha] = useState('');
+  
+  // Form state
   const [formData, setFormData] = useState({
     fecha: new Date().toISOString().split('T')[0],
+    proveedor_id: '',
     beneficiario_nombre: '',
     moneda_id: '',
-    tipo_documento: '',
+    tipo_documento: 'boleta',
     numero_documento: '',
-    notas: '',
-    lineas: [{ categoria_id: '', descripcion: '', linea_negocio_id: '', centro_costo_id: '', importe: 0, igv_aplica: true }],
-    pago_cuenta_financiera_id: '',
-    pago_medio: 'efectivo',
-    pago_referencia: ''
+    notas: ''
   });
+  
+  // Line items
+  const [lineasGasto, setLineasGasto] = useState([{
+    categoria_id: '',
+    descripcion: '',
+    linea_negocio_id: '',
+    centro_costo_id: '',
+    importe: 0,
+    igv_aplica: true
+  }]);
+  
+  // Payments
+  const [pagos, setPagos] = useState([{
+    cuenta_financiera_id: '',
+    medio_pago: 'efectivo',
+    monto: 0,
+    referencia: ''
+  }]);
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [filtroFecha]);
 
   const loadData = async () => {
     try {
       setLoading(true);
-      const [gastosRes, categoriasRes, lineasRes, centrosRes, cuentasRes, monedasRes] = await Promise.all([
-        getGastos(),
+      const params = {};
+      if (filtroFecha) params.fecha_desde = filtroFecha;
+      
+      const [gastosRes, provRes, monRes, catRes, linRes, cenRes, cueRes] = await Promise.all([
+        getGastos(params),
+        getProveedores(),
+        getMonedas(),
         getCategorias('egreso'),
         getLineasNegocio(),
         getCentrosCosto(),
-        getCuentasFinancieras(),
-        getMonedas()
+        getCuentasFinancieras()
       ]);
       
       setGastos(gastosRes.data);
-      setCategorias(categoriasRes.data);
-      setLineasNegocio(lineasRes.data);
-      setCentrosCosto(centrosRes.data);
-      setCuentasFinancieras(cuentasRes.data);
-      setMonedas(monedasRes.data);
+      setProveedores(provRes.data);
+      setMonedas(monRes.data);
+      setCategorias(catRes.data);
+      setLineas(linRes.data);
+      setCentros(cenRes.data);
+      setCuentas(cueRes.data);
       
-      // Set defaults
-      const pen = monedasRes.data.find(m => m.codigo === 'PEN');
-      if (pen) {
-        setFormData(prev => ({ ...prev, moneda_id: pen.id }));
-      }
-      if (cuentasRes.data.length > 0) {
-        setFormData(prev => ({ ...prev, pago_cuenta_financiera_id: cuentasRes.data[0].id }));
+      // Set default moneda
+      if (monRes.data.length > 0 && !formData.moneda_id) {
+        setFormData(prev => ({ ...prev, moneda_id: monRes.data[0].id }));
       }
     } catch (error) {
       console.error('Error loading data:', error);
@@ -77,99 +118,159 @@ export const Gastos = () => {
     }
   };
 
+  const calcularTotales = () => {
+    const subtotal = lineasGasto.reduce((sum, l) => sum + (parseFloat(l.importe) || 0), 0);
+    const igv = lineasGasto.reduce((sum, l) => l.igv_aplica ? sum + (parseFloat(l.importe) || 0) * 0.18 : sum, 0);
+    const total = subtotal + igv;
+    return { subtotal, igv, total };
+  };
+
+  const calcularTotalPagos = () => {
+    return pagos.reduce((sum, p) => sum + (parseFloat(p.monto) || 0), 0);
+  };
+
+  const resetForm = () => {
+    setFormData({
+      fecha: new Date().toISOString().split('T')[0],
+      proveedor_id: '',
+      beneficiario_nombre: '',
+      moneda_id: monedas[0]?.id || '',
+      tipo_documento: 'boleta',
+      numero_documento: '',
+      notas: ''
+    });
+    setLineasGasto([{
+      categoria_id: '',
+      descripcion: '',
+      linea_negocio_id: '',
+      centro_costo_id: '',
+      importe: 0,
+      igv_aplica: true
+    }]);
+    setPagos([{
+      cuenta_financiera_id: '',
+      medio_pago: 'efectivo',
+      monto: 0,
+      referencia: ''
+    }]);
+  };
+
   const handleAddLinea = () => {
-    setFormData(prev => ({
-      ...prev,
-      lineas: [...prev.lineas, { categoria_id: '', descripcion: '', linea_negocio_id: '', centro_costo_id: '', importe: 0, igv_aplica: true }]
-    }));
+    setLineasGasto([...lineasGasto, {
+      categoria_id: '',
+      descripcion: '',
+      linea_negocio_id: '',
+      centro_costo_id: '',
+      importe: 0,
+      igv_aplica: true
+    }]);
   };
 
   const handleRemoveLinea = (index) => {
-    setFormData(prev => ({
-      ...prev,
-      lineas: prev.lineas.filter((_, i) => i !== index)
-    }));
+    if (lineasGasto.length > 1) {
+      setLineasGasto(lineasGasto.filter((_, i) => i !== index));
+    }
   };
 
   const handleLineaChange = (index, field, value) => {
-    setFormData(prev => ({
-      ...prev,
-      lineas: prev.lineas.map((linea, i) => 
-        i === index ? { ...linea, [field]: value } : linea
-      )
-    }));
+    setLineasGasto(prev => prev.map((l, i) => 
+      i === index ? { ...l, [field]: value } : l
+    ));
   };
 
-  const calcularTotal = () => {
-    let subtotal = 0;
-    let igv = 0;
-    formData.lineas.forEach(linea => {
-      const importe = parseFloat(linea.importe) || 0;
-      subtotal += importe;
-      if (linea.igv_aplica) {
-        igv += importe * 0.18;
-      }
-    });
-    return { subtotal, igv, total: subtotal + igv };
+  const handleAddPago = () => {
+    setPagos([...pagos, {
+      cuenta_financiera_id: '',
+      medio_pago: 'efectivo',
+      monto: 0,
+      referencia: ''
+    }]);
+  };
+
+  const handleRemovePago = (index) => {
+    if (pagos.length > 1) {
+      setPagos(pagos.filter((_, i) => i !== index));
+    }
+  };
+
+  const handlePagoChange = (index, field, value) => {
+    setPagos(prev => prev.map((p, i) => 
+      i === index ? { ...p, [field]: value } : p
+    ));
+  };
+
+  const handleDistribuirPago = () => {
+    // Distribute total equally among payments
+    const totales = calcularTotales();
+    const montoPorPago = totales.total / pagos.length;
+    setPagos(prev => prev.map(p => ({ ...p, monto: parseFloat(montoPorPago.toFixed(2)) })));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!formData.pago_cuenta_financiera_id) {
-      toast.error('Debe seleccionar una cuenta para el pago');
+    const totales = calcularTotales();
+    const totalPagos = calcularTotalPagos();
+    
+    // Validations
+    if (lineasGasto.every(l => !l.importe || l.importe <= 0)) {
+      toast.error('Agregue al menos una línea con importe');
       return;
     }
-
+    
+    if (!pagos.every(p => p.cuenta_financiera_id && p.monto > 0)) {
+      toast.error('Todos los pagos deben tener cuenta y monto');
+      return;
+    }
+    
+    if (Math.abs(totalPagos - totales.total) > 0.01) {
+      toast.error(`Los pagos (${formatCurrency(totalPagos)}) deben sumar el total del gasto (${formatCurrency(totales.total)})`);
+      return;
+    }
+    
     try {
-      const dataToSend = {
+      const payload = {
         ...formData,
-        moneda_id: formData.moneda_id ? parseInt(formData.moneda_id) : null,
-        pago_cuenta_financiera_id: parseInt(formData.pago_cuenta_financiera_id),
-        lineas: formData.lineas.map(l => ({
-          ...l,
-          categoria_id: l.categoria_id ? parseInt(l.categoria_id) : null,
-          linea_negocio_id: l.linea_negocio_id ? parseInt(l.linea_negocio_id) : null,
-          centro_costo_id: l.centro_costo_id ? parseInt(l.centro_costo_id) : null,
-          importe: parseFloat(l.importe) || 0
+        proveedor_id: formData.proveedor_id || null,
+        lineas: lineasGasto.filter(l => l.importe > 0).map(l => ({
+          categoria_id: l.categoria_id || null,
+          descripcion: l.descripcion || null,
+          linea_negocio_id: l.linea_negocio_id || null,
+          centro_costo_id: l.centro_costo_id || null,
+          importe: parseFloat(l.importe),
+          igv_aplica: l.igv_aplica
+        })),
+        pagos: pagos.map(p => ({
+          cuenta_financiera_id: parseInt(p.cuenta_financiera_id),
+          medio_pago: p.medio_pago,
+          monto: parseFloat(p.monto),
+          referencia: p.referencia || null
         }))
       };
       
-      await createGasto(dataToSend);
-      toast.success('Gasto registrado y pagado');
+      await createGasto(payload);
+      toast.success('Gasto registrado exitosamente');
       setShowModal(false);
       resetForm();
       loadData();
     } catch (error) {
       console.error('Error creating gasto:', error);
-      toast.error('Error al registrar gasto');
+      toast.error(error.response?.data?.detail || 'Error al registrar gasto');
     }
   };
 
-  const resetForm = () => {
-    const pen = monedas.find(m => m.codigo === 'PEN');
-    setFormData({
-      fecha: new Date().toISOString().split('T')[0],
-      beneficiario_nombre: '',
-      moneda_id: pen?.id || '',
-      tipo_documento: '',
-      numero_documento: '',
-      notas: '',
-      lineas: [{ categoria_id: '', descripcion: '', linea_negocio_id: '', centro_costo_id: '', importe: 0, igv_aplica: true }],
-      pago_cuenta_financiera_id: cuentasFinancieras[0]?.id || '',
-      pago_medio: 'efectivo',
-      pago_referencia: ''
-    });
+  const handleView = (gasto) => {
+    setSelectedGasto(gasto);
+    setShowViewModal(true);
   };
 
-  const totales = calcularTotal();
+  const totales = calcularTotales();
+  const totalPagos = calcularTotalPagos();
   const monedaActual = monedas.find(m => m.id === parseInt(formData.moneda_id));
-
-  // Totales de la lista
   const totalGastos = gastos.reduce((sum, g) => sum + parseFloat(g.total || 0), 0);
 
   return (
-    <div data-testid="gastos-page">
+    <div data-testid="gastos-page" className="page-container">
       <div className="page-header">
         <div>
           <h1 className="page-title">Gastos</h1>
@@ -177,7 +278,7 @@ export const Gastos = () => {
         </div>
         <button 
           className="btn btn-primary"
-          onClick={() => setShowModal(true)}
+          onClick={() => { resetForm(); setShowModal(true); }}
           data-testid="nuevo-gasto-btn"
         >
           <Plus size={18} />
@@ -186,6 +287,29 @@ export const Gastos = () => {
       </div>
 
       <div className="page-content">
+        {/* Filters */}
+        <div className="filters-bar">
+          <div className="filter-group">
+            <label className="filter-label">Desde</label>
+            <input
+              type="date"
+              className="form-input"
+              value={filtroFecha}
+              onChange={(e) => setFiltroFecha(e.target.value)}
+              style={{ width: '150px' }}
+            />
+          </div>
+          {filtroFecha && (
+            <button 
+              className="btn btn-ghost btn-sm"
+              onClick={() => setFiltroFecha('')}
+            >
+              <X size={16} />
+            </button>
+          )}
+        </div>
+
+        {/* Table */}
         <div className="card">
           <div className="data-table-wrapper">
             {loading ? (
@@ -194,7 +318,7 @@ export const Gastos = () => {
               </div>
             ) : gastos.length === 0 ? (
               <div className="empty-state">
-                <Wallet className="empty-state-icon" />
+                <FileText className="empty-state-icon" />
                 <div className="empty-state-title">No hay gastos registrados</div>
                 <div className="empty-state-description">Registra tu primer gasto</div>
                 <button className="btn btn-primary" onClick={() => setShowModal(true)}>
@@ -203,25 +327,45 @@ export const Gastos = () => {
                 </button>
               </div>
             ) : (
-              <table className="data-table" data-testid="gastos-table">
+              <table className="data-table">
                 <thead>
                   <tr>
-                    <th>Número</th>
                     <th>Fecha</th>
-                    <th>Beneficiario</th>
+                    <th>Número</th>
+                    <th>Proveedor / Beneficiario</th>
                     <th>Documento</th>
                     <th className="text-right">Total</th>
+                    <th className="text-center">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
                   {gastos.map((gasto) => (
                     <tr key={gasto.id}>
-                      <td style={{ fontWeight: 500 }}>{gasto.numero}</td>
                       <td>{formatDate(gasto.fecha)}</td>
-                      <td>{gasto.beneficiario_nombre || gasto.proveedor_nombre || '-'}</td>
-                      <td>{gasto.tipo_documento ? `${gasto.tipo_documento} ${gasto.numero_documento || ''}` : '-'}</td>
-                      <td className="text-right" style={{ fontWeight: 500 }}>
-                        {formatCurrency(gasto.total)}
+                      <td style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.8125rem' }}>
+                        {gasto.numero}
+                      </td>
+                      <td>
+                        {gasto.proveedor_nombre || gasto.beneficiario_nombre || '-'}
+                      </td>
+                      <td>
+                        {gasto.tipo_documento && gasto.numero_documento 
+                          ? `${gasto.tipo_documento.toUpperCase()} ${gasto.numero_documento}`
+                          : '-'}
+                      </td>
+                      <td className="text-right" style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 500 }}>
+                        {formatCurrency(gasto.total, gasto.moneda_codigo === 'USD' ? '$' : 'S/')}
+                      </td>
+                      <td>
+                        <div className="actions-row">
+                          <button 
+                            className="action-btn"
+                            onClick={() => handleView(gasto)}
+                            title="Ver detalles"
+                          >
+                            <Eye size={15} />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -232,15 +376,12 @@ export const Gastos = () => {
         </div>
       </div>
 
-      {/* Modal Nuevo Gasto */}
+      {/* Modal Crear Gasto */}
       {showModal && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
-          <div className="modal" style={{ maxWidth: '800px' }} onClick={(e) => e.stopPropagation()}>
+          <div className="modal modal-xl" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h2 className="modal-title">
-                <Wallet size={20} style={{ marginRight: '0.5rem' }} />
-                Nuevo Gasto
-              </h2>
+              <h2 className="modal-title">Nuevo Gasto</h2>
               <button className="modal-close" onClick={() => setShowModal(false)}>
                 <X size={20} />
               </button>
@@ -248,119 +389,269 @@ export const Gastos = () => {
             
             <form onSubmit={handleSubmit}>
               <div className="modal-body">
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+                {/* Header Info */}
+                <div className="form-grid form-grid-4">
                   <div className="form-group">
-                    <label className="form-label required">Fecha</label>
+                    <label className="form-label">Fecha *</label>
                     <input
                       type="date"
                       className="form-input"
                       value={formData.fecha}
-                      onChange={(e) => setFormData(prev => ({ ...prev, fecha: e.target.value }))}
+                      onChange={(e) => setFormData({ ...formData, fecha: e.target.value })}
                       required
                     />
                   </div>
-                  
-                  <div className="form-group">
-                    <label className="form-label">Beneficiario</label>
-                    <input
-                      type="text"
-                      className="form-input"
-                      placeholder="Nombre del beneficiario"
-                      value={formData.beneficiario_nombre}
-                      onChange={(e) => setFormData(prev => ({ ...prev, beneficiario_nombre: e.target.value }))}
-                    />
-                  </div>
-                  
                   <div className="form-group">
                     <label className="form-label">Moneda</label>
                     <select
                       className="form-input form-select"
                       value={formData.moneda_id}
-                      onChange={(e) => setFormData(prev => ({ ...prev, moneda_id: e.target.value }))}
+                      onChange={(e) => setFormData({ ...formData, moneda_id: e.target.value })}
                     >
                       {monedas.map(m => (
-                        <option key={m.id} value={m.id}>{m.codigo}</option>
+                        <option key={m.id} value={m.id}>{m.nombre} ({m.simbolo})</option>
                       ))}
                     </select>
                   </div>
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
                   <div className="form-group">
-                    <label className="form-label">Tipo Documento</label>
+                    <label className="form-label">Tipo Doc.</label>
                     <select
                       className="form-input form-select"
                       value={formData.tipo_documento}
-                      onChange={(e) => setFormData(prev => ({ ...prev, tipo_documento: e.target.value }))}
+                      onChange={(e) => setFormData({ ...formData, tipo_documento: e.target.value })}
                     >
-                      <option value="">Sin documento</option>
                       <option value="boleta">Boleta</option>
                       <option value="factura">Factura</option>
                       <option value="recibo">Recibo</option>
                       <option value="ticket">Ticket</option>
+                      <option value="otro">Otro</option>
                     </select>
                   </div>
-                  
                   <div className="form-group">
-                    <label className="form-label">Número Documento</label>
+                    <label className="form-label">Nº Documento</label>
                     <input
                       type="text"
                       className="form-input"
                       value={formData.numero_documento}
-                      onChange={(e) => setFormData(prev => ({ ...prev, numero_documento: e.target.value }))}
+                      onChange={(e) => setFormData({ ...formData, numero_documento: e.target.value })}
+                      placeholder="001-00001"
                     />
                   </div>
                 </div>
 
-                {/* Detalles */}
-                <div style={{ marginBottom: '1rem' }}>
-                  <h3 style={{ fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.75rem' }}>
-                    Detalle del gasto
-                  </h3>
+                {/* Proveedor / Beneficiario */}
+                <div className="form-grid form-grid-2">
+                  <div className="form-group">
+                    <label className="form-label">Proveedor</label>
+                    <SearchableSelect
+                      options={proveedores}
+                      value={formData.proveedor_id}
+                      onChange={(value) => setFormData({ ...formData, proveedor_id: value, beneficiario_nombre: '' })}
+                      placeholder="Seleccionar proveedor..."
+                      searchPlaceholder="Buscar..."
+                      displayKey="nombre"
+                      valueKey="id"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">O Beneficiario (texto libre)</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      value={formData.beneficiario_nombre}
+                      onChange={(e) => setFormData({ ...formData, beneficiario_nombre: e.target.value, proveedor_id: '' })}
+                      placeholder="Nombre del beneficiario"
+                      disabled={!!formData.proveedor_id}
+                    />
+                  </div>
+                </div>
 
-                  <table className="excel-table">
+                {/* Line Items */}
+                <div style={{ marginTop: '1.5rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                    <h3 style={{ margin: 0, fontSize: '0.875rem', fontWeight: 600 }}>Detalle del Gasto</h3>
+                    <button type="button" className="btn btn-outline btn-sm" onClick={handleAddLinea}>
+                      <Plus size={14} /> Agregar línea
+                    </button>
+                  </div>
+                  
+                  <div className="items-table-wrapper">
+                    <table className="data-table items-table">
+                      <thead>
+                        <tr>
+                          <th style={{ width: '180px' }}>Categoría</th>
+                          <th>Descripción</th>
+                          <th style={{ width: '140px' }}>Línea Negocio</th>
+                          <th style={{ width: '140px' }}>Centro Costo</th>
+                          <th style={{ width: '100px' }}>Importe</th>
+                          <th style={{ width: '60px' }}>IGV</th>
+                          <th style={{ width: '40px' }}></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {lineasGasto.map((linea, index) => (
+                          <tr key={index}>
+                            <td>
+                              <select
+                                className="form-input form-select"
+                                value={linea.categoria_id}
+                                onChange={(e) => handleLineaChange(index, 'categoria_id', e.target.value)}
+                                style={{ fontSize: '0.8125rem' }}
+                              >
+                                <option value="">Seleccionar...</option>
+                                {categorias.map(c => (
+                                  <option key={c.id} value={c.id}>{c.nombre}</option>
+                                ))}
+                              </select>
+                            </td>
+                            <td>
+                              <input
+                                type="text"
+                                className="form-input"
+                                value={linea.descripcion}
+                                onChange={(e) => handleLineaChange(index, 'descripcion', e.target.value)}
+                                placeholder="Descripción..."
+                                style={{ fontSize: '0.8125rem' }}
+                              />
+                            </td>
+                            <td>
+                              <select
+                                className="form-input form-select"
+                                value={linea.linea_negocio_id}
+                                onChange={(e) => handleLineaChange(index, 'linea_negocio_id', e.target.value)}
+                                style={{ fontSize: '0.8125rem' }}
+                              >
+                                <option value="">-</option>
+                                {lineas.map(l => (
+                                  <option key={l.id} value={l.id}>{l.nombre}</option>
+                                ))}
+                              </select>
+                            </td>
+                            <td>
+                              <select
+                                className="form-input form-select"
+                                value={linea.centro_costo_id}
+                                onChange={(e) => handleLineaChange(index, 'centro_costo_id', e.target.value)}
+                                style={{ fontSize: '0.8125rem' }}
+                              >
+                                <option value="">-</option>
+                                {centros.map(c => (
+                                  <option key={c.id} value={c.id}>{c.nombre}</option>
+                                ))}
+                              </select>
+                            </td>
+                            <td>
+                              <input
+                                type="number"
+                                step="0.01"
+                                className="form-input text-right"
+                                value={linea.importe}
+                                onChange={(e) => handleLineaChange(index, 'importe', e.target.value)}
+                                style={{ fontSize: '0.8125rem', fontFamily: "'JetBrains Mono', monospace" }}
+                              />
+                            </td>
+                            <td className="text-center">
+                              <input
+                                type="checkbox"
+                                checked={linea.igv_aplica}
+                                onChange={(e) => handleLineaChange(index, 'igv_aplica', e.target.checked)}
+                              />
+                            </td>
+                            <td>
+                              {lineasGasto.length > 1 && (
+                                <button
+                                  type="button"
+                                  className="action-btn action-danger"
+                                  onClick={() => handleRemoveLinea(index)}
+                                  style={{ width: '28px', height: '28px' }}
+                                >
+                                  <Trash2 size={14} />
+                                </button>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                      <tfoot>
+                        <tr>
+                          <td colSpan={4} className="text-right" style={{ fontWeight: 500 }}>Subtotal:</td>
+                          <td className="text-right" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                            {formatCurrency(totales.subtotal, monedaActual?.simbolo)}
+                          </td>
+                          <td colSpan={2}></td>
+                        </tr>
+                        <tr>
+                          <td colSpan={4} className="text-right" style={{ fontWeight: 500 }}>IGV (18%):</td>
+                          <td className="text-right" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                            {formatCurrency(totales.igv, monedaActual?.simbolo)}
+                          </td>
+                          <td colSpan={2}></td>
+                        </tr>
+                        <tr style={{ background: '#f8fafc' }}>
+                          <td colSpan={4} className="text-right" style={{ fontWeight: 600, fontSize: '1rem' }}>TOTAL:</td>
+                          <td className="text-right" style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 600, fontSize: '1rem', color: '#1B4D3E' }}>
+                            {formatCurrency(totales.total, monedaActual?.simbolo)}
+                          </td>
+                          <td colSpan={2}></td>
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
+                </div>
+
+                {/* Payments Section */}
+                <div style={{ marginTop: '1.5rem', padding: '1rem', background: '#f0fdf4', borderRadius: '8px', border: '1px solid #86efac' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                    <h3 style={{ margin: 0, fontSize: '0.875rem', fontWeight: 600, color: '#15803d', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <DollarSign size={18} />
+                      Pagos (obligatorio)
+                    </h3>
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <button type="button" className="btn btn-outline btn-sm" onClick={handleDistribuirPago}>
+                        Distribuir igual
+                      </button>
+                      <button type="button" className="btn btn-outline btn-sm" onClick={handleAddPago}>
+                        <Plus size={14} /> Agregar pago
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <table className="data-table" style={{ background: '#fff' }}>
                     <thead>
                       <tr>
-                        <th style={{ width: 40 }}>#</th>
-                        <th>Categoría</th>
-                        <th>Descripción</th>
-                        <th>Centro Costo</th>
-                        <th style={{ width: 100 }}>Importe</th>
-                        <th style={{ width: 60 }}>IGV</th>
-                        <th style={{ width: 60 }}></th>
+                        <th style={{ width: '200px' }}>Cuenta *</th>
+                        <th style={{ width: '140px' }}>Medio</th>
+                        <th style={{ width: '120px' }}>Monto *</th>
+                        <th>Referencia</th>
+                        <th style={{ width: '40px' }}></th>
                       </tr>
                     </thead>
                     <tbody>
-                      {formData.lineas.map((linea, index) => (
+                      {pagos.map((pago, index) => (
                         <tr key={index}>
-                          <td className="row-number">{index + 1}</td>
                           <td>
                             <select
-                              value={linea.categoria_id}
-                              onChange={(e) => handleLineaChange(index, 'categoria_id', e.target.value)}
+                              className="form-input form-select"
+                              value={pago.cuenta_financiera_id}
+                              onChange={(e) => handlePagoChange(index, 'cuenta_financiera_id', e.target.value)}
+                              style={{ fontSize: '0.8125rem' }}
+                              required
                             >
-                              <option value="">Categoría</option>
-                              {categorias.map(c => (
-                                <option key={c.id} value={c.id}>{c.nombre}</option>
+                              <option value="">Seleccionar...</option>
+                              {cuentas.map(c => (
+                                <option key={c.id} value={c.id}>{c.nombre} ({formatCurrency(c.saldo_actual)})</option>
                               ))}
                             </select>
                           </td>
                           <td>
-                            <input
-                              type="text"
-                              placeholder="Descripción"
-                              value={linea.descripcion}
-                              onChange={(e) => handleLineaChange(index, 'descripcion', e.target.value)}
-                            />
-                          </td>
-                          <td>
                             <select
-                              value={linea.centro_costo_id}
-                              onChange={(e) => handleLineaChange(index, 'centro_costo_id', e.target.value)}
+                              className="form-input form-select"
+                              value={pago.medio_pago}
+                              onChange={(e) => handlePagoChange(index, 'medio_pago', e.target.value)}
+                              style={{ fontSize: '0.8125rem' }}
                             >
-                              <option value="">Centro</option>
-                              {centrosCosto.map(c => (
-                                <option key={c.id} value={c.id}>{c.nombre}</option>
+                              {MEDIOS_PAGO.map(m => (
+                                <option key={m.value} value={m.value}>{m.label}</option>
                               ))}
                             </select>
                           </td>
@@ -368,26 +659,30 @@ export const Gastos = () => {
                             <input
                               type="number"
                               step="0.01"
-                              placeholder="0.00"
-                              value={linea.importe}
-                              onChange={(e) => handleLineaChange(index, 'importe', e.target.value)}
-                              style={{ textAlign: 'right' }}
+                              className="form-input text-right"
+                              value={pago.monto}
+                              onChange={(e) => handlePagoChange(index, 'monto', e.target.value)}
+                              style={{ fontSize: '0.8125rem', fontFamily: "'JetBrains Mono', monospace" }}
+                              required
                             />
                           </td>
-                          <td style={{ textAlign: 'center', background: '#f8fafc' }}>
+                          <td>
                             <input
-                              type="checkbox"
-                              checked={linea.igv_aplica}
-                              onChange={(e) => handleLineaChange(index, 'igv_aplica', e.target.checked)}
-                              style={{ width: 'auto' }}
+                              type="text"
+                              className="form-input"
+                              value={pago.referencia}
+                              onChange={(e) => handlePagoChange(index, 'referencia', e.target.value)}
+                              placeholder="Nº operación..."
+                              style={{ fontSize: '0.8125rem' }}
                             />
                           </td>
-                          <td className="actions-cell">
-                            {formData.lineas.length > 1 && (
+                          <td>
+                            {pagos.length > 1 && (
                               <button
                                 type="button"
-                                className="btn btn-outline btn-sm btn-icon"
-                                onClick={() => handleRemoveLinea(index)}
+                                className="action-btn action-danger"
+                                onClick={() => handleRemovePago(index)}
+                                style={{ width: '28px', height: '28px' }}
                               >
                                 <Trash2 size={14} />
                               </button>
@@ -396,81 +691,38 @@ export const Gastos = () => {
                         </tr>
                       ))}
                     </tbody>
+                    <tfoot>
+                      <tr style={{ background: totalPagos !== totales.total ? '#fef2f2' : '#f0fdf4' }}>
+                        <td colSpan={2} className="text-right" style={{ fontWeight: 600 }}>Total Pagos:</td>
+                        <td className="text-right" style={{ 
+                          fontFamily: "'JetBrains Mono', monospace", 
+                          fontWeight: 600,
+                          color: Math.abs(totalPagos - totales.total) > 0.01 ? '#dc2626' : '#15803d'
+                        }}>
+                          {formatCurrency(totalPagos, monedaActual?.simbolo)}
+                        </td>
+                        <td colSpan={2}>
+                          {Math.abs(totalPagos - totales.total) > 0.01 && (
+                            <span style={{ color: '#dc2626', fontSize: '0.75rem' }}>
+                              Diferencia: {formatCurrency(totales.total - totalPagos, monedaActual?.simbolo)}
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    </tfoot>
                   </table>
-
-                  <button
-                    type="button"
-                    className="btn btn-outline btn-sm"
-                    onClick={handleAddLinea}
-                    style={{ marginTop: '0.75rem' }}
-                  >
-                    <Plus size={16} />
-                    Agregar línea
-                  </button>
                 </div>
 
-                {/* Pago obligatorio */}
-                <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '8px', padding: '1rem', marginBottom: '1rem' }}>
-                  <h3 style={{ fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.75rem', color: '#166534' }}>
-                    Pago (obligatorio)
-                  </h3>
-                  
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
-                    <div className="form-group" style={{ marginBottom: 0 }}>
-                      <label className="form-label required">Cuenta</label>
-                      <select
-                        className="form-input form-select"
-                        value={formData.pago_cuenta_financiera_id}
-                        onChange={(e) => setFormData(prev => ({ ...prev, pago_cuenta_financiera_id: e.target.value }))}
-                        required
-                      >
-                        <option value="">Seleccionar...</option>
-                        {cuentasFinancieras.map(c => (
-                          <option key={c.id} value={c.id}>{c.nombre}</option>
-                        ))}
-                      </select>
-                    </div>
-                    
-                    <div className="form-group" style={{ marginBottom: 0 }}>
-                      <label className="form-label">Medio</label>
-                      <select
-                        className="form-input form-select"
-                        value={formData.pago_medio}
-                        onChange={(e) => setFormData(prev => ({ ...prev, pago_medio: e.target.value }))}
-                      >
-                        <option value="efectivo">Efectivo</option>
-                        <option value="transferencia">Transferencia</option>
-                        <option value="tarjeta">Tarjeta</option>
-                      </select>
-                    </div>
-                    
-                    <div className="form-group" style={{ marginBottom: 0 }}>
-                      <label className="form-label">Referencia</label>
-                      <input
-                        type="text"
-                        className="form-input"
-                        placeholder="Nº operación"
-                        value={formData.pago_referencia}
-                        onChange={(e) => setFormData(prev => ({ ...prev, pago_referencia: e.target.value }))}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Totales */}
-                <div className="totals-section">
-                  <div className="totals-row">
-                    <span>Subtotal</span>
-                    <span className="totals-value">{formatCurrency(totales.subtotal, monedaActual?.simbolo)}</span>
-                  </div>
-                  <div className="totals-row">
-                    <span>IGV (18%)</span>
-                    <span className="totals-value">{formatCurrency(totales.igv, monedaActual?.simbolo)}</span>
-                  </div>
-                  <div className="totals-row total">
-                    <span>Total a Pagar</span>
-                    <span className="totals-value">{formatCurrency(totales.total, monedaActual?.simbolo)}</span>
-                  </div>
+                {/* Notas */}
+                <div className="form-group" style={{ marginTop: '1rem' }}>
+                  <label className="form-label">Notas</label>
+                  <textarea
+                    className="form-input"
+                    rows={2}
+                    value={formData.notas}
+                    onChange={(e) => setFormData({ ...formData, notas: e.target.value })}
+                    placeholder="Observaciones adicionales..."
+                  />
                 </div>
               </div>
 
@@ -478,7 +730,12 @@ export const Gastos = () => {
                 <button type="button" className="btn btn-outline" onClick={() => setShowModal(false)}>
                   Cancelar
                 </button>
-                <button type="submit" className="btn btn-primary">
+                <button 
+                  type="submit" 
+                  className="btn btn-primary"
+                  disabled={Math.abs(totalPagos - totales.total) > 0.01 || totales.total <= 0}
+                >
+                  <DollarSign size={16} />
                   Guardar y Pagar
                 </button>
               </div>
@@ -486,8 +743,94 @@ export const Gastos = () => {
           </div>
         </div>
       )}
+
+      {/* Modal Ver Gasto */}
+      {showViewModal && selectedGasto && (
+        <div className="modal-overlay" onClick={() => setShowViewModal(false)}>
+          <div className="modal modal-lg" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2 className="modal-title">Gasto {selectedGasto.numero}</h2>
+              <button className="modal-close" onClick={() => setShowViewModal(false)}>
+                <X size={20} />
+              </button>
+            </div>
+            <div className="modal-body">
+              <div className="form-grid form-grid-3" style={{ marginBottom: '1rem' }}>
+                <div>
+                  <label className="form-label">Fecha</label>
+                  <p style={{ fontWeight: 500 }}>{formatDate(selectedGasto.fecha)}</p>
+                </div>
+                <div>
+                  <label className="form-label">Proveedor/Beneficiario</label>
+                  <p style={{ fontWeight: 500 }}>{selectedGasto.proveedor_nombre || selectedGasto.beneficiario_nombre || '-'}</p>
+                </div>
+                <div>
+                  <label className="form-label">Documento</label>
+                  <p style={{ fontWeight: 500 }}>
+                    {selectedGasto.tipo_documento && selectedGasto.numero_documento 
+                      ? `${selectedGasto.tipo_documento.toUpperCase()} ${selectedGasto.numero_documento}`
+                      : '-'}
+                  </p>
+                </div>
+              </div>
+
+              <h4 style={{ margin: '1rem 0 0.5rem', fontSize: '0.875rem' }}>Detalle</h4>
+              <table className="data-table" style={{ fontSize: '0.8125rem' }}>
+                <thead>
+                  <tr>
+                    <th>Categoría</th>
+                    <th>Descripción</th>
+                    <th className="text-right">Importe</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {selectedGasto.lineas?.map((linea, i) => (
+                    <tr key={i}>
+                      <td>{linea.categoria_nombre || '-'}</td>
+                      <td>{linea.descripcion || '-'}</td>
+                      <td className="text-right" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                        {formatCurrency(linea.importe)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <td colSpan={2} className="text-right">Subtotal:</td>
+                    <td className="text-right" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                      {formatCurrency(selectedGasto.subtotal)}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td colSpan={2} className="text-right">IGV:</td>
+                    <td className="text-right" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                      {formatCurrency(selectedGasto.igv)}
+                    </td>
+                  </tr>
+                  <tr style={{ fontWeight: 600 }}>
+                    <td colSpan={2} className="text-right">TOTAL:</td>
+                    <td className="text-right" style={{ fontFamily: "'JetBrains Mono', monospace", color: '#1B4D3E' }}>
+                      {formatCurrency(selectedGasto.total)}
+                    </td>
+                  </tr>
+                </tfoot>
+              </table>
+
+              {selectedGasto.notas && (
+                <div style={{ marginTop: '1rem' }}>
+                  <label className="form-label">Notas</label>
+                  <p style={{ color: '#64748b' }}>{selectedGasto.notas}</p>
+                </div>
+              )}
+            </div>
+            <div className="modal-footer">
+              <button className="btn btn-outline" onClick={() => setShowViewModal(false)}>
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
-};
-
-export default Gastos;
+}
