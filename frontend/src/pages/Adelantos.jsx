@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  getAdelantos, createAdelanto, getEmpleados, getCuentasFinancieras
+  getAdelantos, createAdelanto, pagarAdelanto, getEmpleados, getCuentasFinancieras
 } from '../services/api';
-import { Plus, FileText, Eye, X, DollarSign, Download, Calendar, Users, Wallet } from 'lucide-react';
+import { Plus, FileText, Eye, X, DollarSign, Download, Calendar, Users, Wallet, CreditCard } from 'lucide-react';
 import { toast } from 'sonner';
 import SearchableSelect from '../components/SearchableSelect';
 
@@ -38,7 +38,9 @@ export const Adelantos = () => {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
+  const [showPagoModal, setShowPagoModal] = useState(false);
   const [selectedAdelanto, setSelectedAdelanto] = useState(null);
+  const [pagoData, setPagoData] = useState({ cuenta_financiera_id: '', medio_pago: 'efectivo' });
   
   // Filters
   const [filtroEmpleado, setFiltroEmpleado] = useState('');
