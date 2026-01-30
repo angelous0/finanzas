@@ -459,11 +459,15 @@ class GastoBase(BaseModel):
     numero_documento: Optional[str] = None
     notas: Optional[str] = None
 
+class GastoPagoDetalle(BaseModel):
+    cuenta_financiera_id: int
+    medio_pago: str = "efectivo"
+    monto: float
+    referencia: Optional[str] = None
+
 class GastoCreate(GastoBase):
     lineas: List[GastoLineaCreate] = []
-    pago_cuenta_financiera_id: int
-    pago_medio: str = "efectivo"
-    pago_referencia: Optional[str] = None
+    pagos: List[GastoPagoDetalle] = []  # Multiple payments that must sum to total
 
 class Gasto(GastoBase):
     id: int
