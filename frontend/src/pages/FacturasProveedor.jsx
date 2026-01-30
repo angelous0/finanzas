@@ -1066,6 +1066,16 @@ export const FacturasProveedor = () => {
                               <Eye size={15} />
                             </button>
                             
+                            {/* PDF */}
+                            <button 
+                              className="action-btn"
+                              onClick={() => handleDownloadPDF(factura)}
+                              title="Descargar PDF"
+                              data-testid={`pdf-factura-${factura.id}`}
+                            >
+                              <Download size={15} />
+                            </button>
+                            
                             {/* Editar */}
                             {factura.estado !== 'pagado' && factura.estado !== 'canjeado' && (
                               <button 
