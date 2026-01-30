@@ -55,11 +55,49 @@ h1, h2, h3, h4, h5, h6 {
   height: 100vh;
   z-index: 50;
   overflow-y: auto;
+  transition: width 0.2s ease;
+}
+
+.sidebar.collapsed {
+  width: 70px;
 }
 
 .sidebar-header {
   padding: 1.5rem;
   border-bottom: 1px solid rgba(255,255,255,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sidebar.collapsed .sidebar-header {
+  padding: 1.5rem 0.75rem;
+  justify-content: center;
+}
+
+.sidebar-toggle {
+  background: rgba(255,255,255,0.1);
+  border: none;
+  border-radius: 6px;
+  padding: 0.375rem;
+  cursor: pointer;
+  color: var(--sidebar-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.15s;
+}
+
+.sidebar-toggle:hover {
+  background: rgba(255,255,255,0.2);
+}
+
+.sidebar.collapsed .sidebar-toggle {
+  display: none;
+}
+
+.sidebar.collapsed .sidebar-logo {
+  justify-content: center;
 }
 
 .sidebar-logo {
