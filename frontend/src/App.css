@@ -946,6 +946,7 @@ input[type="number"] {
 
 .factura-modal-body {
   padding: 1.5rem;
+  padding-bottom: 300px;
   overflow-y: auto;
   flex: 1;
 }
