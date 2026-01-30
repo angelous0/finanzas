@@ -561,49 +561,6 @@ export const ConciliacionBancaria = () => {
             
             {expandedBanco && (
               <div className="data-table-wrapper" style={{ maxHeight: '300px', overflow: 'auto' }}>
-                {/* Filter for bank movements */}
-                <div style={{ 
-                  display: 'flex', 
-                  gap: '0.5rem', 
-                  marginBottom: '1rem',
-                  padding: '0.75rem',
-                  background: '#f8fafc',
-                  borderRadius: '8px'
-                }}>
-                  <button
-                    onClick={() => setFiltroBanco('pendientes')}
-                    style={{
-                      padding: '0.5rem 1rem',
-                      borderRadius: '6px',
-                      border: 'none',
-                      background: filtroBanco === 'pendientes' ? '#2563eb' : 'white',
-                      color: filtroBanco === 'pendientes' ? 'white' : '#64748b',
-                      fontWeight: 500,
-                      fontSize: '0.875rem',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s'
-                    }}
-                  >
-                    Pendientes ({movimientosBanco.filter(m => !m.procesado).length})
-                  </button>
-                  <button
-                    onClick={() => setFiltroBanco('conciliados')}
-                    style={{
-                      padding: '0.5rem 1rem',
-                      borderRadius: '6px',
-                      border: 'none',
-                      background: filtroBanco === 'conciliados' ? '#2563eb' : 'white',
-                      color: filtroBanco === 'conciliados' ? 'white' : '#64748b',
-                      fontWeight: 500,
-                      fontSize: '0.875rem',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s'
-                    }}
-                  >
-                    Conciliados ({movimientosBanco.filter(m => m.procesado).length})
-                  </button>
-                </div>
-
                 {loading ? (
                   <div className="loading"><div className="loading-spinner"></div></div>
                 ) : movimientosBanco.length === 0 ? (
