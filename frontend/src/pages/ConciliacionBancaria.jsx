@@ -210,62 +210,41 @@ export const ConciliacionBancaria = () => {
 
   return (
     <div className="page" data-testid="conciliacion-page">
-      {/* Header with gradient */}
-      <div style={{ 
-        background: 'linear-gradient(135deg, #1B4D3E 0%, #2d6a5a 100%)',
-        borderRadius: '16px',
-        padding: '1.5rem 2rem',
-        marginBottom: '1.5rem',
-        color: 'white'
-      }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-          <div>
-            <h1 style={{ fontSize: '1.5rem', fontWeight: 700, margin: 0 }}>Conciliación Bancaria</h1>
-            <p style={{ opacity: 0.8, margin: '0.25rem 0 0 0', fontSize: '0.875rem' }}>
-              Concilie los movimientos del banco con el sistema
-            </p>
-          </div>
-          <div style={{ display: 'flex', gap: '0.75rem' }}>
-            <button 
-              className="btn"
-              onClick={() => setShowImportModal(true)}
-              disabled={!cuentaSeleccionada}
-              style={{ 
-                background: 'rgba(255,255,255,0.15)', 
-                border: '1px solid rgba(255,255,255,0.3)',
-                color: 'white'
-              }}
-            >
-              <Upload size={16} />
-              Importar Excel
-            </button>
-            <button 
-              className="btn"
-              onClick={handleConciliarAuto}
-              disabled={movimientosBanco.length === 0}
-              style={{ 
-                background: 'rgba(255,255,255,0.15)', 
-                border: '1px solid rgba(255,255,255,0.3)',
-                color: 'white'
-              }}
-            >
-              <RefreshCw size={16} />
-              Conciliar Auto
-            </button>
-          </div>
+      {/* Page Header */}
+      <div className="page-header" style={{ marginBottom: '1.5rem' }}>
+        <div>
+          <h1 className="page-title">Conciliación Bancaria</h1>
+          <p className="page-subtitle">Concilie los movimientos del banco con el sistema</p>
         </div>
+        <div style={{ display: 'flex', gap: '0.75rem' }}>
+          <button 
+            className="btn btn-outline"
+            onClick={() => setShowImportModal(true)}
+            disabled={!cuentaSeleccionada}
+          >
+            <Upload size={16} />
+            Importar Excel
+          </button>
+          <button 
+            className="btn btn-secondary"
+            onClick={handleConciliarAuto}
+            disabled={movimientosBanco.length === 0}
+          >
+            <RefreshCw size={16} />
+            Conciliar Auto
+          </button>
+        </div>
+      </div>
 
-        {/* Filters inline */}
+      {/* Filters Card */}
+      <div className="card" style={{ padding: '1rem 1.25rem', marginBottom: '1.5rem' }}>
         <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'flex-end' }}>
-          <div style={{ flex: '1', minWidth: '200px' }}>
-            <label style={{ fontSize: '0.75rem', opacity: 0.8, display: 'block', marginBottom: '0.25rem' }}>
-              Cuenta Bancaria
-            </label>
+          <div className="form-group" style={{ flex: '1', minWidth: '220px', marginBottom: 0 }}>
+            <label className="form-label">Cuenta Bancaria</label>
             <select
               className="form-input form-select"
               value={cuentaSeleccionada}
               onChange={(e) => setCuentaSeleccionada(e.target.value)}
-              style={{ background: 'rgba(255,255,255,0.95)', border: 'none' }}
             >
               <option value="">Seleccionar cuenta...</option>
               {cuentas.map(cuenta => (
@@ -275,39 +254,34 @@ export const ConciliacionBancaria = () => {
               ))}
             </select>
           </div>
-          <div>
-            <label style={{ fontSize: '0.75rem', opacity: 0.8, display: 'block', marginBottom: '0.25rem' }}>
-              Desde
-            </label>
+          <div className="form-group" style={{ marginBottom: 0 }}>
+            <label className="form-label">Desde</label>
             <input
               type="date"
               className="form-input"
               value={fechaDesde}
               onChange={(e) => setFechaDesde(e.target.value)}
-              style={{ background: 'rgba(255,255,255,0.95)', border: 'none' }}
             />
           </div>
-          <div>
-            <label style={{ fontSize: '0.75rem', opacity: 0.8, display: 'block', marginBottom: '0.25rem' }}>
-              Hasta
-            </label>
+          <div className="form-group" style={{ marginBottom: 0 }}>
+            <label className="form-label">Hasta</label>
             <input
               type="date"
               className="form-input"
               value={fechaHasta}
               onChange={(e) => setFechaHasta(e.target.value)}
-              style={{ background: 'rgba(255,255,255,0.95)', border: 'none' }}
             />
           </div>
           <button 
             className="btn btn-primary"
             onClick={loadMovimientos}
             disabled={!cuentaSeleccionada}
-            style={{ background: 'white', color: '#1B4D3E', border: 'none', fontWeight: 600 }}
           >
             <Search size={16} />
             Buscar
           </button>
+        </div>
+      </div>
         </div>
       </div>
 
