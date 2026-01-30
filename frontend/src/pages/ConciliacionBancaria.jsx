@@ -46,6 +46,8 @@ export const ConciliacionBancaria = () => {
   const [showImportModal, setShowImportModal] = useState(false);
   const [importing, setImporting] = useState(false);
   const [uploadFile, setUploadFile] = useState(null);
+  const [previewData, setPreviewData] = useState(null);
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
   
   const [activeTab, setActiveTab] = useState('pendientes');
   const [expandedBanco, setExpandedBanco] = useState(true);
