@@ -22,15 +22,19 @@ Create a QuickBooks-like system for treasury, control, and minimal accounting ca
 
 ## Modules & Status
 
-### 1. Base Catalogs ✅ SCAFFOLDED
-- `cont_empresa` - Company info
-- `cont_moneda` - Currencies (PEN, USD)
-- `cont_tipo_cambio` - Exchange rates
-- `cont_categoria` - Categories (income/expense)
-- `cont_centro_costo` - Cost centers
-- `cont_linea_negocio` - Business lines
-- `cont_cuenta_financiera` - Financial accounts (bank, cash)
-- `cont_tercero` - Third parties (supplier/client/staff unified)
+### 1. Base Catalogs ✅ COMPLETE
+- `cont_empresa` - CRUD complete with edit
+- `cont_moneda` - Working
+- `cont_tipo_cambio` - Working
+- `cont_categoria` - CRUD complete
+- `cont_centro_costo` - CRUD complete
+- `cont_linea_negocio` - CRUD complete
+- `cont_cuenta_financiera` - Working
+- `cont_tercero` - CRUD complete (proveedores)
+
+### UI Components Created (2026-01-30):
+- `SearchableSelect.jsx` - Searchable dropdown for forms with create new option
+- `TableSearchSelect.jsx` - Compact searchable dropdown for table cells
 
 ### 2. Supplier Invoice (Factura Proveedor) ✅ COMPLETE
 **Completed (2026-01-30):**
