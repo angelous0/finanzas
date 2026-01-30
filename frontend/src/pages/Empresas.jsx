@@ -123,8 +123,7 @@ export const Empresas = () => {
                 <thead>
                   <tr>
                     <th>RUC</th>
-                    <th>Razón Social</th>
-                    <th>Nombre Comercial</th>
+                    <th>Nombre / Razón Social</th>
                     <th>Dirección</th>
                     <th>Contacto</th>
                     <th className="text-center">Acciones</th>
@@ -134,8 +133,7 @@ export const Empresas = () => {
                   {empresas.map((empresa) => (
                     <tr key={empresa.id}>
                       <td style={{ fontFamily: "'JetBrains Mono', monospace" }}>{empresa.ruc || '-'}</td>
-                      <td style={{ fontWeight: 500 }}>{empresa.razon_social}</td>
-                      <td>{empresa.nombre_comercial || '-'}</td>
+                      <td style={{ fontWeight: 500 }}>{empresa.nombre}</td>
                       <td>{empresa.direccion || '-'}</td>
                       <td>
                         {empresa.telefono && <div>{empresa.telefono}</div>}
