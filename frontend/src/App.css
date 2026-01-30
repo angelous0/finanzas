@@ -92,10 +92,6 @@ h1, h2, h3, h4, h5, h6 {
   background: rgba(255,255,255,0.2);
 }
 
-.sidebar.collapsed .sidebar-toggle {
-  display: none;
-}
-
 .sidebar.collapsed .sidebar-logo {
   justify-content: center;
 }
