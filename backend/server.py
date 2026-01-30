@@ -2557,7 +2557,14 @@ async def sync_ventas_pos(company: str = "ambission", days_back: int = 30):
                 try:
                     # Extract values with proper handling of Odoo's tuple format
                     odoo_id = order.get('id')
-                    date_order = order.get('date_order')
+                    
+                    # Parse date_order (comes as string from Odoo)
+                    date_order_str = order.get('date_order')
+                    if date_order_str and isinstance(date_order_str, str):
+                        date_order = datetime.strptime(date_order_str, '%Y-%m-%d %H:%M:%S')
+                    else:
+                        date_order = date_order_str
+                    
                     name = order.get('name')
                     tipo_comp = order.get('tipo_comp')
                     num_comp = order.get('num_comp')
