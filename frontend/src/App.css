@@ -688,6 +688,32 @@ input[type="number"] {
 }
 
 .searchable-select-option.selected {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+/* Dropdown más grande y visible */
+.searchable-select-dropdown {
+  max-height: 280px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+  border: 1px solid #cbd5e1;
+}
+
+.searchable-select-option {
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+}
+
+/* Valor seleccionado más visible */
+.searchable-select-trigger .value {
+  font-weight: 500;
+  color: #0f172a;
+}
+
+.searchable-select-trigger .placeholder {
+  color: #94a3b8;
+  font-style: italic;
+}
   background: var(--primary-light);
   color: var(--primary);
   font-weight: 500;
