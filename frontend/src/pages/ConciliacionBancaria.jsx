@@ -233,14 +233,14 @@ export const ConciliacionBancaria = () => {
 
   const pendientesBanco = movimientosBanco.filter(m => !m.procesado).length;
   const pendientesSistema = movimientosSistema.filter(m => !m.conciliado).length;
-  const totalBancoPendiente = movimientosBanco.reduce((sum, m) => sum + (m.abono || 0) - (m.cargo || 0), 0);
+  const totalBancoPendiente = movimientosBanco.reduce((sum, m) => sum + (m.monto || 0), 0);
   const totalSistemaPendiente = movimientosSistema.reduce((sum, m) => 
     sum + (m.tipo === 'ingreso' ? m.monto_total : -m.monto_total), 0);
   const diferencia = totalBancoPendiente - totalSistemaPendiente;
 
   const selectedBancoTotal = selectedBanco.reduce((sum, id) => {
     const mov = movimientosBanco.find(m => m.id === id);
-    return sum + (mov ? (mov.abono || 0) - (mov.cargo || 0) : 0);
+    return sum + (mov ? (mov.monto || 0) : 0);
   }, 0);
 
   const selectedSistemaTotal = selectedSistema.reduce((sum, id) => {
