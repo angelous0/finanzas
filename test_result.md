@@ -172,16 +172,11 @@ frontend:
         agent: "main"
         comment: "Added filtroBanco state (line 42) and filter buttons in Movimientos Banco tab (lines 481-519). Applied filter logic in table rendering (line 815) to show either pendientes (!m.procesado) or conciliados (m.procesado) bank movements. This fixes the Conciliados filter functionality."
 
-metadata:
-  created_by: "main_agent"
-  version: "1.0"
-  test_sequence: 0
-  run_ui: true
-
 test_plan:
   current_focus:
-    - "Bank Reconciliation - Save endpoint"
-    - "Bank Reconciliation - Connect save button to backend"
+    - "Bank Reconciliation - API filtering parameters"
+    - "Bank Reconciliation - Pendientes tab filtering"
+    - "Bank Reconciliation - Movimientos Banco filter"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
@@ -191,3 +186,5 @@ agent_communication:
     message: "Completed implementation of bank reconciliation save functionality. Backend endpoint was already in place. Added frontend API function and connected handleConciliarManual to call the backend. The function validates that amounts match before calling the endpoint. Need full E2E testing: 1) Import Excel bank movements 2) Select matching bank and system movements 3) Click 'Conciliar' button 4) Verify movements are marked as reconciled in DB 5) Verify UI refreshes and shows updated counts"
   - agent: "testing"
     message: "BANK RECONCILIATION TESTING COMPLETED SUCCESSFULLY: ✅ Backend API POST /api/conciliacion/conciliar working perfectly - accepts banco_ids and pago_ids as query params, returns correct success message with counts. ✅ Database verification passed - bank movements marked as procesado=TRUE, payments marked as conciliado=TRUE. ✅ Applied minor fix to Pago model to include conciliado field for proper API response. ✅ Frontend integration verified through API testing. All core functionality working as expected. Ready for production use."
+  - agent: "main"
+    message: "Fixed two critical bugs reported by user: 1) Added cuenta_financiera_id and conciliado parameters to /api/pagos endpoint to filter reconciled payments. 2) Updated frontend loadMovimientos to use conciliado: false filter for sistema payments in Pendientes tab. 3) Added filtroBanco state and filter buttons in Movimientos Banco tab with proper filtering logic. Need testing to verify: PAG-E-2026-00008 (reconciled) should NOT appear in Pendientes, and Conciliados filter should work in Movimientos Banco tab."
