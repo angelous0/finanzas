@@ -655,35 +655,49 @@ input[type="number"] {
 .badge {
   display: inline-flex;
   align-items: center;
-  padding: 0.25rem 0.625rem;
-  font-size: 0.75rem;
-  font-weight: 500;
-  border-radius: 9999px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
 }
 
 .badge-success {
-  background: #dcfce7;
-  color: #166534;
+  background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+  color: #15803d;
+  border: 1px solid #86efac;
 }
 
 .badge-warning {
-  background: #fef3c7;
-  color: #92400e;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  color: #b45309;
+  border: 1px solid #fcd34d;
 }
 
 .badge-error {
-  background: #fee2e2;
-  color: #991b1b;
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  color: #b91c1c;
+  border: 1px solid #fca5a5;
 }
 
 .badge-info {
-  background: #dbeafe;
-  color: #1e40af;
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  color: #1d4ed8;
+  border: 1px solid #93c5fd;
 }
 
 .badge-neutral {
-  background: #f1f5f9;
+  background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
   color: #475569;
+  border: 1px solid #cbd5e1;
+}
+
+/* Estado específico: Canjeado */
+.badge-canjeado {
+  background: linear-gradient(135deg, #fae8ff 0%, #f5d0fe 100%);
+  color: #86198f;
+  border: 1px solid #e879f9;
 }
 
 /* Tabs */
