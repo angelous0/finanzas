@@ -453,7 +453,12 @@ export const FacturasProveedor = () => {
                       <select
                         className="form-input form-select"
                         value={formData.proveedor_id}
-                        onChange={(e) => setFormData(prev => ({ ...prev, proveedor_id: e.target.value }))}
+                        onChange={(e) => setFormData(prev => ({ 
+                          ...prev, 
+                          proveedor_id: e.target.value,
+                          // Clear beneficiario when proveedor is selected
+                          beneficiario_nombre: e.target.value ? '' : prev.beneficiario_nombre
+                        }))}
                         data-testid="proveedor-select"
                       >
                         <option value="">Buscar proveedor...</option>
@@ -464,17 +469,20 @@ export const FacturasProveedor = () => {
                     </div>
                   </div>
                   
-                  <div className="form-group" style={{ flex: 1 }}>
-                    <label className="form-label">O escribir beneficiario</label>
-                    <input
-                      type="text"
-                      className="form-input"
-                      placeholder="Nombre del beneficiario"
-                      value={formData.beneficiario_nombre}
-                      onChange={(e) => setFormData(prev => ({ ...prev, beneficiario_nombre: e.target.value }))}
-                      data-testid="beneficiario-input"
-                    />
-                  </div>
+                  {/* Mostrar campo beneficiario solo si NO hay proveedor seleccionado */}
+                  {!formData.proveedor_id && (
+                    <div className="form-group" style={{ flex: 1 }}>
+                      <label className="form-label">O escribir beneficiario</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        placeholder="Nombre del beneficiario"
+                        value={formData.beneficiario_nombre}
+                        onChange={(e) => setFormData(prev => ({ ...prev, beneficiario_nombre: e.target.value }))}
+                        data-testid="beneficiario-input"
+                      />
+                    </div>
+                  )}
                 </div>
 
                 {/* Términos, Moneda, Fechas */}
