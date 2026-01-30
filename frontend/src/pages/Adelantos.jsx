@@ -199,12 +199,12 @@ export const Adelantos = () => {
   // Filter adelantos
   const adelantosFiltrados = adelantos.filter(a => {
     if (filtroEmpleado && a.empleado_id !== parseInt(filtroEmpleado)) return false;
-    if (filtroEstado && a.estado !== filtroEstado) return false;
+    if (filtroEstado && getEstadoAdelanto(a) !== filtroEstado) return false;
     return true;
   });
 
   const totalAdelantos = adelantos.reduce((acc, a) => acc + (a.monto || 0), 0);
-  const totalPendientes = adelantos.filter(a => a.estado === 'pendiente').reduce((acc, a) => acc + (a.monto || 0), 0);
+  const totalPendientes = adelantos.filter(a => !a.descontado).reduce((acc, a) => acc + (a.monto || 0), 0);
 
   return (
     <div data-testid="adelantos-page">
