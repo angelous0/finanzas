@@ -510,6 +510,17 @@ h1, h2, h3, h4, h5, h6 {
   border-color: #ef4444;
 }
 
+.action-btn.action-edit {
+  color: #2563eb;
+  border-color: #93c5fd;
+  background: #eff6ff;
+}
+
+.action-btn.action-edit:hover {
+  background: #dbeafe;
+  border-color: #3b82f6;
+}
+
 .data-table .text-right {
   text-align: right;
   font-family: 'JetBrains Mono', monospace;
