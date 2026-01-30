@@ -483,7 +483,7 @@ export const Adelantos = () => {
                 </div>
                 <div>
                   <div style={{ fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase' }}>Estado</div>
-                  <span className={getEstadoBadge(selectedAdelanto.estado)}>{selectedAdelanto.estado}</span>
+                  <span className={getEstadoBadge(getEstadoAdelanto(selectedAdelanto))}>{getEstadoAdelanto(selectedAdelanto)}</span>
                 </div>
                 <div>
                   <div style={{ fontSize: '0.75rem', color: '#64748b', textTransform: 'uppercase' }}>Descontado en</div>
