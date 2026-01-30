@@ -5,7 +5,7 @@ import {
   getInventario, getModelosCortes, createTercero, createPago, getCuentasFinancieras, generarLetras,
   getPagosDeFactura, getLetrasDeFactura, deshacerCanjeLetras, deletePago, updatePago
 } from '../services/api';
-import { Plus, Trash2, Search, X, FileText, ChevronDown, ChevronUp, Copy, Edit2, Eye, DollarSign, FileSpreadsheet, Undo2, History } from 'lucide-react';
+import { Plus, Trash2, Search, X, FileText, ChevronDown, ChevronUp, Copy, Edit2, Eye, DollarSign, FileSpreadsheet, Undo2, History, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import SearchableSelect from '../components/SearchableSelect';
 import TableSearchSelect from '../components/TableSearchSelect';
