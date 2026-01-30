@@ -76,7 +76,7 @@ const navSections = [
   },
 ];
 
-export const Sidebar = () => {
+export const Sidebar = ({ collapsed, setCollapsed }) => {
   const location = useLocation();
   const [expandedSections, setExpandedSections] = useState(
     navSections.reduce((acc, section) => ({ ...acc, [section.title]: true }), {})
@@ -87,12 +87,19 @@ export const Sidebar = () => {
   };
 
   return (
-    <aside className="sidebar" data-testid="sidebar">
+    <aside className={`sidebar ${collapsed ? 'collapsed' : ''}`} data-testid="sidebar">
       <div className="sidebar-header">
         <div className="sidebar-logo">
           <div className="sidebar-logo-icon">F4</div>
-          <span className="sidebar-logo-text">Finanzas 4.0</span>
+          {!collapsed && <span className="sidebar-logo-text">Finanzas 4.0</span>}
         </div>
+        <button 
+          className="sidebar-toggle"
+          onClick={() => setCollapsed(!collapsed)}
+          data-testid="sidebar-toggle"
+        >
+          {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+        </button>
       </div>
       
       <nav className="sidebar-nav">
