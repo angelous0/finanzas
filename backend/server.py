@@ -1609,6 +1609,63 @@ async def get_pago(id: int) -> dict:
 async def get_pago_endpoint(id: int):
     return await get_pago(id)
 
+
+@api_router.put("/pagos/{id}")
+async def update_pago(id: int, data: dict):
+    """Update pago - only allow editing referencia if conciliado"""
+    pool = await get_pool()
+    async with pool.acquire() as conn:
+        await conn.execute("SET search_path TO finanzas2, public")
+        
+        # Check if pago exists and if it's conciliado
+        pago = await conn.fetchrow("SELECT * FROM finanzas2.cont_pago WHERE id = $1", id)
+        if not pago:
+            raise HTTPException(404, "Pago no encontrado")
+        
+        # If conciliado, only allow updating referencia
+        if pago['conciliado']:
+            if 'referencia' in data:
+                await conn.execute("""
+                    UPDATE finanzas2.cont_pago 
+                    SET referencia = $1, updated_at = NOW()
+                    WHERE id = $2
+                """, data.get('referencia'), id)
+            return {"message": "Referencia actualizada (pago conciliado)"}
+        
+        # If not conciliado, allow updating multiple fields
+        update_fields = []
+        values = []
+        param_count = 1
+        
+        if 'fecha' in data:
+            update_fields.append(f"fecha = ${param_count}")
+            values.append(data['fecha'])
+            param_count += 1
+        
+        if 'referencia' in data:
+            update_fields.append(f"referencia = ${param_count}")
+            values.append(data['referencia'])
+            param_count += 1
+        
+        if 'notas' in data:
+            update_fields.append(f"notas = ${param_count}")
+            values.append(data['notas'])
+            param_count += 1
+        
+        update_fields.append(f"updated_at = NOW()")
+        
+        if update_fields:
+            values.append(id)
+            query = f"""
+                UPDATE finanzas2.cont_pago 
+                SET {', '.join(update_fields)}
+                WHERE id = ${param_count}
+            """
+            await conn.execute(query, *values)
+        
+        return {"message": "Pago actualizado exitosamente"}
+
+
 @api_router.delete("/pagos/{id}")
 async def delete_pago(id: int):
     """Delete a payment and reverse all its effects"""
