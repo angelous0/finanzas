@@ -36,7 +36,9 @@ export const FacturasProveedor = () => {
   const [categorias, setCategorias] = useState([]);
   const [lineasNegocio, setLineasNegocio] = useState([]);
   const [centrosCosto, setCentrosCosto] = useState([]);
-  const [showDetallesArticulo, setShowDetallesArticulo] = useState(false);
+  const [showDetallesArticulo, setShowDetallesArticulo] = useState(true);
+  const [inventario, setInventario] = useState([]);
+  const [modelosCortes, setModelosCortes] = useState([]);
   
   // Filtros
   const [filtroEstado, setFiltroEstado] = useState('');
@@ -53,7 +55,8 @@ export const FacturasProveedor = () => {
     numero: '',
     impuestos_incluidos: true,
     notas: '',
-    lineas: [{ categoria_id: '', descripcion: '', linea_negocio_id: '', centro_costo_id: '', importe: 0, igv_aplica: true }]
+    lineas: [{ categoria_id: '', descripcion: '', linea_negocio_id: '', centro_costo_id: '', importe: 0, igv_aplica: true }],
+    articulos: [{ articulo_id: '', modelo_corte_id: '', unidad: '', cantidad: 1, precio: 0, linea_negocio_id: '', igv_aplica: true }]
   });
 
   useEffect(() => {
