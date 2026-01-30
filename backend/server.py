@@ -1669,25 +1669,45 @@ async def generar_letras(data: GenerarLetrasRequest):
             if existing > 0:
                 raise HTTPException(400, "Factura already has letras")
             
-            # Calculate monto per letra
-            monto_por_letra = data.monto_por_letra or (factura['total'] / data.cantidad_letras)
-            
             letras = []
-            fecha_base = factura['fecha_vencimiento'] or datetime.now().date()
             
-            for i in range(data.cantidad_letras):
-                fecha_vencimiento = fecha_base + timedelta(days=data.dias_entre_letras * i)
-                numero = f"L-{factura['numero']}-{i+1:02d}"
+            # Check if using custom letras
+            if data.letras_personalizadas and len(data.letras_personalizadas) > 0:
+                # Validate total matches factura total
+                total_letras = sum(l.monto for l in data.letras_personalizadas)
+                if abs(total_letras - float(factura['total'])) > 0.01:
+                    raise HTTPException(400, f"El total de las letras ({total_letras:.2f}) debe ser igual al total de la factura ({factura['total']:.2f})")
                 
-                letra = await conn.fetchrow("""
-                    INSERT INTO finanzas2.cont_letra 
-                    (numero, factura_id, proveedor_id, monto, fecha_emision, fecha_vencimiento, 
-                     estado, saldo_pendiente)
-                    VALUES ($1, $2, $3, $4, $5, $6, 'pendiente', $4)
-                    RETURNING *
-                """, numero, data.factura_id, factura['proveedor_id'], monto_por_letra,
-                    datetime.now().date(), fecha_vencimiento)
-                letras.append(dict(letra))
+                for i, letra_data in enumerate(data.letras_personalizadas):
+                    numero = f"L-{factura['numero']}-{i+1:02d}"
+                    
+                    letra = await conn.fetchrow("""
+                        INSERT INTO finanzas2.cont_letra 
+                        (numero, factura_id, proveedor_id, monto, fecha_emision, fecha_vencimiento, 
+                         estado, saldo_pendiente)
+                        VALUES ($1, $2, $3, $4, $5, $6, 'pendiente', $4)
+                        RETURNING *
+                    """, numero, data.factura_id, factura['proveedor_id'], letra_data.monto,
+                        datetime.now().date(), letra_data.fecha_vencimiento)
+                    letras.append(dict(letra))
+            else:
+                # Use automatic calculation
+                monto_por_letra = data.monto_por_letra or (factura['total'] / data.cantidad_letras)
+                fecha_base = factura['fecha_vencimiento'] or datetime.now().date()
+                
+                for i in range(data.cantidad_letras):
+                    fecha_vencimiento = fecha_base + timedelta(days=data.dias_entre_letras * i)
+                    numero = f"L-{factura['numero']}-{i+1:02d}"
+                    
+                    letra = await conn.fetchrow("""
+                        INSERT INTO finanzas2.cont_letra 
+                        (numero, factura_id, proveedor_id, monto, fecha_emision, fecha_vencimiento, 
+                         estado, saldo_pendiente)
+                        VALUES ($1, $2, $3, $4, $5, $6, 'pendiente', $4)
+                        RETURNING *
+                    """, numero, data.factura_id, factura['proveedor_id'], monto_por_letra,
+                        datetime.now().date(), fecha_vencimiento)
+                    letras.append(dict(letra))
             
             # Update factura status to 'canjeado'
             await conn.execute("""
