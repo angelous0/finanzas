@@ -322,8 +322,8 @@ export const Adelantos = () => {
                         {adelanto.motivo || '-'}
                       </td>
                       <td className="text-center">
-                        <span className={getEstadoBadge(adelanto.estado)}>
-                          {adelanto.estado}
+                        <span className={getEstadoBadge(getEstadoAdelanto(adelanto))}>
+                          {getEstadoAdelanto(adelanto)}
                         </span>
                       </td>
                       <td>
