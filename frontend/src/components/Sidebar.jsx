@@ -76,7 +76,7 @@ const navSections = [
   },
 ];
 
-export const Sidebar = ({ collapsed, setCollapsed }) => {
+export const Sidebar = ({ collapsed, setCollapsed, mobileOpen, setMobileOpen }) => {
   const location = useLocation();
   const [expandedSections, setExpandedSections] = useState(
     navSections.reduce((acc, section) => ({ ...acc, [section.title]: true }), {})
@@ -86,20 +86,37 @@ export const Sidebar = ({ collapsed, setCollapsed }) => {
     setExpandedSections(prev => ({ ...prev, [title]: !prev[title] }));
   };
 
+  const handleNavClick = () => {
+    // Close mobile menu when a nav item is clicked
+    if (setMobileOpen) {
+      setMobileOpen(false);
+    }
+  };
+
   return (
-    <aside className={`sidebar ${collapsed ? 'collapsed' : ''}`} data-testid="sidebar">
+    <aside className={`sidebar ${collapsed ? 'collapsed' : ''} ${mobileOpen ? 'mobile-open' : ''}`} data-testid="sidebar">
       <div className="sidebar-header">
         <div className="sidebar-logo">
           <div className="sidebar-logo-icon">F4</div>
           {!collapsed && <span className="sidebar-logo-text">Finanzas 4.0</span>}
         </div>
-        <button 
-          className="sidebar-toggle"
-          onClick={() => setCollapsed(!collapsed)}
-          data-testid="sidebar-toggle"
-        >
-          {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
-        </button>
+        <div className="sidebar-header-buttons">
+          <button 
+            className="sidebar-toggle"
+            onClick={() => setCollapsed(!collapsed)}
+            data-testid="sidebar-toggle"
+          >
+            {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+          </button>
+          {/* Close button for mobile */}
+          <button 
+            className="mobile-close-btn"
+            onClick={() => setMobileOpen && setMobileOpen(false)}
+            data-testid="mobile-close-btn"
+          >
+            <X size={20} />
+          </button>
+        </div>
       </div>
       
       <nav className="sidebar-nav">
@@ -141,6 +158,7 @@ export const Sidebar = ({ collapsed, setCollapsed }) => {
                     }
                     data-testid={`nav-${item.path.replace('/', '') || 'dashboard'}`}
                     title={collapsed ? item.label : undefined}
+                    onClick={handleNavClick}
                   >
                     <item.icon className="nav-item-icon" size={18} />
                     {!collapsed && <span>{item.label}</span>}
