@@ -3094,41 +3094,42 @@ async def get_historial_conciliaciones():
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
         
-        rows = await conn.fetch("""
-            SELECT 
-                b.id as banco_id,
-                b.fecha as fecha_banco,
-                b.banco,
-                b.referencia as ref_banco,
-                b.descripcion as descripcion_banco,
-                b.monto as monto,
-                p.id as sistema_id,
-                p.fecha as fecha_sistema,
-                p.numero as numero_sistema,
-                p.tipo as tipo_sistema,
-                p.notas as descripcion_sistema,
-                p.referencia as ref_sistema
-            FROM finanzas2.cont_banco_mov_raw b
-            INNER JOIN finanzas2.cont_pago p ON b.cuenta_financiera_id = p.cuenta_financiera_id
-            WHERE b.procesado = TRUE AND p.conciliado = TRUE
-            ORDER BY b.fecha DESC, b.id DESC
+        # Get all reconciled movements separately and pair them by approximate match
+        banco_rows = await conn.fetch("""
+            SELECT id, fecha, banco, referencia, descripcion, monto, cuenta_financiera_id
+            FROM finanzas2.cont_banco_mov_raw 
+            WHERE procesado = TRUE
+            ORDER BY fecha DESC, id DESC
+        """)
+        
+        sistema_rows = await conn.fetch("""
+            SELECT id, fecha, numero, tipo, notas, referencia, monto_total, cuenta_financiera_id
+            FROM finanzas2.cont_pago 
+            WHERE conciliado = TRUE
+            ORDER BY fecha DESC, id DESC
         """)
         
         result = []
-        for row in rows:
-            result.append({
-                "banco_id": row['banco_id'],
-                "sistema_id": row['sistema_id'],
-                "fecha_banco": row['fecha_banco'].isoformat() if row['fecha_banco'] else None,
-                "fecha_sistema": row['fecha_sistema'].isoformat() if row['fecha_sistema'] else None,
-                "banco": row['banco'],
-                "ref_banco": row['ref_banco'],
-                "descripcion_banco": row['descripcion_banco'],
-                "numero_sistema": row['numero_sistema'],
-                "tipo_sistema": row['tipo_sistema'],
-                "descripcion_sistema": row['descripcion_sistema'] or row['ref_sistema'] or '-',
-                "monto": float(row['monto']) if row['monto'] else 0.0
-            })
+        # Match by approximate criteria (same date, same amount, same account)
+        for banco in banco_rows:
+            for sistema in sistema_rows:
+                # Check if amounts match (approximately) and dates are close
+                if (banco['cuenta_financiera_id'] == sistema['cuenta_financiera_id'] and
+                    abs((banco['monto'] or 0) - (sistema['monto_total'] or 0) * (-1 if sistema['tipo'] == 'egreso' else 1)) < 0.01):
+                    result.append({
+                        "banco_id": banco['id'],
+                        "sistema_id": sistema['id'],
+                        "fecha_banco": banco['fecha'].isoformat() if banco['fecha'] else None,
+                        "fecha_sistema": sistema['fecha'].isoformat() if sistema['fecha'] else None,
+                        "banco": banco['banco'],
+                        "ref_banco": banco['referencia'],
+                        "descripcion_banco": banco['descripcion'],
+                        "numero_sistema": sistema['numero'],
+                        "tipo_sistema": sistema['tipo'],
+                        "descripcion_sistema": sistema['notas'] or sistema['referencia'] or '-',
+                        "monto": float(banco['monto']) if banco['monto'] else 0.0
+                    })
+                    break  # Found a match, move to next banco
         
         return result
 
