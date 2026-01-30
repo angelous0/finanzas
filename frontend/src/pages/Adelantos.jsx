@@ -768,6 +768,133 @@ export const Adelantos = () => {
           </div>
         </div>
       )}
+
+      {/* Modal Ver Pagos */}
+      {showPagosListModal && selectedAdelanto && (
+        <PagosListModal 
+          adelanto={selectedAdelanto}
+          onClose={() => {
+            setShowPagosListModal(false);
+            setPagoDetails(null);
+          }}
+          formatCurrency={formatCurrency}
+          formatDate={formatDate}
+        />
+      )}
+    </div>
+  );
+};
+
+// Componente separado para el modal de pagos
+const PagosListModal = ({ adelanto, onClose, formatCurrency, formatDate }) => {
+  const [pago, setPago] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadPago = async () => {
+      if (!adelanto.pago_id) return;
+      try {
+        setLoading(true);
+        const response = await getPago(adelanto.pago_id);
+        setPago(response.data);
+      } catch (error) {
+        console.error('Error loading pago:', error);
+        toast.error('Error al cargar datos del pago');
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadPago();
+  }, [adelanto.pago_id]);
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '700px' }}>
+        <div className="modal-header">
+          <h2 className="modal-title">Pagos del Adelanto</h2>
+          <button className="modal-close" onClick={onClose}>
+            <X size={20} />
+          </button>
+        </div>
+        
+        <div className="modal-body">
+          {/* Resumen del Adelanto */}
+          <div style={{ 
+            background: '#f8fafc', 
+            padding: '1rem', 
+            borderRadius: '8px',
+            marginBottom: '1.5rem',
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, 1fr)',
+            gap: '1rem'
+          }}>
+            <div>
+              <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Empleado</div>
+              <div style={{ fontWeight: 600 }}>{adelanto.empleado_nombre}</div>
+            </div>
+            <div>
+              <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Monto Adelanto</div>
+              <div style={{ fontWeight: 600, fontFamily: "'JetBrains Mono', monospace" }}>
+                {formatCurrency(adelanto.monto)}
+              </div>
+            </div>
+            <div>
+              <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Fecha</div>
+              <div style={{ fontWeight: 600 }}>{formatDate(adelanto.fecha)}</div>
+            </div>
+          </div>
+
+          {/* Tabla de Pagos */}
+          <h3 style={{ fontSize: '0.9375rem', fontWeight: 600, marginBottom: '0.75rem' }}>
+            Movimientos Registrados
+          </h3>
+          
+          {loading ? (
+            <div className="loading" style={{ padding: '2rem' }}>
+              <div className="loading-spinner"></div>
+            </div>
+          ) : pago ? (
+            <div className="data-table-wrapper" style={{ border: '1px solid #e2e8f0', borderRadius: '8px' }}>
+              <table className="data-table" style={{ marginBottom: 0 }}>
+                <thead>
+                  <tr>
+                    <th>Número</th>
+                    <th>Fecha</th>
+                    <th>Cuenta</th>
+                    <th>Medio</th>
+                    <th className="text-right">Monto</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 500 }}>
+                      {pago.numero}
+                    </td>
+                    <td>{formatDate(pago.fecha)}</td>
+                    <td>{pago.cuenta_financiera_nombre || '-'}</td>
+                    <td style={{ textTransform: 'capitalize' }}>
+                      {pago.detalles?.[0]?.medio_pago || 'efectivo'}
+                    </td>
+                    <td className="text-right currency-display" style={{ fontWeight: 600, color: '#dc2626' }}>
+                      -{formatCurrency(pago.monto_total)}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div style={{ textAlign: 'center', padding: '2rem', color: '#64748b' }}>
+              No hay pagos registrados
+            </div>
+          )}
+        </div>
+
+        <div className="modal-footer">
+          <button className="btn btn-outline" onClick={onClose}>
+            Cerrar
+          </button>
+        </div>
+      </div>
     </div>
   );
 };
