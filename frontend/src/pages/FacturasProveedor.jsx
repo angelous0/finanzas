@@ -772,32 +772,26 @@ export const FacturasProveedor = () => {
                             <tr key={index}>
                               <td className="row-number">{index + 1}</td>
                               <td>
-                                <select
+                                <TableSearchSelect
+                                  options={inventario}
                                   value={articulo.articulo_id}
-                                  onChange={(e) => handleArticuloChange(index, 'articulo_id', e.target.value)}
-                                  data-testid={`articulo-select-${index}`}
-                                >
-                                  <option value="">Artículo</option>
-                                  {inventario.map(inv => (
-                                    <option key={inv.id} value={inv.id}>
-                                      {inv.codigo ? `${inv.codigo} - ` : ''}{inv.nombre}
-                                    </option>
-                                  ))}
-                                </select>
+                                  onChange={(value) => handleArticuloChange(index, 'articulo_id', value)}
+                                  placeholder="Artículo"
+                                  displayKey="nombre"
+                                  valueKey="id"
+                                  renderOption={(inv) => `${inv.codigo ? inv.codigo + ' - ' : ''}${inv.nombre}`}
+                                />
                               </td>
                               <td>
-                                <select
+                                <TableSearchSelect
+                                  options={modelosCortes}
                                   value={articulo.modelo_corte_id}
-                                  onChange={(e) => handleArticuloChange(index, 'modelo_corte_id', e.target.value)}
-                                  data-testid={`modelo-corte-select-${index}`}
-                                >
-                                  <option value="">Modelo / Corte</option>
-                                  {modelosCortes.map(mc => (
-                                    <option key={mc.id} value={mc.id}>
-                                      {mc.display_name || `${mc.modelo_nombre || 'Sin modelo'} - Corte ${mc.n_corte}`}
-                                    </option>
-                                  ))}
-                                </select>
+                                  onChange={(value) => handleArticuloChange(index, 'modelo_corte_id', value)}
+                                  placeholder="Modelo / Corte"
+                                  displayKey="display_name"
+                                  valueKey="id"
+                                  renderOption={(mc) => mc.display_name || `${mc.modelo_nombre || 'Sin modelo'} - Corte ${mc.n_corte}`}
+                                />
                               </td>
                               <td>
                                 <input
@@ -832,17 +826,16 @@ export const FacturasProveedor = () => {
                                 />
                               </td>
                               <td>
-                                <select
+                                <TableSearchSelect
+                                  options={lineasNegocio}
                                   value={articulo.linea_negocio_id}
-                                  onChange={(e) => handleArticuloChange(index, 'linea_negocio_id', e.target.value)}
-                                >
-                                  <option value="">Línea</option>
-                                  {lineasNegocio.map(l => (
-                                    <option key={l.id} value={l.id}>{l.nombre}</option>
-                                  ))}
-                                </select>
+                                  onChange={(value) => handleArticuloChange(index, 'linea_negocio_id', value)}
+                                  placeholder="Línea"
+                                  displayKey="nombre"
+                                  valueKey="id"
+                                />
                               </td>
-                              <td style={{ textAlign: 'right', fontWeight: 500, fontFamily: "'JetBrains Mono', monospace" }}>
+                              <td style={{ textAlign: 'right', fontWeight: 500, fontFamily: "'JetBrains Mono', monospace", padding: '0.625rem 0.75rem' }}>
                                 {calcularImporteArticulo(articulo).toFixed(2)}
                               </td>
                               <td style={{ textAlign: 'center' }}>
