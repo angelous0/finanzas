@@ -714,40 +714,60 @@ export default function OrdenesCompra() {
                       <table className="articulos-table">
                         <thead>
                           <tr>
-                            <th style={{ width: '50px' }}>#</th>
-                            <th style={{ minWidth: '300px' }}>Artículo</th>
-                            <th style={{ width: '120px' }}>Código</th>
-                            <th style={{ minWidth: '250px' }}>Descripción</th>
-                            <th style={{ width: '100px' }}>Cant.</th>
-                            <th style={{ width: '80px' }}>Unidad</th>
-                            <th style={{ width: '120px' }}>P. Unit.</th>
-                            <th style={{ width: '130px' }}>Subtotal</th>
-                            <th style={{ width: '50px' }}></th>
+                            <th style={{ width: '40px' }}>#</th>
+                            <th style={{ minWidth: '280px' }}>Artículo</th>
+                            <th style={{ width: '100px' }}>Código</th>
+                            <th style={{ minWidth: '200px' }}>Descripción</th>
+                            <th style={{ width: '90px' }}>Cant.</th>
+                            <th style={{ width: '70px' }}>Unidad</th>
+                            <th style={{ width: '110px' }}>P. Unit.</th>
+                            <th style={{ width: '120px' }}>Subtotal</th>
+                            <th style={{ width: '45px' }}></th>
                           </tr>
                         </thead>
                         <tbody>
                           {lineas.map((linea, index) => {
                             const subtotal = (parseFloat(linea.cantidad) || 0) * (parseFloat(linea.precio_unitario) || 0);
                             const articuloSeleccionado = articulos.find(a => a.id === parseInt(linea.articulo_id));
+                            const filteredArts = getFilteredArticulos(index);
+                            
                             return (
                               <tr key={index}>
-                                <td className="text-center">{index + 1}</td>
-                                <td>
+                                <td className="text-center" style={{ background: '#f8fafc', fontWeight: 500, color: '#64748b' }}>{index + 1}</td>
+                                <td style={{ padding: '0.5rem' }}>
                                   <div className="articulo-cell">
+                                    {/* Search Input */}
+                                    <div style={{ position: 'relative' }}>
+                                      <Search size={14} style={{ position: 'absolute', left: '0.625rem', top: '50%', transform: 'translateY(-50%)', color: '#9ca3af' }} />
+                                      <input
+                                        type="text"
+                                        className="form-input"
+                                        placeholder="Buscar artículo..."
+                                        value={articuloSearchTerm[index] || ''}
+                                        onChange={(e) => setArticuloSearchTerm(prev => ({ ...prev, [index]: e.target.value }))}
+                                        style={{ paddingLeft: '2rem', fontSize: '0.8125rem' }}
+                                      />
+                                    </div>
+                                    
+                                    {/* Dropdown Select */}
                                     <select
                                       className="form-input form-select articulo-select"
                                       value={linea.articulo_id}
                                       onChange={(e) => handleSelectArticulo(index, e.target.value)}
+                                      style={{ fontSize: '0.8125rem' }}
                                     >
-                                      <option value="">-- Seleccionar artículo --</option>
-                                      {articulos.map(a => (
+                                      <option value="">-- Seleccionar --</option>
+                                      {filteredArts.map(a => (
                                         <option key={a.id} value={a.id}>
                                           {a.codigo ? `[${a.codigo}] ` : ''}{a.nombre}
                                         </option>
                                       ))}
                                     </select>
+                                    
+                                    {/* Selected Badge */}
                                     {articuloSeleccionado && (
                                       <div className="articulo-selected-badge">
+                                        <Check size={12} />
                                         {articuloSeleccionado.nombre}
                                       </div>
                                     )}
@@ -759,7 +779,7 @@ export default function OrdenesCompra() {
                                     className="form-input text-center"
                                     value={linea.codigo}
                                     readOnly
-                                    style={{ background: '#f1f5f9' }}
+                                    style={{ background: '#f1f5f9', fontSize: '0.8125rem' }}
                                   />
                                 </td>
                                 <td>
@@ -768,7 +788,8 @@ export default function OrdenesCompra() {
                                     className="form-input"
                                     value={linea.descripcion}
                                     onChange={(e) => handleLineaChange(index, 'descripcion', e.target.value)}
-                                    placeholder="Descripción del artículo"
+                                    placeholder="Descripción"
+                                    style={{ fontSize: '0.8125rem' }}
                                   />
                                 </td>
                                 <td>
@@ -779,6 +800,7 @@ export default function OrdenesCompra() {
                                     className="form-input text-center"
                                     value={linea.cantidad}
                                     onChange={(e) => handleLineaChange(index, 'cantidad', e.target.value)}
+                                    style={{ fontSize: '0.8125rem' }}
                                   />
                                 </td>
                                 <td>
@@ -787,7 +809,7 @@ export default function OrdenesCompra() {
                                     className="form-input text-center"
                                     value={linea.unidad}
                                     readOnly
-                                    style={{ background: '#f1f5f9' }}
+                                    style={{ background: '#f1f5f9', fontSize: '0.8125rem' }}
                                   />
                                 </td>
                                 <td>
@@ -798,12 +820,13 @@ export default function OrdenesCompra() {
                                     className="form-input text-right currency-input"
                                     value={linea.precio_unitario}
                                     onChange={(e) => handleLineaChange(index, 'precio_unitario', e.target.value)}
+                                    style={{ fontSize: '0.8125rem' }}
                                   />
                                 </td>
-                                <td className="text-right currency-display">
+                                <td className="text-right currency-display" style={{ fontWeight: 600, color: '#1e293b', fontSize: '0.875rem' }}>
                                   {formatCurrency(subtotal, monedaActual?.simbolo)}
                                 </td>
-                                <td>
+                                <td style={{ background: '#f8fafc' }}>
                                   {lineas.length > 1 && (
                                     <button
                                       type="button"
