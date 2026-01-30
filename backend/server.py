@@ -2545,57 +2545,118 @@ async def sync_ventas_pos(company: str = "ambission", days_back: int = 30):
         
         orders = odoo.get_pos_orders(days_back=days_back)
         
+        if not orders:
+            return {"message": "No orders found", "synced": 0}
+        
         pool = await get_pool()
         async with pool.acquire() as conn:
             await conn.execute("SET search_path TO finanzas2, public")
             
             synced = 0
             for order in orders:
-                # Check if already exists
-                existing = await conn.fetchval("""
-                    SELECT id FROM finanzas2.cont_venta_pos WHERE odoo_id = $1
-                """, order['id'])
-                
-                if existing:
-                    # Update
-                    await conn.execute("""
-                        UPDATE finanzas2.cont_venta_pos SET
-                            date_order = $2,
-                            name = $3,
-                            partner_id = $4,
-                            partner_name = $5,
-                            company_id = $6,
-                            company_name = $7,
-                            amount_total = $8,
-                            state = $9,
-                            synced_at = NOW()
-                        WHERE odoo_id = $1
-                    """, order['id'],
-                        order.get('date_order'),
-                        order.get('name'),
-                        order['partner_id'][0] if isinstance(order.get('partner_id'), list) else order.get('partner_id'),
-                        order['partner_id'][1] if isinstance(order.get('partner_id'), list) else None,
-                        order['company_id'][0] if isinstance(order.get('company_id'), list) else order.get('company_id'),
-                        order['company_id'][1] if isinstance(order.get('company_id'), list) else None,
-                        order.get('amount_total'),
-                        order.get('state'))
-                else:
-                    # Insert
-                    await conn.execute("""
-                        INSERT INTO finanzas2.cont_venta_pos 
-                        (odoo_id, date_order, name, partner_id, partner_name, company_id, company_name,
-                         amount_total, state, synced_at)
-                        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW())
-                    """, order['id'],
-                        order.get('date_order'),
-                        order.get('name'),
-                        order['partner_id'][0] if isinstance(order.get('partner_id'), list) else order.get('partner_id'),
-                        order['partner_id'][1] if isinstance(order.get('partner_id'), list) else None,
-                        order['company_id'][0] if isinstance(order.get('company_id'), list) else order.get('company_id'),
-                        order['company_id'][1] if isinstance(order.get('company_id'), list) else None,
-                        order.get('amount_total'),
-                        order.get('state'))
-                synced += 1
+                try:
+                    # Extract values with proper handling of Odoo's tuple format
+                    odoo_id = order.get('id')
+                    date_order = order.get('date_order')
+                    name = order.get('name')
+                    tipo_comp = order.get('tipo_comp')
+                    num_comp = order.get('num_comp')
+                    
+                    # partner_id comes as [id, name] tuple from Odoo
+                    partner_id = order['partner_id'][0] if isinstance(order.get('partner_id'), list) else order.get('partner_id')
+                    partner_name = order['partner_id'][1] if isinstance(order.get('partner_id'), list) else None
+                    
+                    # x_tienda comes as [id, name] tuple
+                    tienda_id = order['x_tienda'][0] if isinstance(order.get('x_tienda'), list) else None
+                    tienda_name = order['x_tienda'][1] if isinstance(order.get('x_tienda'), list) else order.get('x_tienda')
+                    
+                    # vendedor_id comes as [id, name] tuple
+                    vendedor_id = order['vendedor_id'][0] if isinstance(order.get('vendedor_id'), list) else order.get('vendedor_id')
+                    vendedor_name = order['vendedor_id'][1] if isinstance(order.get('vendedor_id'), list) else None
+                    
+                    # company_id comes as [id, name] tuple
+                    company_id = order['company_id'][0] if isinstance(order.get('company_id'), list) else order.get('company_id')
+                    company_name = order['company_id'][1] if isinstance(order.get('company_id'), list) else None
+                    
+                    x_pagos = order.get('x_pagos')
+                    quantity_total = order.get('quantity_pos_order')
+                    amount_total = order.get('amount_total')
+                    state = order.get('state')
+                    
+                    reserva_pendiente = order.get('x_reserva_pendiente', 0)
+                    reserva_facturada = order.get('x_reserva_facturada', 0)
+                    is_cancel = order.get('is_cancel', False)
+                    order_cancel = order.get('order_cancel')
+                    reserva = order.get('reserva', False)
+                    is_credit = order.get('is_credit', False)
+                    reserva_use_id = order.get('reserva_use_id')
+                    
+                    # Check if already exists
+                    existing = await conn.fetchval("""
+                        SELECT id FROM finanzas2.cont_venta_pos WHERE odoo_id = $1
+                    """, odoo_id)
+                    
+                    if existing:
+                        # Update existing record
+                        await conn.execute("""
+                            UPDATE finanzas2.cont_venta_pos SET
+                                date_order = $2,
+                                name = $3,
+                                tipo_comp = $4,
+                                num_comp = $5,
+                                partner_id = $6,
+                                partner_name = $7,
+                                tienda_id = $8,
+                                tienda_name = $9,
+                                vendedor_id = $10,
+                                vendedor_name = $11,
+                                company_id = $12,
+                                company_name = $13,
+                                x_pagos = $14,
+                                quantity_total = $15,
+                                amount_total = $16,
+                                state = $17,
+                                reserva_pendiente = $18,
+                                reserva_facturada = $19,
+                                is_cancel = $20,
+                                order_cancel = $21,
+                                reserva = $22,
+                                is_credit = $23,
+                                reserva_use_id = $24,
+                                synced_at = NOW()
+                            WHERE odoo_id = $1
+                        """, odoo_id, date_order, name, tipo_comp, num_comp,
+                            partner_id, partner_name, tienda_id, tienda_name,
+                            vendedor_id, vendedor_name, company_id, company_name,
+                            x_pagos, quantity_total, amount_total, state,
+                            reserva_pendiente, reserva_facturada, is_cancel,
+                            order_cancel, reserva, is_credit, reserva_use_id)
+                    else:
+                        # Insert new record
+                        await conn.execute("""
+                            INSERT INTO finanzas2.cont_venta_pos 
+                            (odoo_id, date_order, name, tipo_comp, num_comp,
+                             partner_id, partner_name, tienda_id, tienda_name,
+                             vendedor_id, vendedor_name, company_id, company_name,
+                             x_pagos, quantity_total, amount_total, state,
+                             reserva_pendiente, reserva_facturada, is_cancel,
+                             order_cancel, reserva, is_credit, reserva_use_id,
+                             synced_at)
+                            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10,
+                                    $11, $12, $13, $14, $15, $16, $17, $18, $19,
+                                    $20, $21, $22, $23, $24, NOW())
+                        """, odoo_id, date_order, name, tipo_comp, num_comp,
+                            partner_id, partner_name, tienda_id, tienda_name,
+                            vendedor_id, vendedor_name, company_id, company_name,
+                            x_pagos, quantity_total, amount_total, state,
+                            reserva_pendiente, reserva_facturada, is_cancel,
+                            order_cancel, reserva, is_credit, reserva_use_id)
+                    
+                    synced += 1
+                    
+                except Exception as row_error:
+                    logger.error(f"Error processing order {order.get('id')}: {row_error}")
+                    continue
         
         return {"message": f"Synced {synced} orders from {company}", "synced": synced}
         
