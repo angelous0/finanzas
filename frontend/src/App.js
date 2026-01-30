@@ -30,9 +30,10 @@ import BalanceGeneral from './pages/BalanceGeneral';
 import LineasNegocio from './pages/LineasNegocio';
 import CentrosCosto from './pages/CentrosCosto';
 import Empresas from './pages/Empresas';
+import Planilla from './pages/Planilla';
 import { 
   Clientes, Articulos,
-  Adelantos, Planillas, Presupuestos, Conciliacion, 
+  Adelantos, Presupuestos, Conciliacion, 
   EstadoResultados, FlujoCaja 
 } from './pages/PlaceholderPages';
 
