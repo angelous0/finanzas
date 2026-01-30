@@ -978,6 +978,12 @@ input[type="number"] {
   margin-bottom: 1rem;
 }
 
+/* Table scroll wrapper for horizontal scroll */
+.table-scroll-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 .factura-section-header {
   padding: 0.75rem 1rem;
   background: #f8fafc;
