@@ -1595,7 +1595,8 @@ input[type="number"] {
   
   .main-content {
     margin-left: 0 !important;
-
+  }
+}
 
 /* Fullscreen Modal for OC */
 .modal-fullscreen {
