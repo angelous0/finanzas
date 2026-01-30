@@ -194,26 +194,16 @@ export const Empresas = () => {
                   </div>
                   
                   <div className="form-group">
-                    <label className="form-label required">Razón Social</label>
+                    <label className="form-label required">Nombre / Razón Social</label>
                     <input
                       type="text"
                       className="form-input"
-                      value={formData.razon_social}
-                      onChange={(e) => setFormData(prev => ({ ...prev, razon_social: e.target.value }))}
+                      value={formData.nombre}
+                      onChange={(e) => setFormData(prev => ({ ...prev, nombre: e.target.value }))}
                       required
-                      data-testid="empresa-razon-social-input"
+                      data-testid="empresa-nombre-input"
                     />
                   </div>
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label">Nombre Comercial</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    value={formData.nombre_comercial}
-                    onChange={(e) => setFormData(prev => ({ ...prev, nombre_comercial: e.target.value }))}
-                  />
                 </div>
 
                 <div className="form-group">
