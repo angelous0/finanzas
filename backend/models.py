@@ -1,0 +1,721 @@
+from pydantic import BaseModel, Field
+from typing import Optional, List
+from datetime import datetime, date
+from decimal import Decimal
+
+# =====================
+# EMPRESA
+# =====================
+class EmpresaBase(BaseModel):
+    nombre: str
+    ruc: Optional[str] = None
+    direccion: Optional[str] = None
+    telefono: Optional[str] = None
+    email: Optional[str] = None
+    logo_url: Optional[str] = None
+    activo: bool = True
+
+class EmpresaCreate(EmpresaBase):
+    pass
+
+class EmpresaUpdate(BaseModel):
+    nombre: Optional[str] = None
+    ruc: Optional[str] = None
+    direccion: Optional[str] = None
+    telefono: Optional[str] = None
+    email: Optional[str] = None
+    logo_url: Optional[str] = None
+    activo: Optional[bool] = None
+
+class Empresa(EmpresaBase):
+    id: int
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+# =====================
+# MONEDA
+# =====================
+class MonedaBase(BaseModel):
+    codigo: str
+    nombre: str
+    simbolo: str
+    es_principal: bool = False
+    activo: bool = True
+
+class MonedaCreate(MonedaBase):
+    pass
+
+class Moneda(MonedaBase):
+    id: int
+    created_at: Optional[datetime] = None
+
+# =====================
+# CATEGORIA
+# =====================
+class CategoriaBase(BaseModel):
+    codigo: Optional[str] = None
+    nombre: str
+    tipo: str  # ingreso, egreso
+    padre_id: Optional[int] = None
+    descripcion: Optional[str] = None
+    activo: bool = True
+
+class CategoriaCreate(CategoriaBase):
+    pass
+
+class CategoriaUpdate(BaseModel):
+    codigo: Optional[str] = None
+    nombre: Optional[str] = None
+    tipo: Optional[str] = None
+    padre_id: Optional[int] = None
+    descripcion: Optional[str] = None
+    activo: Optional[bool] = None
+
+class Categoria(CategoriaBase):
+    id: int
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+# =====================
+# CENTRO COSTO
+# =====================
+class CentroCostoBase(BaseModel):
+    codigo: Optional[str] = None
+    nombre: str
+    descripcion: Optional[str] = None
+    activo: bool = True
+
+class CentroCostoCreate(CentroCostoBase):
+    pass
+
+class CentroCosto(CentroCostoBase):
+    id: int
+    created_at: Optional[datetime] = None
+
+# =====================
+# LINEA NEGOCIO
+# =====================
+class LineaNegocioBase(BaseModel):
+    codigo: Optional[str] = None
+    nombre: str
+    descripcion: Optional[str] = None
+    activo: bool = True
+
+class LineaNegocioCreate(LineaNegocioBase):
+    pass
+
+class LineaNegocio(LineaNegocioBase):
+    id: int
+    created_at: Optional[datetime] = None
+
+# =====================
+# CUENTA FINANCIERA
+# =====================
+class CuentaFinancieraBase(BaseModel):
+    nombre: str
+    tipo: str  # banco, caja
+    banco: Optional[str] = None
+    numero_cuenta: Optional[str] = None
+    cci: Optional[str] = None
+    moneda_id: Optional[int] = None
+    saldo_actual: float = 0
+    activo: bool = True
+
+class CuentaFinancieraCreate(CuentaFinancieraBase):
+    pass
+
+class CuentaFinancieraUpdate(BaseModel):
+    nombre: Optional[str] = None
+    tipo: Optional[str] = None
+    banco: Optional[str] = None
+    numero_cuenta: Optional[str] = None
+    cci: Optional[str] = None
+    moneda_id: Optional[int] = None
+    saldo_actual: Optional[float] = None
+    activo: Optional[bool] = None
+
+class CuentaFinanciera(CuentaFinancieraBase):
+    id: int
+    moneda_codigo: Optional[str] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+# =====================
+# TERCERO (Cliente/Proveedor/Personal)
+# =====================
+class TerceroBase(BaseModel):
+    tipo_documento: Optional[str] = None
+    numero_documento: Optional[str] = None
+    nombre: str
+    nombre_comercial: Optional[str] = None
+    direccion: Optional[str] = None
+    telefono: Optional[str] = None
+    email: Optional[str] = None
+    es_cliente: bool = False
+    es_proveedor: bool = False
+    es_personal: bool = False
+    terminos_pago_dias: int = 0
+    limite_credito: float = 0
+    notas: Optional[str] = None
+    activo: bool = True
+
+class TerceroCreate(TerceroBase):
+    pass
+
+class TerceroUpdate(BaseModel):
+    tipo_documento: Optional[str] = None
+    numero_documento: Optional[str] = None
+    nombre: Optional[str] = None
+    nombre_comercial: Optional[str] = None
+    direccion: Optional[str] = None
+    telefono: Optional[str] = None
+    email: Optional[str] = None
+    es_cliente: Optional[bool] = None
+    es_proveedor: Optional[bool] = None
+    es_personal: Optional[bool] = None
+    terminos_pago_dias: Optional[int] = None
+    limite_credito: Optional[float] = None
+    notas: Optional[str] = None
+    activo: Optional[bool] = None
+
+class Tercero(TerceroBase):
+    id: int
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+# =====================
+# EMPLEADO DETALLE
+# =====================
+class EmpleadoDetalleBase(BaseModel):
+    tercero_id: int
+    fecha_ingreso: Optional[date] = None
+    cargo: Optional[str] = None
+    salario_base: Optional[float] = None
+    cuenta_bancaria: Optional[str] = None
+    banco: Optional[str] = None
+    activo: bool = True
+
+class EmpleadoDetalleCreate(EmpleadoDetalleBase):
+    pass
+
+class EmpleadoDetalle(EmpleadoDetalleBase):
+    id: int
+    created_at: Optional[datetime] = None
+
+# =====================
+# ARTICULO REF
+# =====================
+class ArticuloRefBase(BaseModel):
+    prod_inventario_id: Optional[int] = None
+    codigo: Optional[str] = None
+    nombre: str
+    descripcion: Optional[str] = None
+    precio_referencia: Optional[float] = None
+    activo: bool = True
+
+class ArticuloRefCreate(ArticuloRefBase):
+    pass
+
+class ArticuloRef(ArticuloRefBase):
+    id: int
+    created_at: Optional[datetime] = None
+
+# =====================
+# ORDEN DE COMPRA
+# =====================
+class OCLineaBase(BaseModel):
+    articulo_id: Optional[int] = None
+    descripcion: Optional[str] = None
+    cantidad: float
+    precio_unitario: float
+    igv_aplica: bool = True
+
+class OCLineaCreate(OCLineaBase):
+    pass
+
+class OCLinea(OCLineaBase):
+    id: int
+    oc_id: int
+    subtotal: float = 0
+    created_at: Optional[datetime] = None
+
+class OCBase(BaseModel):
+    fecha: date
+    proveedor_id: Optional[int] = None
+    moneda_id: Optional[int] = None
+    notas: Optional[str] = None
+
+class OCCreate(OCBase):
+    lineas: List[OCLineaCreate] = []
+
+class OCUpdate(BaseModel):
+    fecha: Optional[date] = None
+    proveedor_id: Optional[int] = None
+    moneda_id: Optional[int] = None
+    estado: Optional[str] = None
+    notas: Optional[str] = None
+
+class OC(OCBase):
+    id: int
+    numero: str
+    estado: str = "borrador"
+    subtotal: float = 0
+    igv: float = 0
+    total: float = 0
+    proveedor_nombre: Optional[str] = None
+    moneda_codigo: Optional[str] = None
+    lineas: List[OCLinea] = []
+    factura_generada_id: Optional[int] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+# =====================
+# FACTURA PROVEEDOR
+# =====================
+class FacturaLineaBase(BaseModel):
+    categoria_id: Optional[int] = None
+    articulo_id: Optional[int] = None
+    descripcion: Optional[str] = None
+    linea_negocio_id: Optional[int] = None
+    centro_costo_id: Optional[int] = None
+    importe: float
+    igv_aplica: bool = True
+
+class FacturaLineaCreate(FacturaLineaBase):
+    pass
+
+class FacturaLinea(FacturaLineaBase):
+    id: int
+    factura_id: int
+    categoria_nombre: Optional[str] = None
+    linea_negocio_nombre: Optional[str] = None
+    centro_costo_nombre: Optional[str] = None
+    created_at: Optional[datetime] = None
+
+class FacturaProveedorBase(BaseModel):
+    proveedor_id: Optional[int] = None
+    beneficiario_nombre: Optional[str] = None
+    moneda_id: Optional[int] = None
+    fecha_factura: date
+    fecha_vencimiento: Optional[date] = None
+    terminos_dias: int = 0
+    tipo_documento: str = "factura"
+    impuestos_incluidos: bool = False
+    notas: Optional[str] = None
+
+class FacturaProveedorCreate(FacturaProveedorBase):
+    numero: Optional[str] = None
+    lineas: List[FacturaLineaCreate] = []
+
+class FacturaProveedorUpdate(BaseModel):
+    proveedor_id: Optional[int] = None
+    beneficiario_nombre: Optional[str] = None
+    moneda_id: Optional[int] = None
+    fecha_factura: Optional[date] = None
+    fecha_vencimiento: Optional[date] = None
+    terminos_dias: Optional[int] = None
+    tipo_documento: Optional[str] = None
+    impuestos_incluidos: Optional[bool] = None
+    notas: Optional[str] = None
+
+class FacturaProveedor(FacturaProveedorBase):
+    id: int
+    numero: str
+    estado: str = "pendiente"
+    subtotal: float = 0
+    igv: float = 0
+    total: float = 0
+    saldo_pendiente: float = 0
+    proveedor_nombre: Optional[str] = None
+    moneda_codigo: Optional[str] = None
+    moneda_simbolo: Optional[str] = None
+    lineas: List[FacturaLinea] = []
+    oc_origen_id: Optional[int] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+# =====================
+# PAGO
+# =====================
+class PagoDetalleBase(BaseModel):
+    cuenta_financiera_id: int
+    medio_pago: str  # efectivo, transferencia, cheque, tarjeta
+    monto: float
+    referencia: Optional[str] = None
+
+class PagoDetalleCreate(PagoDetalleBase):
+    pass
+
+class PagoDetalle(PagoDetalleBase):
+    id: int
+    pago_id: int
+    cuenta_nombre: Optional[str] = None
+    created_at: Optional[datetime] = None
+
+class PagoAplicacionBase(BaseModel):
+    tipo_documento: str  # factura, letra, gasto, planilla, adelanto, cxc
+    documento_id: int
+    monto_aplicado: float
+
+class PagoAplicacionCreate(PagoAplicacionBase):
+    pass
+
+class PagoAplicacion(PagoAplicacionBase):
+    id: int
+    pago_id: int
+    created_at: Optional[datetime] = None
+
+class PagoBase(BaseModel):
+    tipo: str  # ingreso, egreso
+    fecha: date
+    cuenta_financiera_id: Optional[int] = None
+    moneda_id: Optional[int] = None
+    referencia: Optional[str] = None
+    notas: Optional[str] = None
+
+class PagoCreate(PagoBase):
+    monto_total: float
+    detalles: List[PagoDetalleCreate] = []
+    aplicaciones: List[PagoAplicacionCreate] = []
+
+class Pago(PagoBase):
+    id: int
+    numero: str
+    monto_total: float
+    cuenta_nombre: Optional[str] = None
+    moneda_codigo: Optional[str] = None
+    detalles: List[PagoDetalle] = []
+    aplicaciones: List[PagoAplicacion] = []
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+# =====================
+# LETRA
+# =====================
+class LetraBase(BaseModel):
+    factura_id: int
+    proveedor_id: Optional[int] = None
+    monto: float
+    fecha_emision: date
+    fecha_vencimiento: date
+    notas: Optional[str] = None
+
+class LetraCreate(LetraBase):
+    pass
+
+class LetraUpdate(BaseModel):
+    monto: Optional[float] = None
+    fecha_vencimiento: Optional[date] = None
+    estado: Optional[str] = None
+    notas: Optional[str] = None
+
+class Letra(LetraBase):
+    id: int
+    numero: str
+    estado: str = "pendiente"
+    saldo_pendiente: float
+    proveedor_nombre: Optional[str] = None
+    factura_numero: Optional[str] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+class GenerarLetrasRequest(BaseModel):
+    factura_id: int
+    cantidad_letras: int
+    monto_por_letra: Optional[float] = None
+    dias_entre_letras: int = 30
+
+# =====================
+# GASTO
+# =====================
+class GastoLineaBase(BaseModel):
+    categoria_id: Optional[int] = None
+    descripcion: Optional[str] = None
+    linea_negocio_id: Optional[int] = None
+    centro_costo_id: Optional[int] = None
+    importe: float
+    igv_aplica: bool = True
+
+class GastoLineaCreate(GastoLineaBase):
+    pass
+
+class GastoLinea(GastoLineaBase):
+    id: int
+    gasto_id: int
+    categoria_nombre: Optional[str] = None
+    created_at: Optional[datetime] = None
+
+class GastoBase(BaseModel):
+    fecha: date
+    proveedor_id: Optional[int] = None
+    beneficiario_nombre: Optional[str] = None
+    moneda_id: Optional[int] = None
+    tipo_documento: Optional[str] = None
+    numero_documento: Optional[str] = None
+    notas: Optional[str] = None
+
+class GastoCreate(GastoBase):
+    lineas: List[GastoLineaCreate] = []
+    pago_cuenta_financiera_id: int
+    pago_medio: str = "efectivo"
+    pago_referencia: Optional[str] = None
+
+class Gasto(GastoBase):
+    id: int
+    numero: str
+    subtotal: float = 0
+    igv: float = 0
+    total: float = 0
+    proveedor_nombre: Optional[str] = None
+    moneda_codigo: Optional[str] = None
+    lineas: List[GastoLinea] = []
+    pago_id: Optional[int] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+# =====================
+# PLANILLA
+# =====================
+class PlanillaDetalleBase(BaseModel):
+    empleado_id: int
+    salario_base: float = 0
+    bonificaciones: float = 0
+    adelantos: float = 0
+    otros_descuentos: float = 0
+
+class PlanillaDetalleCreate(PlanillaDetalleBase):
+    pass
+
+class PlanillaDetalle(PlanillaDetalleBase):
+    id: int
+    planilla_id: int
+    neto_pagar: float = 0
+    empleado_nombre: Optional[str] = None
+    created_at: Optional[datetime] = None
+
+class PlanillaBase(BaseModel):
+    periodo: str
+    fecha_inicio: date
+    fecha_fin: date
+    notas: Optional[str] = None
+
+class PlanillaCreate(PlanillaBase):
+    detalles: List[PlanillaDetalleCreate] = []
+
+class Planilla(PlanillaBase):
+    id: int
+    total_bruto: float = 0
+    total_adelantos: float = 0
+    total_descuentos: float = 0
+    total_neto: float = 0
+    estado: str = "borrador"
+    detalles: List[PlanillaDetalle] = []
+    pago_id: Optional[int] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+# =====================
+# ADELANTO EMPLEADO
+# =====================
+class AdelantoBase(BaseModel):
+    empleado_id: int
+    fecha: date
+    monto: float
+    motivo: Optional[str] = None
+
+class AdelantoCreate(AdelantoBase):
+    pagar: bool = False
+    cuenta_financiera_id: Optional[int] = None
+    medio_pago: str = "efectivo"
+
+class Adelanto(AdelantoBase):
+    id: int
+    pagado: bool = False
+    descontado: bool = False
+    planilla_id: Optional[int] = None
+    pago_id: Optional[int] = None
+    empleado_nombre: Optional[str] = None
+    created_at: Optional[datetime] = None
+
+# =====================
+# VENTA POS (desde Odoo)
+# =====================
+class VentaPOS(BaseModel):
+    id: int
+    odoo_id: Optional[int] = None
+    date_order: Optional[datetime] = None
+    name: Optional[str] = None
+    tipo_comp: Optional[str] = None
+    num_comp: Optional[str] = None
+    partner_id: Optional[int] = None
+    partner_name: Optional[str] = None
+    x_tienda: Optional[str] = None
+    vendedor_id: Optional[int] = None
+    vendedor_name: Optional[str] = None
+    company_id: Optional[int] = None
+    company_name: Optional[str] = None
+    x_pagos: Optional[str] = None
+    quantity_pos_order: Optional[float] = None
+    amount_total: Optional[float] = None
+    state: Optional[str] = None
+    x_reserva_pendientes: bool = False
+    x_reserva_facturada: bool = False
+    is_cancel: bool = False
+    order_cancel: Optional[str] = None
+    reserva: bool = False
+    is_credit: bool = False
+    reserva_use_id: Optional[int] = None
+    estado_local: str = "pendiente"
+    cxc_id: Optional[int] = None
+    synced_at: Optional[datetime] = None
+
+# =====================
+# CXC (Cuentas por Cobrar)
+# =====================
+class CXCBase(BaseModel):
+    venta_pos_id: Optional[int] = None
+    cliente_id: Optional[int] = None
+    monto_original: float
+    saldo_pendiente: float
+    fecha_vencimiento: Optional[date] = None
+    notas: Optional[str] = None
+
+class CXCCreate(CXCBase):
+    pass
+
+class CXC(CXCBase):
+    id: int
+    estado: str = "pendiente"
+    cliente_nombre: Optional[str] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+# =====================
+# PRESUPUESTO
+# =====================
+class PresupuestoLineaBase(BaseModel):
+    categoria_id: Optional[int] = None
+    centro_costo_id: Optional[int] = None
+    linea_negocio_id: Optional[int] = None
+    mes: int
+    monto_presupuestado: float = 0
+
+class PresupuestoLineaCreate(PresupuestoLineaBase):
+    pass
+
+class PresupuestoLinea(PresupuestoLineaBase):
+    id: int
+    presupuesto_id: int
+    monto_real: float = 0
+    categoria_nombre: Optional[str] = None
+    created_at: Optional[datetime] = None
+
+class PresupuestoBase(BaseModel):
+    nombre: str
+    anio: int
+    notas: Optional[str] = None
+
+class PresupuestoCreate(PresupuestoBase):
+    lineas: List[PresupuestoLineaCreate] = []
+
+class Presupuesto(PresupuestoBase):
+    id: int
+    version: int = 1
+    estado: str = "borrador"
+    lineas: List[PresupuestoLinea] = []
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+# =====================
+# CONCILIACION BANCARIA
+# =====================
+class BancoMovRaw(BaseModel):
+    id: int
+    cuenta_financiera_id: Optional[int] = None
+    banco: Optional[str] = None
+    fecha: Optional[date] = None
+    descripcion: Optional[str] = None
+    referencia: Optional[str] = None
+    cargo: Optional[float] = None
+    abono: Optional[float] = None
+    saldo: Optional[float] = None
+    procesado: bool = False
+    created_at: Optional[datetime] = None
+
+class BancoMov(BaseModel):
+    id: int
+    raw_id: Optional[int] = None
+    cuenta_financiera_id: Optional[int] = None
+    fecha: date
+    tipo: str
+    monto: float
+    descripcion: Optional[str] = None
+    referencia: Optional[str] = None
+    conciliado: bool = False
+    created_at: Optional[datetime] = None
+
+class ConciliacionLineaBase(BaseModel):
+    banco_mov_id: Optional[int] = None
+    pago_id: Optional[int] = None
+    tipo: Optional[str] = None
+    documento_id: Optional[int] = None
+    monto: Optional[float] = None
+    conciliado: bool = False
+
+class ConciliacionLinea(ConciliacionLineaBase):
+    id: int
+    conciliacion_id: int
+    created_at: Optional[datetime] = None
+
+class ConciliacionBase(BaseModel):
+    cuenta_financiera_id: int
+    fecha_inicio: date
+    fecha_fin: date
+    saldo_inicial: Optional[float] = None
+    saldo_final: Optional[float] = None
+    notas: Optional[str] = None
+
+class ConciliacionCreate(ConciliacionBase):
+    pass
+
+class Conciliacion(ConciliacionBase):
+    id: int
+    diferencia: Optional[float] = None
+    estado: str = "borrador"
+    cuenta_nombre: Optional[str] = None
+    lineas: List[ConciliacionLinea] = []
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+# =====================
+# REPORTES
+# =====================
+class FlujoCajaItem(BaseModel):
+    fecha: date
+    concepto: str
+    tipo: str
+    monto: float
+    saldo_acumulado: float
+
+class EstadoResultadosItem(BaseModel):
+    categoria: str
+    tipo: str
+    monto: float
+
+class BalanceGeneralItem(BaseModel):
+    cuenta: str
+    tipo: str
+    monto: float
+
+# =====================
+# DASHBOARD KPIs
+# =====================
+class DashboardKPIs(BaseModel):
+    total_cxp: float = 0
+    total_cxc: float = 0
+    total_letras_pendientes: float = 0
+    saldo_bancos: float = 0
+    ventas_mes: float = 0
+    gastos_mes: float = 0
+    facturas_pendientes: int = 0
+    letras_por_vencer: int = 0
