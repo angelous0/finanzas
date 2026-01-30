@@ -2593,7 +2593,12 @@ async def sync_ventas_pos(company: str = "ambission", days_back: int = 30):
                     reserva_pendiente = order.get('x_reserva_pendiente', 0)
                     reserva_facturada = order.get('x_reserva_facturada', 0)
                     is_cancel = order.get('is_cancel', False)
+                    
+                    # order_cancel is VARCHAR, convert False to None
                     order_cancel = order.get('order_cancel')
+                    if order_cancel == False or order_cancel == 'False':
+                        order_cancel = None
+                    
                     reserva = order.get('reserva', False)
                     is_credit = order.get('is_credit', False)
                     reserva_use_id = order.get('reserva_use_id')
