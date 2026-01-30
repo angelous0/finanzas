@@ -1238,6 +1238,289 @@ export const FacturasProveedor = () => {
           </div>
         </div>
       )}
+
+      {/* Modal de Pago Rápido */}
+      {showPagoModal && facturaParaPago && (
+        <div className="modal-overlay" onClick={() => setShowPagoModal(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
+            <div className="modal-header">
+              <h2 className="modal-title">Agregar Pago</h2>
+              <button className="modal-close" onClick={() => setShowPagoModal(false)}>
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="modal-body">
+              {/* Info del documento */}
+              <div style={{ 
+                background: '#f8fafc', 
+                padding: '1rem', 
+                borderRadius: '8px', 
+                marginBottom: '1.5rem',
+                border: '1px solid var(--border)'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                  <span style={{ color: '#64748b' }}>Documento:</span>
+                  <span style={{ fontWeight: 600, fontFamily: "'JetBrains Mono', monospace" }}>
+                    {facturaParaPago.numero}
+                  </span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                  <span style={{ color: '#64748b' }}>Proveedor:</span>
+                  <span style={{ fontWeight: 500 }}>
+                    {facturaParaPago.proveedor_nombre || facturaParaPago.beneficiario_nombre}
+                  </span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: '#64748b' }}>Saldo Pendiente:</span>
+                  <span style={{ fontWeight: 600, color: '#EF4444', fontFamily: "'JetBrains Mono', monospace" }}>
+                    {formatCurrency(facturaParaPago.saldo_pendiente)}
+                  </span>
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label required">Cuenta</label>
+                <select
+                  className="form-input form-select"
+                  value={pagoData.cuenta_id}
+                  onChange={(e) => setPagoData(prev => ({ ...prev, cuenta_id: e.target.value }))}
+                  data-testid="pago-cuenta-select"
+                >
+                  <option value="">Seleccionar cuenta...</option>
+                  {cuentasFinancieras.map(c => (
+                    <option key={c.id} value={c.id}>{c.nombre}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label required">Medio de Pago</label>
+                <select
+                  className="form-input form-select"
+                  value={pagoData.medio_pago}
+                  onChange={(e) => setPagoData(prev => ({ ...prev, medio_pago: e.target.value }))}
+                  data-testid="pago-medio-select"
+                >
+                  <option value="transferencia">Transferencia</option>
+                  <option value="efectivo">Efectivo</option>
+                  <option value="cheque">Cheque</option>
+                  <option value="tarjeta">Tarjeta</option>
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label required">Monto</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  className="form-input"
+                  value={pagoData.monto}
+                  onChange={(e) => setPagoData(prev => ({ ...prev, monto: e.target.value }))}
+                  style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                  data-testid="pago-monto-input"
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Referencia / Nº Operación</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  placeholder="Ej: OP-12345678"
+                  value={pagoData.referencia}
+                  onChange={(e) => setPagoData(prev => ({ ...prev, referencia: e.target.value }))}
+                  data-testid="pago-referencia-input"
+                />
+              </div>
+            </div>
+
+            <div className="modal-footer">
+              <button type="button" className="btn btn-outline" onClick={() => setShowPagoModal(false)}>
+                Cancelar
+              </button>
+              <button 
+                type="button" 
+                className="btn btn-success"
+                onClick={handleRegistrarPago}
+                data-testid="registrar-pago-btn"
+              >
+                <DollarSign size={16} />
+                Registrar Pago
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Canjear por Letras */}
+      {showLetrasModal && facturaParaLetras && (
+        <div className="modal-overlay" onClick={() => setShowLetrasModal(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '600px' }}>
+            <div className="modal-header">
+              <h2 className="modal-title">Canjear por Letras</h2>
+              <button className="modal-close" onClick={() => setShowLetrasModal(false)}>
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="modal-body">
+              {/* Info del documento */}
+              <div style={{ 
+                background: '#f8fafc', 
+                padding: '1rem', 
+                borderRadius: '8px', 
+                marginBottom: '1.5rem',
+                border: '1px solid var(--border)'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                  <span style={{ color: '#64748b' }}>Documento:</span>
+                  <span style={{ fontWeight: 600, fontFamily: "'JetBrains Mono', monospace" }}>
+                    {facturaParaLetras.numero}
+                  </span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                  <span style={{ color: '#64748b' }}>Proveedor:</span>
+                  <span style={{ fontWeight: 500 }}>
+                    {facturaParaLetras.proveedor_nombre || facturaParaLetras.beneficiario_nombre}
+                  </span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: '#64748b' }}>Saldo a canjear:</span>
+                  <span style={{ fontWeight: 600, color: '#1B4D3E', fontFamily: "'JetBrains Mono', monospace" }}>
+                    {formatCurrency(facturaParaLetras.saldo_pendiente)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Generación rápida */}
+              <div style={{ 
+                background: '#f0fdf4', 
+                padding: '1rem', 
+                borderRadius: '8px', 
+                marginBottom: '1.5rem',
+                border: '1px solid #bbf7d0'
+              }}>
+                <h4 style={{ margin: '0 0 1rem', fontSize: '0.875rem', fontWeight: 600, color: '#166534' }}>
+                  Generación Rápida
+                </h4>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label className="form-label">Prefijo</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      value={letrasConfig.prefijo}
+                      onChange={(e) => handleLetrasConfigChange('prefijo', e.target.value)}
+                      style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                    />
+                  </div>
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label className="form-label">Cantidad Letras</label>
+                    <input
+                      type="number"
+                      min="1"
+                      max="12"
+                      className="form-input"
+                      value={letrasConfig.cantidad}
+                      onChange={(e) => handleLetrasConfigChange('cantidad', e.target.value)}
+                      data-testid="letras-cantidad-input"
+                    />
+                  </div>
+                  <div className="form-group" style={{ marginBottom: 0 }}>
+                    <label className="form-label">Intervalo (días)</label>
+                    <input
+                      type="number"
+                      min="1"
+                      className="form-input"
+                      value={letrasConfig.intervalo_dias}
+                      onChange={(e) => handleLetrasConfigChange('intervalo_dias', e.target.value)}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label className="form-label required">Fecha de Giro</label>
+                  <input
+                    type="date"
+                    className="form-input"
+                    value={letrasConfig.fecha_giro}
+                    onChange={(e) => handleLetrasConfigChange('fecha_giro', e.target.value)}
+                  />
+                </div>
+                <div className="form-group" style={{ marginBottom: 0 }}>
+                  <label className="form-label required">Banco para pago</label>
+                  <select
+                    className="form-input form-select"
+                    value={letrasConfig.banco_id}
+                    onChange={(e) => setLetrasConfig(prev => ({ ...prev, banco_id: e.target.value }))}
+                    data-testid="letras-banco-select"
+                  >
+                    <option value="">Seleccionar banco...</option>
+                    {cuentasFinancieras.map(c => (
+                      <option key={c.id} value={c.id}>{c.nombre}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Preview de letras */}
+              <div style={{ marginBottom: '1rem' }}>
+                <h4 style={{ margin: '0 0 0.75rem', fontSize: '0.875rem', fontWeight: 600 }}>
+                  Letras a crear ({letrasPreview.length})
+                </h4>
+                <table className="data-table" style={{ fontSize: '0.8125rem' }}>
+                  <thead>
+                    <tr>
+                      <th>N° Letra</th>
+                      <th>Fecha Venc.</th>
+                      <th className="text-right">Monto</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {letrasPreview.map((letra, index) => (
+                      <tr key={index}>
+                        <td style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                          {letrasConfig.prefijo}-{facturaParaLetras.numero}-{String(letra.numero).padStart(2, '0')}
+                        </td>
+                        <td>{formatDate(letra.fecha_vencimiento)}</td>
+                        <td className="text-right" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                          {formatCurrency(letra.monto)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot>
+                    <tr style={{ background: '#f8fafc', fontWeight: 600 }}>
+                      <td colSpan={2}>Total Letras</td>
+                      <td className="text-right" style={{ fontFamily: "'JetBrains Mono', monospace", color: '#1B4D3E' }}>
+                        {formatCurrency(letrasPreview.reduce((sum, l) => sum + l.monto, 0))}
+                      </td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </div>
+
+            <div className="modal-footer">
+              <button type="button" className="btn btn-outline" onClick={() => setShowLetrasModal(false)}>
+                Cancelar
+              </button>
+              <button 
+                type="button" 
+                className="btn btn-primary"
+                onClick={handleCrearLetras}
+                data-testid="crear-letras-btn"
+              >
+                <FileSpreadsheet size={16} />
+                Crear {letrasPreview.length} Letras
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
