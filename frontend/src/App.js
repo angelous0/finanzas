@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import './App.css';
@@ -29,10 +29,12 @@ import {
 } from './pages/PlaceholderPages';
 
 function App() {
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
   return (
     <Router>
-      <div className="app-layout">
-        <Sidebar />
+      <div className={`app-layout ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
+        <Sidebar collapsed={sidebarCollapsed} setCollapsed={setSidebarCollapsed} />
         <main className="main-content">
           <Routes>
             <Route path="/" element={<Dashboard />} />
