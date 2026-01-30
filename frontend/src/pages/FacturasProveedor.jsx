@@ -714,6 +714,7 @@ export const FacturasProveedor = () => {
                       ))}
                     </tbody>
                   </table>
+                  </div>
 
                   <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.75rem' }}>
                     <button
