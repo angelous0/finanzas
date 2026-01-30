@@ -204,7 +204,7 @@ export default function OrdenesCompra() {
   };
 
   const handleSelectArticulo = (index, articuloId) => {
-    const articulo = articulos.find(a => a.id === parseInt(articuloId));
+    const articulo = articulos.find(a => String(a.id) === String(articuloId));
     if (articulo) {
       setLineas(prev => prev.map((l, i) => 
         i === index ? { 
