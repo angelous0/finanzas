@@ -1006,7 +1006,25 @@ async def generar_factura_desde_oc(id: int):
                 UPDATE finanzas2.cont_oc SET estado = 'facturada', factura_generada_id = $1 WHERE id = $2
             """, factura_id, id)
             
-            return await get_factura_proveedor(factura_id)
+            # Get full factura within transaction
+            f_row = await conn.fetchrow("""
+                SELECT fp.*, t.nombre as proveedor_nombre, m.codigo as moneda_codigo, m.simbolo as moneda_simbolo
+                FROM finanzas2.cont_factura_proveedor fp
+                LEFT JOIN finanzas2.cont_tercero t ON fp.proveedor_id = t.id
+                LEFT JOIN finanzas2.cont_moneda m ON fp.moneda_id = m.id
+                WHERE fp.id = $1
+            """, factura_id)
+            
+            factura_dict = dict(f_row)
+            f_lineas = await conn.fetch("""
+                SELECT fpl.*, c.nombre as categoria_nombre
+                FROM finanzas2.cont_factura_proveedor_linea fpl
+                LEFT JOIN finanzas2.cont_categoria c ON fpl.categoria_id = c.id
+                WHERE fpl.factura_id = $1 ORDER BY fpl.id
+            """, factura_id)
+            factura_dict['lineas'] = [dict(l) for l in f_lineas]
+            
+            return factura_dict
 
 # =====================
 # FACTURAS PROVEEDOR
