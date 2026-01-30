@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getConciliacionesDetalladas, desconciliarMovimientos } from '../services/api';
-import { History, Trash2, FileText, Receipt, Calendar, DollarSign, AlertCircle } from 'lucide-react';
+import { History, Trash2, Search, Download, RefreshCw, Calendar } from 'lucide-react';
 import { toast } from 'sonner';
 
 const formatCurrency = (value, symbol = 'S/') => {
@@ -15,11 +15,21 @@ const formatDate = (dateStr) => {
 
 export const HistorialConciliaciones = () => {
   const [conciliaciones, setConciliaciones] = useState([]);
+  const [conciliacionesFiltradas, setConciliacionesFiltradas] = useState([]);
   const [loading, setLoading] = useState(true);
+  
+  // Filters
+  const [searchTerm, setSearchTerm] = useState('');
+  const [fechaDesde, setFechaDesde] = useState('2024-01-01');
+  const [fechaHasta, setFechaHasta] = useState('2026-12-31');
 
   useEffect(() => {
     loadConciliaciones();
   }, []);
+
+  useEffect(() => {
+    filtrarConciliaciones();
+  }, [conciliaciones, searchTerm, fechaDesde, fechaHasta]);
 
   const loadConciliaciones = async () => {
     try {
@@ -32,6 +42,37 @@ export const HistorialConciliaciones = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const filtrarConciliaciones = () => {
+    let filtered = [...conciliaciones];
+
+    // Filter by search term
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      filtered = filtered.filter(c =>
+        (c.descripcion_banco || '').toLowerCase().includes(term) ||
+        (c.descripcion_sistema || '').toLowerCase().includes(term) ||
+        (c.ref_banco || '').toLowerCase().includes(term) ||
+        (c.numero_sistema || '').toLowerCase().includes(term)
+      );
+    }
+
+    // Filter by date range
+    if (fechaDesde) {
+      filtered = filtered.filter(c => {
+        const fecha = c.fecha_banco || c.fecha_sistema;
+        return fecha >= fechaDesde;
+      });
+    }
+    if (fechaHasta) {
+      filtered = filtered.filter(c => {
+        const fecha = c.fecha_banco || c.fecha_sistema;
+        return fecha <= fechaHasta;
+      });
+    }
+
+    setConciliacionesFiltradas(filtered);
   };
 
   const handleDesconciliar = async (bancoId, pagoId) => {
@@ -49,20 +90,99 @@ export const HistorialConciliaciones = () => {
     }
   };
 
+  const totalMontoBanco = conciliacionesFiltradas.reduce((sum, c) => sum + (c.monto || 0), 0);
+  const totalMontoSistema = conciliacionesFiltradas.reduce((sum, c) => sum + (c.tipo_sistema === 'ingreso' ? c.monto : -Math.abs(c.monto)), 0);
+  const diferencia = totalMontoBanco - totalMontoSistema;
+
+  const exportToExcel = () => {
+    toast.info('Función de exportar a Excel en desarrollo');
+  };
+
+  const exportToPDF = () => {
+    toast.info('Función de exportar a PDF en desarrollo');
+  };
+
   return (
     <div className="page">
       {/* Page Header */}
       <div className="page-header" style={{ marginBottom: '1.5rem' }}>
         <div>
-          <h1 className="page-title">Historial de Conciliaciones</h1>
-          <p className="page-subtitle">Todos los movimientos bancarios conciliados con el sistema</p>
+          <h1 className="page-title">
+            <History size={28} style={{ display: 'inline', marginRight: '0.5rem', verticalAlign: 'middle' }} />
+            Historial de Conciliaciones
+          </h1>
+          <p className="page-subtitle">Vista general de todas las conciliaciones realizadas</p>
+        </div>
+      </div>
+
+      {/* Search and Filters */}
+      <div className="card" style={{ marginBottom: '1.5rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr auto auto auto auto auto', gap: '1rem', alignItems: 'end' }}>
+          {/* Search */}
+          <div>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>
+              Buscar
+            </label>
+            <div style={{ position: 'relative' }}>
+              <Search size={18} style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+              <input
+                type="text"
+                className="form-input"
+                placeholder="Descripción, proveedor, nro doc..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                style={{ paddingLeft: '2.5rem' }}
+              />
+            </div>
+          </div>
+
+          {/* Date From */}
+          <div>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>
+              Desde
+            </label>
+            <input
+              type="date"
+              className="form-input"
+              value={fechaDesde}
+              onChange={(e) => setFechaDesde(e.target.value)}
+            />
+          </div>
+
+          {/* Date To */}
+          <div>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: 500 }}>
+              Hasta
+            </label>
+            <input
+              type="date"
+              className="form-input"
+              value={fechaHasta}
+              onChange={(e) => setFechaHasta(e.target.value)}
+            />
+          </div>
+
+          {/* Export Excel */}
+          <button className="btn btn-outline" onClick={exportToExcel} style={{ height: 'fit-content' }}>
+            <Download size={16} /> Excel
+          </button>
+
+          {/* Export PDF */}
+          <button className="btn btn-outline" onClick={exportToPDF} style={{ height: 'fit-content' }}>
+            <Download size={16} /> PDF
+          </button>
+
+          {/* Refresh */}
+          <button className="btn btn-outline" onClick={loadConciliaciones} style={{ height: 'fit-content' }}>
+            <RefreshCw size={16} /> Actualizar
+          </button>
         </div>
       </div>
 
       {/* Summary Cards */}
       <div style={{ 
         display: 'grid', 
-        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+        gridTemplateColumns: 'repeat(4, 1fr)', 
         gap: '1rem',
         marginBottom: '1.5rem'
       }}>
@@ -70,27 +190,66 @@ export const HistorialConciliaciones = () => {
           background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
           color: 'white'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
-            <History size={20} />
-            <span style={{ fontSize: '0.875rem', opacity: 0.9 }}>Total Conciliaciones</span>
+          <div style={{ fontSize: '0.875rem', opacity: 0.9, marginBottom: '0.5rem' }}>
+            Total Conciliaciones
           </div>
-          <div style={{ fontSize: '2rem', fontWeight: 700 }}>{conciliaciones.length}</div>
+          <div style={{ fontSize: '2rem', fontWeight: 700 }}>{conciliacionesFiltradas.length}</div>
+        </div>
+
+        <div className="summary-card" style={{ 
+          background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+          color: 'white'
+        }}>
+          <div style={{ fontSize: '0.875rem', opacity: 0.9, marginBottom: '0.5rem' }}>
+            Total Monto Banco
+          </div>
+          <div style={{ fontSize: '2rem', fontWeight: 700 }}>{formatCurrency(totalMontoBanco)}</div>
+        </div>
+
+        <div className="summary-card" style={{ 
+          background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+          color: 'white'
+        }}>
+          <div style={{ fontSize: '0.875rem', opacity: 0.9, marginBottom: '0.5rem' }}>
+            Total Monto Sistema
+          </div>
+          <div style={{ fontSize: '2rem', fontWeight: 700 }}>{formatCurrency(totalMontoSistema)}</div>
+        </div>
+
+        <div className="summary-card" style={{ 
+          background: 'linear-gradient(135deg, #a855f7 0%, #9333ea 100%)',
+          color: 'white'
+        }}>
+          <div style={{ fontSize: '0.875rem', opacity: 0.9, marginBottom: '0.5rem' }}>
+            Diferencia
+          </div>
+          <div style={{ fontSize: '2rem', fontWeight: 700 }}>{formatCurrency(diferencia)}</div>
         </div>
       </div>
 
       {/* Conciliaciones Table */}
       <div className="card">
+        <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h3 style={{ margin: 0, fontSize: '1.125rem', fontWeight: 600 }}>Detalle de Conciliaciones</h3>
+          <span style={{ fontSize: '0.8125rem', color: '#64748b' }}>
+            Click en columna para ordenar • Arrastre borde para redimensionar
+          </span>
+        </div>
+
         <div className="data-table-wrapper">
           {loading ? (
             <div style={{ textAlign: 'center', padding: '3rem', color: '#64748b' }}>
-              Cargando...
+              <RefreshCw size={40} className="spin" style={{ marginBottom: '1rem', opacity: 0.5 }} />
+              <div>Cargando...</div>
             </div>
-          ) : conciliaciones.length === 0 ? (
+          ) : conciliacionesFiltradas.length === 0 ? (
             <div className="empty-state">
               <History className="empty-state-icon" />
-              <div className="empty-state-title">No hay conciliaciones registradas</div>
+              <div className="empty-state-title">No hay conciliaciones que mostrar</div>
               <div className="empty-state-description">
-                Las conciliaciones aparecerán aquí una vez que vincule movimientos
+                {conciliaciones.length === 0 
+                  ? 'Las conciliaciones aparecerán aquí una vez que vincule movimientos'
+                  : 'No se encontraron conciliaciones con los filtros aplicados'}
               </div>
             </div>
           ) : (
@@ -99,17 +258,18 @@ export const HistorialConciliaciones = () => {
                 <tr>
                   <th>Fecha</th>
                   <th>Banco</th>
-                  <th>Ref. Banco</th>
+                  <th>Nro Operación</th>
                   <th>Descripción Banco</th>
-                  <th>Sistema</th>
-                  <th>Ref. Sistema</th>
+                  <th>Monto Banco</th>
+                  <th>Nro Doc Sistema</th>
+                  <th>Tipo</th>
                   <th>Descripción Sistema</th>
-                  <th className="text-right">Monto</th>
+                  <th className="text-right">Monto Sistema</th>
                   <th className="text-center">Acciones</th>
                 </tr>
               </thead>
               <tbody>
-                {conciliaciones.map((conc, idx) => (
+                {conciliacionesFiltradas.map((conc, idx) => (
                   <tr key={idx}>
                     <td>{formatDate(conc.fecha_banco || conc.fecha_sistema)}</td>
                     <td>{conc.banco}</td>
@@ -119,22 +279,28 @@ export const HistorialConciliaciones = () => {
                     <td style={{ maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {conc.descripcion_banco || '-'}
                     </td>
-                    <td>
-                      <span className={`badge ${conc.tipo_sistema === 'ingreso' ? 'badge-success' : 'badge-danger'}`} style={{ fontSize: '0.6875rem' }}>
-                        {conc.tipo_sistema === 'ingreso' ? 'INGRESO' : 'EGRESO'}
-                      </span>
-                    </td>
-                    <td style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.75rem' }}>
-                      {conc.numero_sistema || '-'}
-                    </td>
-                    <td style={{ maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {conc.descripcion_sistema || '-'}
-                    </td>
                     <td className="text-right currency-display" style={{ 
                       color: conc.monto < 0 ? '#dc2626' : '#16a34a',
                       fontWeight: 500
                     }}>
                       {formatCurrency(conc.monto, conc.monto < 0 ? '-S/' : 'S/')}
+                    </td>
+                    <td style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.75rem' }}>
+                      {conc.numero_sistema || '-'}
+                    </td>
+                    <td>
+                      <span className={`badge ${conc.tipo_sistema === 'ingreso' ? 'badge-success' : 'badge-danger'}`} style={{ fontSize: '0.6875rem' }}>
+                        {conc.tipo_sistema === 'ingreso' ? 'INGRESO' : 'EGRESO'}
+                      </span>
+                    </td>
+                    <td style={{ maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {conc.descripcion_sistema || '-'}
+                    </td>
+                    <td className="text-right currency-display" style={{ 
+                      fontWeight: 500,
+                      color: conc.tipo_sistema === 'ingreso' ? '#16a34a' : '#dc2626'
+                    }}>
+                      {conc.tipo_sistema === 'ingreso' ? '' : '-'}{formatCurrency(Math.abs(conc.monto))}
                     </td>
                     <td className="text-center">
                       <button
