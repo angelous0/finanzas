@@ -696,7 +696,7 @@ export const FacturasProveedor = () => {
                   </div>
                 </div>
 
-                {/* Sección Detalles del artículo (colapsable) */}
+                {/* Sección Detalles del artículo */}
                 <div className="factura-section">
                   <button
                     type="button"
@@ -707,13 +707,159 @@ export const FacturasProveedor = () => {
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                       {showDetallesArticulo ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
                       <span style={{ fontWeight: 600 }}>Detalles del artículo</span>
+                      <span style={{ color: '#64748b', fontSize: '0.875rem' }}>({formData.articulos.length} artículo{formData.articulos.length !== 1 ? 's' : ''})</span>
                     </div>
                   </button>
                   
                   {showDetallesArticulo && (
-                    <div style={{ padding: '1rem', color: '#64748b', fontSize: '0.875rem' }}>
-                      Sección para agregar artículos del inventario (próximamente)
-                    </div>
+                    <>
+                      <table className="factura-table">
+                        <thead>
+                          <tr>
+                            <th style={{ width: '40px' }}>#</th>
+                            <th>ARTÍCULO</th>
+                            <th>MODELO / CORTE</th>
+                            <th style={{ width: '70px' }}>UND</th>
+                            <th style={{ width: '70px' }}>CANT.</th>
+                            <th style={{ width: '90px' }}>PRECIO</th>
+                            <th>LÍNEA NEGOCIO</th>
+                            <th style={{ width: '100px' }}>IMPORTE</th>
+                            <th style={{ width: '60px' }}>IGV</th>
+                            <th style={{ width: '80px' }}>ACCIONES</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {formData.articulos.map((articulo, index) => (
+                            <tr key={index}>
+                              <td className="row-number">{index + 1}</td>
+                              <td>
+                                <select
+                                  value={articulo.articulo_id}
+                                  onChange={(e) => handleArticuloChange(index, 'articulo_id', e.target.value)}
+                                  data-testid={`articulo-select-${index}`}
+                                >
+                                  <option value="">Artículo</option>
+                                  {inventario.map(inv => (
+                                    <option key={inv.id} value={inv.id}>
+                                      {inv.codigo ? `${inv.codigo} - ` : ''}{inv.nombre}
+                                    </option>
+                                  ))}
+                                </select>
+                              </td>
+                              <td>
+                                <select
+                                  value={articulo.modelo_corte_id}
+                                  onChange={(e) => handleArticuloChange(index, 'modelo_corte_id', e.target.value)}
+                                  data-testid={`modelo-corte-select-${index}`}
+                                >
+                                  <option value="">Modelo / Corte</option>
+                                  {modelosCortes.map(mc => (
+                                    <option key={mc.id} value={mc.id}>
+                                      {mc.display_name || `${mc.modelo_nombre || 'Sin modelo'} - Corte ${mc.n_corte}`}
+                                    </option>
+                                  ))}
+                                </select>
+                              </td>
+                              <td>
+                                <input
+                                  type="text"
+                                  placeholder="UND"
+                                  value={articulo.unidad}
+                                  onChange={(e) => handleArticuloChange(index, 'unidad', e.target.value)}
+                                  style={{ width: '100%', textAlign: 'center' }}
+                                />
+                              </td>
+                              <td>
+                                <input
+                                  type="number"
+                                  step="1"
+                                  min="1"
+                                  placeholder="1"
+                                  value={articulo.cantidad}
+                                  onChange={(e) => handleArticuloChange(index, 'cantidad', e.target.value)}
+                                  style={{ textAlign: 'center' }}
+                                  data-testid={`articulo-cantidad-${index}`}
+                                />
+                              </td>
+                              <td>
+                                <input
+                                  type="number"
+                                  step="0.01"
+                                  placeholder="0.00"
+                                  value={articulo.precio}
+                                  onChange={(e) => handleArticuloChange(index, 'precio', e.target.value)}
+                                  style={{ textAlign: 'right' }}
+                                  data-testid={`articulo-precio-${index}`}
+                                />
+                              </td>
+                              <td>
+                                <select
+                                  value={articulo.linea_negocio_id}
+                                  onChange={(e) => handleArticuloChange(index, 'linea_negocio_id', e.target.value)}
+                                >
+                                  <option value="">Línea</option>
+                                  {lineasNegocio.map(l => (
+                                    <option key={l.id} value={l.id}>{l.nombre}</option>
+                                  ))}
+                                </select>
+                              </td>
+                              <td style={{ textAlign: 'right', fontWeight: 500, fontFamily: "'JetBrains Mono', monospace" }}>
+                                {calcularImporteArticulo(articulo).toFixed(2)}
+                              </td>
+                              <td style={{ textAlign: 'center' }}>
+                                <input
+                                  type="checkbox"
+                                  checked={articulo.igv_aplica}
+                                  onChange={(e) => handleArticuloChange(index, 'igv_aplica', e.target.checked)}
+                                  style={{ width: '18px', height: '18px', accentColor: '#1B4D3E' }}
+                                />
+                              </td>
+                              <td className="actions-cell">
+                                <button
+                                  type="button"
+                                  className="btn-icon-small"
+                                  onClick={() => handleDuplicateArticulo(index)}
+                                  title="Duplicar"
+                                >
+                                  <Copy size={14} />
+                                </button>
+                                <button
+                                  type="button"
+                                  className="btn-icon-small"
+                                  onClick={() => handleRemoveArticulo(index)}
+                                  title="Eliminar"
+                                  disabled={formData.articulos.length === 1}
+                                >
+                                  <Trash2 size={14} />
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+
+                      <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.75rem' }}>
+                        <button
+                          type="button"
+                          className="btn btn-outline btn-sm"
+                          onClick={handleAddArticulo}
+                          data-testid="agregar-articulo-btn"
+                        >
+                          <Plus size={16} />
+                          Agregar artículo
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-outline btn-sm"
+                          onClick={() => setFormData(prev => ({ 
+                            ...prev, 
+                            articulos: [{ articulo_id: '', modelo_corte_id: '', unidad: '', cantidad: 1, precio: 0, linea_negocio_id: '', igv_aplica: true }] 
+                          }))}
+                        >
+                          Borrar todos los artículos
+                        </button>
+                      </div>
+                    </>
                   )}
                 </div>
 
