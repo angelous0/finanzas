@@ -1479,6 +1479,48 @@ input[type="number"] {
   
   .main-content {
     margin-left: 0 !important;
+
+
+/* OC Form Styles */
+.oc-section {
+  padding: 1rem;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.oc-summary {
+  position: sticky;
+  top: 0;
+  padding: 1.25rem;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 0.875rem;
+}
+
+.summary-row:last-of-type {
+  border-bottom: none;
+}
+
+.summary-total {
+  padding-top: 0.75rem;
+  margin-top: 0.25rem;
+  border-top: 2px solid var(--border);
+  border-bottom: none;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1B4D3E;
+}
+
     padding-top: 4rem;
   }
   
