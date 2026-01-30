@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { 
   getFacturasProveedor, createFacturaProveedor, deleteFacturaProveedor,
-  getProveedores, getMonedas, getCategorias, getLineasNegocio, getCentrosCosto
+  getProveedores, getMonedas, getCategorias, getLineasNegocio, getCentrosCosto,
+  getInventario, getModelosCortes
 } from '../services/api';
 import { Plus, Trash2, Search, X, FileText, ChevronDown, ChevronUp, Copy } from 'lucide-react';
 import { toast } from 'sonner';
