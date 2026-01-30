@@ -409,7 +409,6 @@ export const Adelantos = () => {
                     <th>Empleado</th>
                     <th className="text-right">Monto</th>
                     <th>Motivo</th>
-                    <th className="text-center">Pago</th>
                     <th className="text-center">Planilla</th>
                     <th className="text-center">Estado</th>
                     <th className="text-center">Acciones</th>
@@ -425,15 +424,6 @@ export const Adelantos = () => {
                       </td>
                       <td style={{ maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {adelanto.motivo || '-'}
-                      </td>
-                      <td className="text-center">
-                        {adelanto.pago_id ? (
-                          <span className="badge badge-info" title={`Pago ID: ${adelanto.pago_id}`}>
-                            #{adelanto.pago_id}
-                          </span>
-                        ) : (
-                          <span style={{ color: '#94a3b8' }}>-</span>
-                        )}
                       </td>
                       <td className="text-center">
                         {adelanto.planilla_id ? (
@@ -475,6 +465,18 @@ export const Adelantos = () => {
                                 <Trash2 size={15} />
                               </button>
                             </>
+                          )}
+                          {adelanto.pago_id && (
+                            <button 
+                              className="action-btn action-info"
+                              onClick={() => {
+                                setSelectedAdelanto(adelanto);
+                                setShowPagosListModal(true);
+                              }}
+                              title="Ver Pagos"
+                            >
+                              <CreditCard size={15} />
+                            </button>
                           )}
                           <button 
                             className="action-btn"
