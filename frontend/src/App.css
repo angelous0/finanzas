@@ -532,6 +532,25 @@ h1, h2, h3, h4, h5, h6 {
   border-color: #06b6d4;
 }
 
+/* Selected row in data table */
+.data-table tbody tr.selected {
+  background: #dbeafe !important;
+}
+
+.data-table tbody tr.selected:hover {
+  background: #bfdbfe !important;
+}
+
+/* Spin animation */
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 .data-table .text-right {
   text-align: right;
   font-family: 'JetBrains Mono', monospace;
