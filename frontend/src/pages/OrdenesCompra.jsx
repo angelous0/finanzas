@@ -401,13 +401,22 @@ export default function OrdenesCompra() {
                             <Eye size={15} />
                           </button>
                           {oc.estado === 'borrador' && (
-                            <button 
-                              className="action-btn action-danger"
-                              onClick={() => handleDelete(oc.id)}
-                              title="Eliminar"
-                            >
-                              <Trash2 size={15} />
-                            </button>
+                            <>
+                              <button 
+                                className="action-btn action-info"
+                                onClick={() => handleEdit(oc)}
+                                title="Editar"
+                              >
+                                <Edit2 size={15} />
+                              </button>
+                              <button 
+                                className="action-btn action-danger"
+                                onClick={() => handleDelete(oc.id)}
+                                title="Eliminar"
+                              >
+                                <Trash2 size={15} />
+                              </button>
+                            </>
                           )}
                         </div>
                       </td>
