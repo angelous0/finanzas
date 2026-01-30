@@ -143,6 +143,58 @@ export const FacturasProveedor = () => {
     }));
   };
 
+  // Artículos handlers
+  const handleAddArticulo = () => {
+    setFormData(prev => ({
+      ...prev,
+      articulos: [...prev.articulos, { articulo_id: '', modelo_corte_id: '', unidad: '', cantidad: 1, precio: 0, linea_negocio_id: '', igv_aplica: true }]
+    }));
+  };
+
+  const handleRemoveArticulo = (index) => {
+    if (formData.articulos.length > 1) {
+      setFormData(prev => ({
+        ...prev,
+        articulos: prev.articulos.filter((_, i) => i !== index)
+      }));
+    }
+  };
+
+  const handleDuplicateArticulo = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      articulos: [...prev.articulos.slice(0, index + 1), { ...prev.articulos[index] }, ...prev.articulos.slice(index + 1)]
+    }));
+  };
+
+  const handleArticuloChange = (index, field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      articulos: prev.articulos.map((art, i) => {
+        if (i !== index) return art;
+        
+        const updated = { ...art, [field]: value };
+        
+        // Auto-fill unidad and precio when selecting articulo
+        if (field === 'articulo_id' && value) {
+          const selectedArticulo = inventario.find(inv => inv.id === value);
+          if (selectedArticulo) {
+            updated.unidad = selectedArticulo.unidad_medida || 'UND';
+            updated.precio = parseFloat(selectedArticulo.precio_ref) || parseFloat(selectedArticulo.costo_compra) || 0;
+          }
+        }
+        
+        return updated;
+      })
+    }));
+  };
+
+  const calcularImporteArticulo = (articulo) => {
+    const cantidad = parseFloat(articulo.cantidad) || 0;
+    const precio = parseFloat(articulo.precio) || 0;
+    return cantidad * precio;
+  };
+
   const calcularTotales = () => {
     let subtotal = 0;
     let igv = 0;
