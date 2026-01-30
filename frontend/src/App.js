@@ -31,9 +31,10 @@ import LineasNegocio from './pages/LineasNegocio';
 import CentrosCosto from './pages/CentrosCosto';
 import Empresas from './pages/Empresas';
 import Planilla from './pages/Planilla';
+import Adelantos from './pages/Adelantos';
 import { 
   Clientes, Articulos,
-  Adelantos, Presupuestos, Conciliacion, 
+  Presupuestos, Conciliacion, 
   EstadoResultados, FlujoCaja 
 } from './pages/PlaceholderPages';
 
