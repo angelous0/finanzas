@@ -486,6 +486,13 @@ export const FacturasProveedor = () => {
     }
   };
 
+  // Actualizar una letra individual en el preview
+  const handleLetraPreviewChange = (index, field, value) => {
+    setLetrasPreview(prev => prev.map((letra, i) => 
+      i === index ? { ...letra, [field]: field === 'monto' ? parseFloat(value) || 0 : value } : letra
+    ));
+  };
+
   // Crear letras
   const handleCrearLetras = async () => {
     try {
