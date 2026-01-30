@@ -1341,8 +1341,34 @@ async def create_pago(data: PagoCreate):
                             UPDATE finanzas2.cont_letra SET estado = 'parcial' WHERE id = $1
                         """, aplicacion.documento_id)
             
-            # Get full pago with relations
-            return await get_pago(pago_id)
+            # Get full pago with relations within the same transaction
+            row = await conn.fetchrow("""
+                SELECT p.*, cf.nombre as cuenta_nombre, m.codigo as moneda_codigo
+                FROM finanzas2.cont_pago p
+                LEFT JOIN finanzas2.cont_cuenta_financiera cf ON p.cuenta_financiera_id = cf.id
+                LEFT JOIN finanzas2.cont_moneda m ON p.moneda_id = m.id
+                WHERE p.id = $1
+            """, pago_id)
+            
+            if not row:
+                raise HTTPException(404, "Pago not found after creation")
+            
+            pago_dict = dict(row)
+            
+            detalles = await conn.fetch("""
+                SELECT pd.*, cf.nombre as cuenta_nombre
+                FROM finanzas2.cont_pago_detalle pd
+                LEFT JOIN finanzas2.cont_cuenta_financiera cf ON pd.cuenta_financiera_id = cf.id
+                WHERE pd.pago_id = $1
+            """, pago_id)
+            pago_dict['detalles'] = [dict(d) for d in detalles]
+            
+            aplicaciones = await conn.fetch("""
+                SELECT * FROM finanzas2.cont_pago_aplicacion WHERE pago_id = $1
+            """, pago_id)
+            pago_dict['aplicaciones'] = [dict(a) for a in aplicaciones]
+            
+            return pago_dict
 
 async def get_pago(id: int) -> dict:
     pool = await get_pool()
