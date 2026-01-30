@@ -627,27 +627,28 @@ export const FacturasProveedor = () => {
                     </div>
                   </div>
 
-                  <table className="factura-table">
-                    <thead>
-                      <tr>
-                        <th style={{ width: '40px' }}>#</th>
-                        <th>CATEGORÍA</th>
-                        <th>DESCRIPCIÓN</th>
-                        <th>LÍNEA NEGOCIO</th>
-                        <th style={{ width: '100px' }}>IMPORTE</th>
-                        <th style={{ width: '80px' }}>IGV 18%</th>
-                        <th style={{ width: '100px' }}>ACCIONES</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {formData.lineas.map((linea, index) => (
-                        <tr key={index}>
-                          <td className="row-number">{index + 1}</td>
-                          <td>
-                            <TableSearchSelect
-                              options={categorias}
-                              value={linea.categoria_id}
-                              onChange={(value) => handleLineaChange(index, 'categoria_id', value)}
+                  <div className="table-scroll-wrapper">
+                    <table className="factura-table">
+                      <thead>
+                        <tr>
+                          <th style={{ width: '40px' }}>#</th>
+                          <th style={{ minWidth: '160px' }}>CATEGORÍA</th>
+                          <th style={{ minWidth: '180px' }}>DESCRIPCIÓN</th>
+                          <th style={{ minWidth: '140px' }}>LÍNEA NEGOCIO</th>
+                          <th style={{ width: '100px' }}>IMPORTE</th>
+                          <th style={{ width: '80px' }}>IGV 18%</th>
+                          <th style={{ width: '100px' }}>ACCIONES</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {formData.lineas.map((linea, index) => (
+                          <tr key={index}>
+                            <td className="row-number">{index + 1}</td>
+                            <td>
+                              <TableSearchSelect
+                                options={categorias}
+                                value={linea.categoria_id}
+                                onChange={(value) => handleLineaChange(index, 'categoria_id', value)}
                               placeholder="Categoría"
                               displayKey="nombre"
                               valueKey="id"
