@@ -1831,10 +1831,14 @@ input[type="number"] {
 
 /* Full Width Articles Table */
 .articulos-table-fullwidth {
-  overflow-x: auto;
+  overflow: visible;
   border: 1px solid var(--border);
   border-radius: 8px;
   background: #fff;
+}
+
+.articulos-table-fullwidth table {
+  min-width: 100%;
 }
 
 .oc-summary-card {
