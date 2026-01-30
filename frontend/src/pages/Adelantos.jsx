@@ -94,7 +94,7 @@ export const Adelantos = () => {
       return;
     }
     
-    if (formData.pagar && !formData.cuenta_financiera_id) {
+    if (!editingId && formData.pagar && !formData.cuenta_financiera_id) {
       toast.error('Seleccione una cuenta financiera para el pago');
       return;
     }
@@ -105,19 +105,63 @@ export const Adelantos = () => {
         monto: parseFloat(formData.monto),
         fecha: formData.fecha,
         motivo: formData.motivo,
-        pagar: formData.pagar,
-        cuenta_financiera_id: formData.pagar && formData.cuenta_financiera_id ? parseInt(formData.cuenta_financiera_id) : null,
+        pagar: editingId ? false : formData.pagar,
+        cuenta_financiera_id: !editingId && formData.pagar && formData.cuenta_financiera_id ? parseInt(formData.cuenta_financiera_id) : null,
         medio_pago: formData.medio_pago
       };
       
-      await createAdelanto(payload);
-      toast.success('Adelanto registrado exitosamente');
+      if (editingId) {
+        await updateAdelanto(editingId, payload);
+        toast.success('Adelanto actualizado exitosamente');
+      } else {
+        await createAdelanto(payload);
+        toast.success('Adelanto registrado exitosamente');
+      }
       setShowModal(false);
+      setEditingId(null);
       resetForm();
       loadData();
     } catch (error) {
-      console.error('Error creating adelanto:', error);
-      toast.error(error.response?.data?.detail || 'Error al registrar adelanto');
+      console.error('Error saving adelanto:', error);
+      toast.error(error.response?.data?.detail || 'Error al guardar adelanto');
+    }
+  };
+
+  const handleEdit = (adelanto) => {
+    setEditingId(adelanto.id);
+    setFormData({
+      empleado_id: String(adelanto.empleado_id),
+      monto: String(adelanto.monto),
+      fecha: adelanto.fecha?.split('T')[0] || new Date().toISOString().split('T')[0],
+      motivo: adelanto.motivo || '',
+      pagar: false,
+      cuenta_financiera_id: '',
+      medio_pago: 'efectivo'
+    });
+    setShowModal(true);
+  };
+
+  const handleDelete = async (adelanto) => {
+    if (adelanto.pagado) {
+      toast.error('No se puede eliminar un adelanto pagado');
+      return;
+    }
+    if (adelanto.descontado) {
+      toast.error('No se puede eliminar un adelanto ya descontado');
+      return;
+    }
+    
+    if (!window.confirm(`¿Eliminar el adelanto de ${formatCurrency(adelanto.monto)} a ${adelanto.empleado_nombre}?`)) {
+      return;
+    }
+    
+    try {
+      await deleteAdelanto(adelanto.id);
+      toast.success('Adelanto eliminado');
+      loadData();
+    } catch (error) {
+      console.error('Error deleting adelanto:', error);
+      toast.error(error.response?.data?.detail || 'Error al eliminar');
     }
   };
 
