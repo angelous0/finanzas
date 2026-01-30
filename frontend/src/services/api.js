@@ -166,6 +166,9 @@ export const conciliarMovimientos = (bancoIds, pagoIds) => {
   pagoIds.forEach(id => params.append('pago_ids', id));
   return api.post(`/conciliacion/conciliar?${params.toString()}`);
 };
+export const getConciliacionesDetalladas = () => api.get('/conciliacion/historial');
+export const desconciliarMovimientos = (bancoId, pagoId) => 
+  api.post('/conciliacion/desconciliar', { banco_id: bancoId, pago_id: pagoId });
 
 // Reportes
 export const getReporteFlujoCaja = (fechaDesde, fechaHasta) => 
