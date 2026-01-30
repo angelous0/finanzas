@@ -105,30 +105,32 @@ export const Sidebar = ({ collapsed, setCollapsed }) => {
       <nav className="sidebar-nav">
         {navSections.map((section) => (
           <div key={section.title} className="nav-section">
-            <button 
-              className="nav-section-title"
-              onClick={() => toggleSection(section.title)}
-              style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'space-between',
-                width: '100%',
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                padding: '0.5rem 1.5rem',
-                color: 'rgba(255,255,255,0.4)'
-              }}
-            >
-              <span>{section.title}</span>
-              {expandedSections[section.title] ? (
-                <ChevronDown size={14} />
-              ) : (
-                <ChevronRight size={14} />
-              )}
-            </button>
+            {!collapsed && (
+              <button 
+                className="nav-section-title"
+                onClick={() => toggleSection(section.title)}
+                style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'space-between',
+                  width: '100%',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '0.5rem 1.5rem',
+                  color: 'rgba(255,255,255,0.4)'
+                }}
+              >
+                <span>{section.title}</span>
+                {expandedSections[section.title] ? (
+                  <ChevronDown size={14} />
+                ) : (
+                  <ChevronRight size={14} />
+                )}
+              </button>
+            )}
             
-            {expandedSections[section.title] && (
+            {(collapsed || expandedSections[section.title]) && (
               <div className="nav-items">
                 {section.items.map((item) => (
                   <NavLink
@@ -138,9 +140,10 @@ export const Sidebar = ({ collapsed, setCollapsed }) => {
                       `nav-item ${isActive || (item.path === '/' && location.pathname === '/') ? 'active' : ''}`
                     }
                     data-testid={`nav-${item.path.replace('/', '') || 'dashboard'}`}
+                    title={collapsed ? item.label : undefined}
                   >
                     <item.icon className="nav-item-icon" size={18} />
-                    <span>{item.label}</span>
+                    {!collapsed && <span>{item.label}</span>}
                   </NavLink>
                 ))}
               </div>
