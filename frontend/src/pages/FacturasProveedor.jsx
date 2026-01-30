@@ -88,8 +88,7 @@ export const FacturasProveedor = () => {
   const [filtroEstado, setFiltroEstado] = useState('');
   const [filtroNumero, setFiltroNumero] = useState('');
   const [filtroProveedorId, setFiltroProveedorId] = useState('');
-  const [filtroFechaDesde, setFiltroFechaDesde] = useState('');
-  const [filtroFechaHasta, setFiltroFechaHasta] = useState('');
+  const [filtroFecha, setFiltroFecha] = useState('');
   
   // Form state
   const [formData, setFormData] = useState({
