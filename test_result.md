@@ -101,3 +101,49 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+user_problem_statement: "Complete Bank Reconciliation save functionality - Implement endpoint to save reconciled bank movements and system payments"
+
+backend:
+  - task: "Bank Reconciliation - Save endpoint"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "true"
+        agent: "main"
+        comment: "Endpoint POST /api/conciliacion/conciliar already exists at line 2998. Takes banco_ids and pago_ids as query params. Updates procesado=TRUE for bank movements and conciliado=TRUE for system payments. Tested via curl successfully."
+
+frontend:
+  - task: "Bank Reconciliation - Connect save button to backend"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/ConciliacionBancaria.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "true"
+        agent: "main"
+        comment: "Added conciliarMovimientos function to api.js. Updated handleConciliarManual to call backend endpoint with selectedBanco and selectedSistema IDs. Added loading state and error handling. Function validates amounts match before calling backend."
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 0
+  run_ui: true
+
+test_plan:
+  current_focus:
+    - "Bank Reconciliation - Save endpoint"
+    - "Bank Reconciliation - Connect save button to backend"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+  - agent: "main"
+    message: "Completed implementation of bank reconciliation save functionality. Backend endpoint was already in place. Added frontend API function and connected handleConciliarManual to call the backend. The function validates that amounts match before calling the endpoint. Need full E2E testing: 1) Import Excel bank movements 2) Select matching bank and system movements 3) Click 'Conciliar' button 4) Verify movements are marked as reconciled in DB 5) Verify UI refreshes and shows updated counts"
