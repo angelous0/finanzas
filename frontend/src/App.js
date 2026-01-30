@@ -126,8 +126,9 @@ function App() {
             <Route path="/flujo-caja" element={<FlujoCaja />} />
           </Routes>
         </main>
-      </div>
-      <Toaster position="top-right" richColors />
+        </div>
+        <Toaster position="top-right" richColors />
+      </EmpresaProvider>
     </Router>
   );
 }
