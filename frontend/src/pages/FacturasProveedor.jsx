@@ -109,7 +109,7 @@ export const FacturasProveedor = () => {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [facturasRes, proveedoresRes, monedasRes, categoriasRes, lineasRes, centrosRes, inventarioRes, modelosRes] = await Promise.all([
+      const [facturasRes, proveedoresRes, monedasRes, categoriasRes, lineasRes, centrosRes, inventarioRes, modelosRes, cuentasRes] = await Promise.all([
         getFacturasProveedor({ estado: filtroEstado || undefined }),
         getProveedores(),
         getMonedas(),
@@ -117,7 +117,8 @@ export const FacturasProveedor = () => {
         getLineasNegocio(),
         getCentrosCosto(),
         getInventario(),
-        getModelosCortes()
+        getModelosCortes(),
+        getCuentasFinancieras()
       ]);
       
       setFacturas(facturasRes.data);
@@ -128,6 +129,7 @@ export const FacturasProveedor = () => {
       setCentrosCosto(centrosRes.data);
       setInventario(inventarioRes.data);
       setModelosCortes(modelosRes.data);
+      setCuentasFinancieras(cuentasRes.data);
       
       // Set default moneda
       const pen = monedasRes.data.find(m => m.codigo === 'PEN');
