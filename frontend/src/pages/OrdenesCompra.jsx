@@ -882,7 +882,8 @@ export default function OrdenesCompra() {
                         const subtotal = (parseFloat(linea.cantidad) || 0) * (parseFloat(linea.precio_unitario) || 0);
                         const articuloSeleccionado = articulos.find(a => String(a.id) === String(linea.articulo_id));
                         const filteredArts = getFilteredArticulos(index);
-                        const isDropdownOpen = articuloDropdownOpen[index] === true;
+                        const searchTerm = articuloSearchTerm[index] || '';
+                        const isDropdownOpen = articuloDropdownOpen[index] === true || searchTerm.length > 0;
                         
                         return (
                           <tr key={index}>
@@ -896,21 +897,23 @@ export default function OrdenesCompra() {
                                     type="text"
                                     className="combo-input"
                                     placeholder={articuloSeleccionado ? articuloSeleccionado.nombre : 'Buscar artículo...'}
-                                    value={articuloSearchTerm[index] || ''}
+                                    value={searchTerm}
                                     onChange={(e) => {
-                                      console.log('onChange:', e.target.value, 'articulos:', articulos.length);
                                       setArticuloSearchTerm(prev => ({ ...prev, [index]: e.target.value }));
                                       setArticuloDropdownOpen(prev => ({ ...prev, [index]: true }));
                                     }}
                                     onFocus={() => {
-                                      console.log('onFocus, articulos:', articulos.length);
                                       setArticuloDropdownOpen(prev => ({ ...prev, [index]: true }));
                                     }}
                                     onBlur={() => {
                                       // Delay to allow click on dropdown item
                                       setTimeout(() => {
                                         setArticuloDropdownOpen(prev => ({ ...prev, [index]: false }));
-                                      }, 200);
+                                        // Clear search term if nothing selected
+                                        if (!articuloSeleccionado) {
+                                          setArticuloSearchTerm(prev => ({ ...prev, [index]: '' }));
+                                        }
+                                      }, 250);
                                     }}
                                   />
                                   <ChevronDown size={14} className="combo-chevron" style={{ transform: isDropdownOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
