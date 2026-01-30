@@ -83,13 +83,16 @@ export const ConciliacionBancaria = () => {
     
     try {
       setLoading(true);
-      const [bancoRes, sistemaRes, concilRes] = await Promise.all([
+      const [bancoPendientesRes, bancoConciliadosRes, sistemaRes, concilRes] = await Promise.all([
         getMovimientosBanco({ cuenta_financiera_id: cuentaSeleccionada, procesado: false }),
+        getMovimientosBanco({ cuenta_financiera_id: cuentaSeleccionada, procesado: true }),
         getPagos({ cuenta_financiera_id: cuentaSeleccionada, fecha_desde: fechaDesde, fecha_hasta: fechaHasta }),
         getConciliaciones(cuentaSeleccionada)
       ]);
       
-      setMovimientosBanco(bancoRes.data || []);
+      // Combine pending and reconciled bank movements
+      const allBancoMovements = [...(bancoPendientesRes.data || []), ...(bancoConciliadosRes.data || [])];
+      setMovimientosBanco(allBancoMovements);
       setMovimientosSistema(sistemaRes.data || []);
       setConciliaciones(concilRes.data || []);
       setSelectedBanco([]);
