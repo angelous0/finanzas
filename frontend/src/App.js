@@ -53,15 +53,16 @@ function App() {
 
   return (
     <Router>
-      <div className={`app-layout ${sidebarCollapsed ? 'sidebar-collapsed' : ''} ${mobileMenuOpen ? 'mobile-menu-open' : ''}`}>
-        {/* Mobile menu overlay */}
-        {mobileMenuOpen && (
-          <div 
-            className="mobile-overlay" 
-            onClick={() => setMobileMenuOpen(false)}
-            data-testid="mobile-overlay"
-          />
-        )}
+      <EmpresaProvider>
+        <div className={`app-layout ${sidebarCollapsed ? 'sidebar-collapsed' : ''} ${mobileMenuOpen ? 'mobile-menu-open' : ''}`}>
+          {/* Mobile menu overlay */}
+          {mobileMenuOpen && (
+            <div 
+              className="mobile-overlay" 
+              onClick={() => setMobileMenuOpen(false)}
+              data-testid="mobile-overlay"
+            />
+          )}
         
         <Sidebar 
           collapsed={sidebarCollapsed} 
