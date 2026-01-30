@@ -729,7 +729,7 @@ export default function OrdenesCompra() {
                         <tbody>
                           {lineas.map((linea, index) => {
                             const subtotal = (parseFloat(linea.cantidad) || 0) * (parseFloat(linea.precio_unitario) || 0);
-                            const articuloSeleccionado = articulos.find(a => a.id === parseInt(linea.articulo_id));
+                            const articuloSeleccionado = articulos.find(a => String(a.id) === String(linea.articulo_id));
                             const filteredArts = getFilteredArticulos(index);
                             
                             return (
