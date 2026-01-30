@@ -547,6 +547,7 @@ class FinanzasAPITester:
             ("CRUD Facturas Proveedor", self.test_crud_facturas_proveedor),
             ("Pagos Functionality", self.test_pagos_functionality),
             ("Letras Functionality", self.test_letras_functionality),
+            ("Bank Reconciliation Save", self.test_bank_reconciliation_save),
         ]
         
         for test_name, test_func in tests:
