@@ -155,25 +155,31 @@ frontend:
     implemented: true
     working: "NA"
     file: "/app/frontend/src/pages/ConciliacionBancaria.jsx"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
     needs_retesting: true
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Fixed loadMovimientos function (line 90) to filter sistema payments with conciliado: false parameter. This ensures only non-reconciled payments appear in Pendientes tab, fixing the bug where PAG-E-2026-00008 (reconciled payment) was still showing."
+      - working: "NA"
+        agent: "testing"
+        comment: "⚠️ UNABLE TO FULLY TEST: Frontend account selection issue prevents complete UI testing. Backend API verified working correctly - PAG-E-2026-00008 (reconciled) properly filtered when conciliado=false parameter used. Frontend implementation appears correct but account dropdown not populating with bank accounts, preventing search functionality. Issue likely related to empresa context or account filtering logic."
 
   - task: "Bank Reconciliation - Movimientos Banco filter"
     implemented: true
     working: "NA"
     file: "/app/frontend/src/pages/ConciliacionBancaria.jsx"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
     needs_retesting: true
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Added filtroBanco state (line 42) and filter buttons in Movimientos Banco tab (lines 481-519). Applied filter logic in table rendering (line 815) to show either pendientes (!m.procesado) or conciliados (m.procesado) bank movements. This fixes the Conciliados filter functionality."
+      - working: "NA"
+        agent: "testing"
+        comment: "⚠️ UNABLE TO FULLY TEST: Same frontend account selection issue prevents testing of filter buttons. Code implementation looks correct - filter buttons present in UI (lines 481-519), proper state management with filtroBanco, and correct filtering logic in table rendering. Backend API supports procesado filtering correctly."
 
 test_plan:
   current_focus:
