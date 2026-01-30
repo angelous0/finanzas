@@ -404,13 +404,26 @@ export const FacturasProveedor = () => {
   };
 
   // Abrir modal de pago
-  const handleOpenPago = (factura) => {
+  const handleOpenPago = async (factura) => {
     setFacturaParaPago(factura);
+    
+    // Calculate payment number based on existing payments
+    let referencia = factura.numero || '';
+    try {
+      const pagosRes = await getPagosFactura(factura.id);
+      const numPagos = pagosRes.data?.length || 0;
+      if (numPagos > 0) {
+        referencia = `${factura.numero} - PAGO ${numPagos + 1}`;
+      }
+    } catch (e) {
+      // If can't get payments, just use document number
+    }
+    
     setPagoData({
       cuenta_id: cuentasFinancieras[0]?.id || '',
       medio_pago: 'transferencia',
       monto: parseFloat(factura.saldo_pendiente) || 0,
-      referencia: ''
+      referencia: referencia
     });
     setShowPagoModal(true);
   };
