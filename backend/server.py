@@ -3029,6 +3029,83 @@ async def importar_excel_banco(
         logger.error(f"Error importing Excel: {e}")
         raise HTTPException(500, f"Error al importar: {str(e)}")
 
+
+@api_router.get("/conciliacion/historial")
+async def get_historial_conciliaciones():
+    """Get all reconciled movements with details"""
+    pool = await get_pool()
+    async with pool.acquire() as conn:
+        await conn.execute("SET search_path TO finanzas2, public")
+        
+        rows = await conn.fetch("""
+            SELECT 
+                b.id as banco_id,
+                b.fecha as fecha_banco,
+                b.banco,
+                b.referencia as ref_banco,
+                b.descripcion as descripcion_banco,
+                b.monto as monto,
+                p.id as sistema_id,
+                p.fecha as fecha_sistema,
+                p.numero as numero_sistema,
+                p.tipo as tipo_sistema,
+                p.notas as descripcion_sistema,
+                t.nombre as tercero_nombre
+            FROM finanzas2.cont_banco_mov_raw b
+            INNER JOIN finanzas2.cont_pago p ON b.cuenta_financiera_id = p.cuenta_financiera_id
+            LEFT JOIN finanzas2.cont_tercero t ON p.tercero_id = t.id
+            WHERE b.procesado = TRUE AND p.conciliado = TRUE
+            ORDER BY b.fecha DESC, b.id DESC
+        """)
+        
+        result = []
+        for row in rows:
+            result.append({
+                "banco_id": row['banco_id'],
+                "sistema_id": row['sistema_id'],
+                "fecha_banco": row['fecha_banco'].isoformat() if row['fecha_banco'] else None,
+                "fecha_sistema": row['fecha_sistema'].isoformat() if row['fecha_sistema'] else None,
+                "banco": row['banco'],
+                "ref_banco": row['ref_banco'],
+                "descripcion_banco": row['descripcion_banco'],
+                "numero_sistema": row['numero_sistema'],
+                "tipo_sistema": row['tipo_sistema'],
+                "descripcion_sistema": row['descripcion_sistema'] or row['tercero_nombre'],
+                "monto": float(row['monto']) if row['monto'] else 0.0
+            })
+        
+        return result
+
+@api_router.post("/conciliacion/desconciliar")
+async def desconciliar_movimientos(data: dict):
+    """Unreconcile movements"""
+    banco_id = data.get('banco_id')
+    pago_id = data.get('pago_id')
+    
+    if not banco_id or not pago_id:
+        raise HTTPException(400, "Se requieren banco_id y pago_id")
+    
+    pool = await get_pool()
+    async with pool.acquire() as conn:
+        await conn.execute("SET search_path TO finanzas2, public")
+        
+        # Reset bank movement
+        await conn.execute("""
+            UPDATE finanzas2.cont_banco_mov_raw 
+            SET procesado = FALSE 
+            WHERE id = $1
+        """, banco_id)
+        
+        # Reset system payment
+        await conn.execute("""
+            UPDATE finanzas2.cont_pago 
+            SET conciliado = FALSE 
+            WHERE id = $1
+        """, pago_id)
+    
+    return {"message": "Movimientos desconciliados exitosamente"}
+
+
 @api_router.get("/conciliacion/movimientos-banco")
 async def list_movimientos_banco(
     cuenta_financiera_id: Optional[int] = None,
