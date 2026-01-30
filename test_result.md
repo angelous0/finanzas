@@ -122,15 +122,18 @@ backend:
 
   - task: "Bank Reconciliation - API filtering parameters"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Added cuenta_financiera_id and conciliado parameters to /api/pagos endpoint (lines 1376-1377, 1399-1406). This allows filtering payments by account and reconciliation status to fix the bug where reconciled payments were showing in Pendientes tab."
+      - working: true
+        agent: "testing"
+        comment: "✅ Backend API filtering VERIFIED: API correctly returns non-reconciled payments (PAG-E-2026-00006, PAG-E-2026-00005, PAG-E-2026-00004) when conciliado=false and reconciled payment (PAG-E-2026-00008) when conciliado=true. Bank movements API also working correctly with procesado filtering."
 
 frontend:
   - task: "Bank Reconciliation - Connect save button to backend"
