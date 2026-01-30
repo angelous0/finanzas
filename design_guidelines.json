@@ -1,0 +1,158 @@
+{
+  "design_system": {
+    "typography": {
+      "font_family": {
+        "headings": "Manrope, sans-serif",
+        "body": "Inter, sans-serif",
+        "mono": "JetBrains Mono, monospace"
+      },
+      "scale": {
+        "h1": "text-4xl font-bold tracking-tight",
+        "h2": "text-3xl font-semibold tracking-tight",
+        "h3": "text-2xl font-semibold",
+        "body_large": "text-lg leading-relaxed",
+        "body_default": "text-base leading-normal",
+        "caption": "text-sm text-muted-foreground"
+      }
+    },
+    "colors": {
+      "palette": {
+        "primary": {
+          "DEFAULT": "#1B4D3E",
+          "foreground": "#FFFFFF"
+        },
+        "secondary": {
+          "DEFAULT": "#E8F5E9",
+          "foreground": "#1B4D3E"
+        },
+        "accent": {
+          "DEFAULT": "#4ADE80",
+          "foreground": "#000000"
+        },
+        "background": "#F8FAFC",
+        "sidebar": {
+          "background": "#11221C",
+          "foreground": "#E2E8F0",
+          "active": "#4ADE80",
+          "hover": "#1F362D"
+        },
+        "muted": {
+          "DEFAULT": "#F1F5F9",
+          "foreground": "#64748B"
+        },
+        "border": "#E2E8F0"
+      },
+      "semantic": {
+        "success": "#22C55E",
+        "warning": "#F59E0B",
+        "error": "#EF4444",
+        "info": "#3B82F6"
+      }
+    },
+    "spacing": {
+      "container_padding": "p-6 md:p-8 lg:p-12",
+      "section_gap": "gap-8",
+      "component_gap": "gap-4"
+    },
+    "visual_enhancers": {
+      "radius": "rounded-md",
+      "shadows": {
+        "card": "shadow-sm hover:shadow-md transition-shadow duration-200",
+        "dropdown": "shadow-lg border border-border/50"
+      },
+      "glassmorphism": "backdrop-blur-md bg-white/80 border border-white/20",
+      "borders": "border border-border"
+    }
+  },
+  "layout_strategies": {
+    "dashboard": {
+      "type": "sidebar_layout",
+      "structure": "fixed_sidebar_left_fluid_content_right",
+      "sidebar_width": "w-64",
+      "grid_system": "grid grid-cols-1 md:grid-cols-12 gap-6",
+      "bento_grid_mode": "mode_b_high_density"
+    },
+    "auth_pages": {
+      "type": "split_screen",
+      "image_side": "left",
+      "form_side": "right"
+    }
+  },
+  "components": {
+    "buttons": {
+      "primary": "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm",
+      "secondary": "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+      "ghost": "hover:bg-accent hover:text-accent-foreground",
+      "outline": "border border-input bg-background hover:bg-accent hover:text-accent-foreground"
+    },
+    "cards": {
+      "default": "bg-card text-card-foreground rounded-lg border shadow-sm",
+      "interactive": "hover:border-primary/50 transition-colors cursor-pointer"
+    },
+    "tables": {
+      "style": "excel_like_dense",
+      "header": "bg-muted/50 text-muted-foreground font-medium text-xs uppercase tracking-wider",
+      "row": "hover:bg-muted/50 transition-colors data-[state=selected]:bg-muted",
+      "cell": "p-2 align-middle [&:has([role=checkbox])]:pr-0"
+    },
+    "inputs": {
+      "default": "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+    }
+  },
+  "assets": {
+    "images": {
+      "auth_background": {
+        "url": "https://images.unsplash.com/photo-1645855564053-fe5176d1311e?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA3MDB8MHwxfHNlYXJjaHwxfHxhYnN0cmFjdCUyMGdlb21ldHJpYyUyMGZpbmFuY2UlMjBiYWNrZ3JvdW5kJTIwbGlnaHR8ZW58MHx8fHwxNzY5NzQ5MjAyfDA&ixlib=rb-4.1.0&q=85",
+        "alt": "Abstract geometric finance background"
+      },
+      "user_avatar": {
+        "url": "https://images.unsplash.com/photo-1629507208649-70919ca33793?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzNDR8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjBidXNpbmVzcyUyMHBvcnRyYWl0fGVufDB8fHx8MTc2OTc0OTIwNHww&ixlib=rb-4.1.0&q=85",
+        "alt": "Professional user avatar"
+      }
+    },
+    "icons": {
+      "library": "lucide-react",
+      "style": "stroke-width-1.5"
+    }
+  },
+  "motion": {
+    "transitions": "transition-all duration-200 ease-in-out",
+    "hover_effects": "hover:-translate-y-0.5 hover:shadow-md",
+    "page_transition": {
+      "initial": { "opacity": 0, "y": 20 },
+      "animate": { "opacity": 1, "y": 0 },
+      "exit": { "opacity": 0, "y": -20 }
+    }
+  },
+  "instructions_to_main_agent": [
+    "Implement a 'Dark Green' sidebar theme (#11221C) with a light content area (#F8FAFC).",
+    "Use 'Manrope' for all headings and 'Inter' for body text.",
+    "For tables, implement an 'Excel-like' inline editing experience: dense rows, clear borders, and direct input fields.",
+    "Ensure all financial data (numbers) are right-aligned and use a monospace font if necessary for alignment.",
+    "Use the provided image URLs for the login screen and user profile.",
+    "Do not use gradients for the main background; keep it clean and solid.",
+    "Add 'data-testid' to all interactive elements.",
+    "Use 'sonner' for toast notifications.",
+    "Customize Shadcn components to match the 'Organic & Earthy' finance aesthetic (Green/Beige/White)."
+  ],
+  "universal_guidelines": [
+    "Dark colors look good when used independently without gradients. DO NOT use dark colors as gradients",
+    "Don't make generic centered layouts, simplistic gradients, and uniform styling.",
+    "Create depth through layered design elements with z-index hierarchy",
+    "Use glass-morphism effects with backdrop filters (12-24px blur)",
+    "You MUST NOT apply universal transition. Eg: transition: all. This results in breaking transforms. Always add transitions for specific interactive elements like button, input excluding transforms",
+    "You MUST NOT center align the app container, ie do not add .App { text-align: center; } in the css file. This disrupts the human natural reading flow of text",
+    "Always use modern button styles like pill-shaped, or sharp button with interaction animations & color relevant to the app style",
+    "NEVER: use AI assistant Emoji characters like 🤖🧠💭💡🔮🎯📚🎭🎬🎪🎉🎊🎁🎀🎂🍰🎈🎨🎰💰💵💳🏦💎🪙💸🤑📊📈📉💹🔢🏆🥇 etc for icons.",
+    "Every interaction needs micro-animations - hover states, transitions, parallax effects, and entrance animations. Static = dead.",
+    "Use 2-3x more spacing than feels comfortable. Cramped designs look cheap.",
+    "Subtle grain textures, noise overlays, custom cursors, selection states, and loading animations: separates good from extraordinary.",
+    "Main agent relies on these image URLs. Missing categories (especially sponsor logos) = main agent will use placeholder text which is FORBIDDEN",
+    "Prioritize using pre-existing components from src/components/ui when applicable",
+    "Create new components that match the style and conventions of existing components when needed",
+    "Examine existing components to understand the project's component patterns before creating new ones",
+    "Components MUST use named exports (export const ComponentName = ...)",
+    "Pages MUST use default exports (export default function PageName() {...})",
+    "Use sonner for toasts. Sonner component are located in /app/src/components/ui/sonner.tsx"
+  ]
+}
