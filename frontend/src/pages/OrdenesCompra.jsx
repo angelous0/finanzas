@@ -40,6 +40,7 @@ export default function OrdenesCompra() {
   const [showModal, setShowModal] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
   const [selectedOC, setSelectedOC] = useState(null);
+  const [editingOC, setEditingOC] = useState(null);
   const printRef = useRef();
   
   // Master data
