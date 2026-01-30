@@ -1689,10 +1689,13 @@ export const FacturasProveedor = () => {
                 </div>
               </div>
 
-              {/* Preview de letras */}
+              {/* Preview de letras - Editable */}
               <div style={{ marginBottom: '1rem' }}>
-                <h4 style={{ margin: '0 0 0.75rem', fontSize: '0.875rem', fontWeight: 600 }}>
+                <h4 style={{ margin: '0 0 0.75rem', fontSize: '0.875rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   Letras a crear ({letrasPreview.length})
+                  <span style={{ fontWeight: 400, fontSize: '0.75rem', color: '#64748b' }}>
+                    — Puedes editar montos y fechas antes de crear
+                  </span>
                 </h4>
                 <table className="data-table" style={{ fontSize: '0.8125rem' }}>
                   <thead>
@@ -1708,9 +1711,39 @@ export const FacturasProveedor = () => {
                         <td style={{ fontFamily: "'JetBrains Mono', monospace" }}>
                           {letrasConfig.prefijo}-{facturaParaLetras.numero}-{String(letra.numero).padStart(2, '0')}
                         </td>
-                        <td>{formatDate(letra.fecha_vencimiento)}</td>
-                        <td className="text-right" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-                          {formatCurrency(letra.monto)}
+                        <td style={{ padding: 0 }}>
+                          <input
+                            type="date"
+                            value={letra.fecha_vencimiento}
+                            onChange={(e) => handleLetraPreviewChange(index, 'fecha_vencimiento', e.target.value)}
+                            style={{ 
+                              width: '100%', 
+                              padding: '0.5rem', 
+                              border: 'none', 
+                              background: 'transparent',
+                              fontFamily: 'inherit',
+                              fontSize: 'inherit'
+                            }}
+                            data-testid={`letra-fecha-${index}`}
+                          />
+                        </td>
+                        <td style={{ padding: 0 }}>
+                          <input
+                            type="number"
+                            step="0.01"
+                            value={letra.monto}
+                            onChange={(e) => handleLetraPreviewChange(index, 'monto', e.target.value)}
+                            style={{ 
+                              width: '100%', 
+                              padding: '0.5rem', 
+                              border: 'none', 
+                              background: 'transparent',
+                              fontFamily: "'JetBrains Mono', monospace",
+                              fontSize: 'inherit',
+                              textAlign: 'right'
+                            }}
+                            data-testid={`letra-monto-${index}`}
+                          />
                         </td>
                       </tr>
                     ))}
@@ -1718,8 +1751,18 @@ export const FacturasProveedor = () => {
                   <tfoot>
                     <tr style={{ background: '#f8fafc', fontWeight: 600 }}>
                       <td colSpan={2}>Total Letras</td>
-                      <td className="text-right" style={{ fontFamily: "'JetBrains Mono', monospace", color: '#1B4D3E' }}>
+                      <td className="text-right" style={{ 
+                        fontFamily: "'JetBrains Mono', monospace", 
+                        color: Math.abs(letrasPreview.reduce((sum, l) => sum + l.monto, 0) - parseFloat(facturaParaLetras.total || 0)) > 0.01 
+                          ? '#EF4444' 
+                          : '#1B4D3E' 
+                      }}>
                         {formatCurrency(letrasPreview.reduce((sum, l) => sum + l.monto, 0))}
+                        {Math.abs(letrasPreview.reduce((sum, l) => sum + l.monto, 0) - parseFloat(facturaParaLetras.total || 0)) > 0.01 && (
+                          <span style={{ display: 'block', fontSize: '0.7rem', fontWeight: 400 }}>
+                            Debe ser: {formatCurrency(facturaParaLetras.total)}
+                          </span>
+                        )}
                       </td>
                     </tr>
                   </tfoot>
