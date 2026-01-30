@@ -153,6 +153,8 @@ export const importarExcelBanco = (file, cuentaFinancieraId, banco) => {
     headers: { 'Content-Type': 'multipart/form-data' },
   });
 };
+export const conciliarMovimientos = (bancoIds, pagoIds) => 
+  api.post('/conciliacion/conciliar', null, { params: { banco_ids: bancoIds, pago_ids: pagoIds } });
 
 // Reportes
 export const getReporteFlujoCaja = (fechaDesde, fechaHasta) => 
