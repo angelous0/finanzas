@@ -23,8 +23,11 @@ import Proveedores from './pages/Proveedores';
 import Empleados from './pages/Empleados';
 import Categorias from './pages/Categorias';
 import BalanceGeneral from './pages/BalanceGeneral';
+import LineasNegocio from './pages/LineasNegocio';
+import CentrosCosto from './pages/CentrosCosto';
+import Empresas from './pages/Empresas';
 import { 
-  Clientes, Articulos, LineasNegocio, CentrosCosto, Empresas,
+  Clientes, Articulos,
   Adelantos, Planillas, Presupuestos, Conciliacion, 
   EstadoResultados, FlujoCaja 
 } from './pages/PlaceholderPages';
