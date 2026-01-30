@@ -128,8 +128,7 @@ export const FacturasProveedor = () => {
       const params = {};
       if (filtroEstado) params.estado = filtroEstado;
       if (filtroProveedorId) params.proveedor_id = filtroProveedorId;
-      if (filtroFechaDesde) params.fecha_desde = filtroFechaDesde;
-      if (filtroFechaHasta) params.fecha_hasta = filtroFechaHasta;
+      if (filtroFecha) params.fecha_desde = filtroFecha;
       
       const [facturasRes, proveedoresRes, monedasRes, categoriasRes, lineasRes, centrosRes, inventarioRes, modelosRes, cuentasRes] = await Promise.all([
         getFacturasProveedor(params),
