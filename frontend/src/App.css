@@ -1239,10 +1239,18 @@ input[type="number"] {
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
   width: 95%;
   max-width: 950px;
-  max-height: 95vh;
+  max-height: 90vh;
   overflow: hidden;
   display: flex;
   flex-direction: column;
+}
+
+.factura-modal > form {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
 }
 
 .factura-modal-header {
