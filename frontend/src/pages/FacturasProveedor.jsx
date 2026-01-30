@@ -199,6 +199,7 @@ export const FacturasProveedor = () => {
     let subtotal = 0;
     let igv = 0;
     
+    // Sumar líneas de categoría
     formData.lineas.forEach(linea => {
       const importe = parseFloat(linea.importe) || 0;
       if (formData.impuestos_incluidos) {
@@ -210,6 +211,23 @@ export const FacturasProveedor = () => {
       } else {
         subtotal += importe;
         if (linea.igv_aplica) {
+          igv += importe * 0.18;
+        }
+      }
+    });
+    
+    // Sumar artículos
+    formData.articulos.forEach(art => {
+      const importe = calcularImporteArticulo(art);
+      if (formData.impuestos_incluidos) {
+        const base = importe / 1.18;
+        subtotal += base;
+        if (art.igv_aplica) {
+          igv += base * 0.18;
+        }
+      } else {
+        subtotal += importe;
+        if (art.igv_aplica) {
           igv += importe * 0.18;
         }
       }
