@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  getAdelantos, createAdelanto, pagarAdelanto, getEmpleados, getCuentasFinancieras
+  getAdelantos, createAdelanto, updateAdelanto, deleteAdelanto, pagarAdelanto, getEmpleados, getCuentasFinancieras
 } from '../services/api';
-import { Plus, FileText, Eye, X, DollarSign, Download, Calendar, Users, Wallet, CreditCard } from 'lucide-react';
+import { Plus, FileText, Eye, X, DollarSign, Download, Calendar, Users, Wallet, CreditCard, Edit2, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import SearchableSelect from '../components/SearchableSelect';
 
