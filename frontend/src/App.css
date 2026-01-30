@@ -2013,6 +2013,8 @@ input[type="number"] {
   display: none;
 }
 
+@media (max-width: 768px) {
+  .main-content {
     padding-top: 4rem;
   }
   
