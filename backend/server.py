@@ -1268,9 +1268,13 @@ async def get_letras_de_factura(id: int):
         await conn.execute("SET search_path TO finanzas2, public")
         
         rows = await conn.fetch("""
-            SELECT l.*, m.codigo as moneda_codigo, m.simbolo as moneda_simbolo
+            SELECT l.*, 
+                   fp.moneda_id,
+                   m.codigo as moneda_codigo, 
+                   m.simbolo as moneda_simbolo
             FROM finanzas2.cont_letra l
-            LEFT JOIN finanzas2.cont_moneda m ON l.moneda_id = m.id
+            LEFT JOIN finanzas2.cont_factura_proveedor fp ON l.factura_id = fp.id
+            LEFT JOIN finanzas2.cont_moneda m ON fp.moneda_id = m.id
             WHERE l.factura_id = $1
             ORDER BY l.fecha_vencimiento ASC
         """, id)
