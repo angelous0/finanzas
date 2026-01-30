@@ -1778,7 +1778,7 @@ input[type="number"] {
   box-shadow: 0 10px 25px rgba(0,0,0,0.15);
   max-height: 240px;
   overflow-y: auto;
-  z-index: 50;
+  z-index: 1000;
   margin-top: 4px;
 }
 
