@@ -750,125 +750,128 @@ export const FacturasProveedor = () => {
                   
                   {showDetallesArticulo && (
                     <>
-                      <table className="factura-table">
-                        <thead>
-                          <tr>
-                            <th style={{ width: '40px' }}>#</th>
-                            <th>ARTÍCULO</th>
-                            <th>MODELO / CORTE</th>
-                            <th style={{ width: '70px' }}>UND</th>
-                            <th style={{ width: '70px' }}>CANT.</th>
-                            <th style={{ width: '90px' }}>PRECIO</th>
-                            <th>LÍNEA NEGOCIO</th>
-                            <th style={{ width: '100px' }}>IMPORTE</th>
-                            <th style={{ width: '60px' }}>IGV</th>
-                            <th style={{ width: '80px' }}>ACCIONES</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {formData.articulos.map((articulo, index) => (
-                            <tr key={index}>
-                              <td className="row-number">{index + 1}</td>
-                              <td>
-                                <TableSearchSelect
-                                  options={inventario}
-                                  value={articulo.articulo_id}
-                                  onChange={(value) => handleArticuloChange(index, 'articulo_id', value)}
-                                  placeholder="Artículo"
-                                  displayKey="nombre"
-                                  valueKey="id"
-                                  renderOption={(inv) => `${inv.codigo ? inv.codigo + ' - ' : ''}${inv.nombre}`}
-                                />
-                              </td>
-                              <td>
-                                <TableSearchSelect
-                                  options={modelosCortes}
-                                  value={articulo.modelo_corte_id}
-                                  onChange={(value) => handleArticuloChange(index, 'modelo_corte_id', value)}
-                                  placeholder="Modelo / Corte"
-                                  displayKey="display_name"
-                                  valueKey="id"
-                                  renderOption={(mc) => mc.display_name || `${mc.modelo_nombre || 'Sin modelo'} - Corte ${mc.n_corte}`}
-                                />
-                              </td>
-                              <td>
-                                <input
-                                  type="text"
-                                  placeholder="UND"
-                                  value={articulo.unidad}
-                                  onChange={(e) => handleArticuloChange(index, 'unidad', e.target.value)}
-                                  style={{ width: '100%', textAlign: 'center' }}
-                                />
-                              </td>
-                              <td>
-                                <input
-                                  type="number"
-                                  step="1"
-                                  min="1"
-                                  placeholder="1"
-                                  value={articulo.cantidad}
-                                  onChange={(e) => handleArticuloChange(index, 'cantidad', e.target.value)}
-                                  style={{ textAlign: 'center' }}
-                                  data-testid={`articulo-cantidad-${index}`}
-                                />
-                              </td>
-                              <td>
-                                <input
-                                  type="number"
-                                  step="0.01"
-                                  placeholder="0.00"
-                                  value={articulo.precio}
-                                  onChange={(e) => handleArticuloChange(index, 'precio', e.target.value)}
-                                  style={{ textAlign: 'right' }}
-                                  data-testid={`articulo-precio-${index}`}
-                                />
-                              </td>
-                              <td>
-                                <TableSearchSelect
-                                  options={lineasNegocio}
-                                  value={articulo.linea_negocio_id}
-                                  onChange={(value) => handleArticuloChange(index, 'linea_negocio_id', value)}
-                                  placeholder="Línea"
-                                  displayKey="nombre"
-                                  valueKey="id"
-                                />
-                              </td>
-                              <td style={{ textAlign: 'right', fontWeight: 500, fontFamily: "'JetBrains Mono', monospace", padding: '0.625rem 0.75rem' }}>
-                                {calcularImporteArticulo(articulo).toFixed(2)}
-                              </td>
-                              <td style={{ textAlign: 'center' }}>
-                                <input
-                                  type="checkbox"
-                                  checked={articulo.igv_aplica}
-                                  onChange={(e) => handleArticuloChange(index, 'igv_aplica', e.target.checked)}
-                                  style={{ width: '18px', height: '18px', accentColor: '#1B4D3E' }}
-                                />
-                              </td>
-                              <td className="actions-cell">
-                                <button
-                                  type="button"
-                                  className="btn-icon-small"
-                                  onClick={() => handleDuplicateArticulo(index)}
-                                  title="Duplicar"
-                                >
-                                  <Copy size={14} />
-                                </button>
-                                <button
-                                  type="button"
-                                  className="btn-icon-small"
-                                  onClick={() => handleRemoveArticulo(index)}
-                                  title="Eliminar"
-                                  disabled={formData.articulos.length === 1}
-                                >
-                                  <Trash2 size={14} />
-                                </button>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                      {formData.articulos.length > 0 ? (
+                        <div className="table-scroll-wrapper">
+                          <table className="factura-table">
+                            <thead>
+                              <tr>
+                                <th style={{ width: '40px' }}>#</th>
+                                <th style={{ minWidth: '180px' }}>ARTÍCULO</th>
+                                <th style={{ minWidth: '180px' }}>MODELO / CORTE</th>
+                                <th style={{ width: '70px' }}>UND</th>
+                                <th style={{ width: '70px' }}>CANT.</th>
+                                <th style={{ width: '90px' }}>PRECIO</th>
+                                <th style={{ minWidth: '140px' }}>LÍNEA NEGOCIO</th>
+                                <th style={{ width: '100px' }}>IMPORTE</th>
+                                <th style={{ width: '60px' }}>IGV</th>
+                                <th style={{ width: '80px' }}>ACCIONES</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {formData.articulos.map((articulo, index) => (
+                                <tr key={index}>
+                                  <td className="row-number">{index + 1}</td>
+                                  <td>
+                                    <TableSearchSelect
+                                      options={inventario}
+                                      value={articulo.articulo_id}
+                                      onChange={(value) => handleArticuloChange(index, 'articulo_id', value)}
+                                      placeholder="Artículo"
+                                      displayKey="nombre"
+                                      valueKey="id"
+                                      renderOption={(inv) => `${inv.codigo ? inv.codigo + ' - ' : ''}${inv.nombre}`}
+                                    />
+                                  </td>
+                                  <td>
+                                    <TableSearchSelect
+                                      options={modelosCortes}
+                                      value={articulo.modelo_corte_id}
+                                      onChange={(value) => handleArticuloChange(index, 'modelo_corte_id', value)}
+                                      placeholder="Modelo / Corte"
+                                      displayKey="display_name"
+                                      valueKey="id"
+                                      renderOption={(mc) => mc.display_name || `${mc.modelo_nombre || 'Sin modelo'} - Corte ${mc.n_corte}`}
+                                    />
+                                  </td>
+                                  <td>
+                                    <input
+                                      type="text"
+                                      value={articulo.unidad || ''}
+                                      readOnly
+                                      disabled
+                                      style={{ width: '100%', textAlign: 'center', background: '#f8fafc', color: '#64748b' }}
+                                    />
+                                  </td>
+                                  <td>
+                                    <input
+                                      type="number"
+                                      step="1"
+                                      min="1"
+                                      placeholder="1"
+                                      value={articulo.cantidad}
+                                      onChange={(e) => handleArticuloChange(index, 'cantidad', e.target.value)}
+                                      style={{ textAlign: 'center' }}
+                                      data-testid={`articulo-cantidad-${index}`}
+                                    />
+                                  </td>
+                                  <td>
+                                    <input
+                                      type="number"
+                                      step="0.01"
+                                      placeholder="0.00"
+                                      value={articulo.precio}
+                                      onChange={(e) => handleArticuloChange(index, 'precio', e.target.value)}
+                                      style={{ textAlign: 'right' }}
+                                      data-testid={`articulo-precio-${index}`}
+                                    />
+                                  </td>
+                                  <td>
+                                    <TableSearchSelect
+                                      options={lineasNegocio}
+                                      value={articulo.linea_negocio_id}
+                                      onChange={(value) => handleArticuloChange(index, 'linea_negocio_id', value)}
+                                      placeholder="Línea"
+                                      displayKey="nombre"
+                                      valueKey="id"
+                                    />
+                                  </td>
+                                  <td style={{ textAlign: 'right', fontWeight: 500, fontFamily: "'JetBrains Mono', monospace", padding: '0.625rem 0.75rem' }}>
+                                    {calcularImporteArticulo(articulo).toFixed(2)}
+                                  </td>
+                                  <td style={{ textAlign: 'center' }}>
+                                    <input
+                                      type="checkbox"
+                                      checked={articulo.igv_aplica}
+                                      onChange={(e) => handleArticuloChange(index, 'igv_aplica', e.target.checked)}
+                                      style={{ width: '18px', height: '18px', accentColor: '#1B4D3E' }}
+                                    />
+                                  </td>
+                                  <td className="actions-cell">
+                                    <button
+                                      type="button"
+                                      className="btn-icon-small"
+                                      onClick={() => handleDuplicateArticulo(index)}
+                                      title="Duplicar"
+                                    >
+                                      <Copy size={14} />
+                                    </button>
+                                    <button
+                                      type="button"
+                                      className="btn-icon-small"
+                                      onClick={() => handleRemoveArticulo(index)}
+                                      title="Eliminar"
+                                    >
+                                      <Trash2 size={14} />
+                                    </button>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      ) : null}
 
-                      <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.75rem' }}>
+                      <div style={{ display: 'flex', gap: '0.75rem', padding: '0.75rem' }}>
                         <button
                           type="button"
                           className="btn btn-outline btn-sm"
@@ -878,16 +881,15 @@ export const FacturasProveedor = () => {
                           <Plus size={16} />
                           Agregar artículo
                         </button>
-                        <button
-                          type="button"
-                          className="btn btn-outline btn-sm"
-                          onClick={() => setFormData(prev => ({ 
-                            ...prev, 
-                            articulos: [{ articulo_id: '', modelo_corte_id: '', unidad: '', cantidad: 1, precio: 0, linea_negocio_id: '', igv_aplica: true }] 
-                          }))}
-                        >
-                          Borrar todos los artículos
-                        </button>
+                        {formData.articulos.length > 0 && (
+                          <button
+                            type="button"
+                            className="btn btn-outline btn-sm"
+                            onClick={() => setFormData(prev => ({ ...prev, articulos: [] }))}
+                          >
+                            Borrar todos
+                          </button>
+                        )}
                       </div>
                     </>
                   )}
