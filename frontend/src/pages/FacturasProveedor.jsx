@@ -72,6 +72,18 @@ export const FacturasProveedor = () => {
   const [editingFactura, setEditingFactura] = useState(null);
   const [viewMode, setViewMode] = useState(false);
   
+  // Modal de Ver Pagos
+  const [showPagosModal, setShowPagosModal] = useState(false);
+  const [facturaParaVerPagos, setFacturaParaVerPagos] = useState(null);
+  const [pagosDeFactura, setPagosDeFactura] = useState([]);
+  const [loadingPagos, setLoadingPagos] = useState(false);
+  
+  // Modal de Ver Letras
+  const [showVerLetrasModal, setShowVerLetrasModal] = useState(false);
+  const [facturaParaVerLetras, setFacturaParaVerLetras] = useState(null);
+  const [letrasDeFactura, setLetrasDeFactura] = useState([]);
+  const [loadingLetras, setLoadingLetras] = useState(false);
+  
   // Filtros
   const [filtroEstado, setFiltroEstado] = useState('');
   
