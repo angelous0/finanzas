@@ -1402,6 +1402,27 @@ async def create_pago(data: PagoCreate):
         await conn.execute("SET search_path TO finanzas2, public")
         
         async with conn.transaction():
+            # Validate that payment amount doesn't exceed document balance
+            for aplicacion in data.aplicaciones:
+                if aplicacion.tipo_documento == 'factura':
+                    doc = await conn.fetchrow("""
+                        SELECT saldo_pendiente, total, estado FROM finanzas2.cont_factura_proveedor WHERE id = $1
+                    """, aplicacion.documento_id)
+                    if not doc:
+                        raise HTTPException(404, f"Factura {aplicacion.documento_id} not found")
+                    if doc['estado'] == 'canjeado':
+                        raise HTTPException(400, "No se puede pagar una factura canjeada. Debe pagar las letras.")
+                    if aplicacion.monto_aplicado > float(doc['saldo_pendiente']):
+                        raise HTTPException(400, f"El monto ({aplicacion.monto_aplicado:.2f}) excede el saldo pendiente ({doc['saldo_pendiente']:.2f})")
+                elif aplicacion.tipo_documento == 'letra':
+                    doc = await conn.fetchrow("""
+                        SELECT saldo_pendiente, monto, estado FROM finanzas2.cont_letra WHERE id = $1
+                    """, aplicacion.documento_id)
+                    if not doc:
+                        raise HTTPException(404, f"Letra {aplicacion.documento_id} not found")
+                    if aplicacion.monto_aplicado > float(doc['saldo_pendiente']):
+                        raise HTTPException(400, f"El monto ({aplicacion.monto_aplicado:.2f}) excede el saldo pendiente ({doc['saldo_pendiente']:.2f})")
+            
             numero = await generate_pago_number(conn, data.tipo)
             
             # Create pago
