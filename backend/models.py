@@ -384,6 +384,7 @@ class Pago(PagoBase):
     monto_total: float
     cuenta_nombre: Optional[str] = None
     moneda_codigo: Optional[str] = None
+    conciliado: Optional[bool] = False
     detalles: List[PagoDetalle] = []
     aplicaciones: List[PagoAplicacion] = []
     created_at: Optional[datetime] = None
