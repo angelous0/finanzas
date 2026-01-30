@@ -215,6 +215,119 @@ export const Pagos = () => {
           </div>
         </div>
       </div>
+
+      {/* Edit Modal */}
+      {showEditModal && editingPago && (
+        <div className="modal-overlay" onClick={() => setShowEditModal(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
+            <div className="modal-header">
+              <div>
+                <h2 className="modal-title">
+                  <Edit2 size={20} style={{ display: 'inline', marginRight: '0.5rem' }} />
+                  Editar Pago
+                </h2>
+                {editingPago.conciliado && (
+                  <div style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '0.5rem', 
+                    marginTop: '0.5rem',
+                    padding: '0.5rem',
+                    background: '#fef3c7',
+                    borderRadius: '6px',
+                    fontSize: '0.875rem',
+                    color: '#92400e'
+                  }}>
+                    <AlertTriangle size={16} />
+                    <span>Este pago está conciliado. Solo puede editar la referencia.</span>
+                  </div>
+                )}
+              </div>
+              <button className="modal-close" onClick={() => setShowEditModal(false)}>
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="modal-body">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                {/* Número y Tipo (solo lectura) */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <div>
+                    <label className="form-label">Número</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      value={editingPago.numero}
+                      disabled
+                      style={{ background: '#f8fafc', cursor: 'not-allowed' }}
+                    />
+                  </div>
+                  <div>
+                    <label className="form-label">Tipo</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      value={editingPago.tipo}
+                      disabled
+                      style={{ background: '#f8fafc', cursor: 'not-allowed' }}
+                    />
+                  </div>
+                </div>
+
+                {/* Fecha */}
+                <div>
+                  <label className="form-label">Fecha</label>
+                  <input
+                    type="date"
+                    className="form-input"
+                    value={editForm.fecha}
+                    onChange={(e) => setEditForm({ ...editForm, fecha: e.target.value })}
+                    disabled={editingPago.conciliado}
+                    style={editingPago.conciliado ? { background: '#f8fafc', cursor: 'not-allowed' } : {}}
+                  />
+                </div>
+
+                {/* Referencia */}
+                <div>
+                  <label className="form-label">
+                    Referencia {editingPago.conciliado && <span style={{ color: '#22c55e' }}>✓ Editable</span>}
+                  </label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    placeholder="Ingrese referencia del pago"
+                    value={editForm.referencia}
+                    onChange={(e) => setEditForm({ ...editForm, referencia: e.target.value })}
+                  />
+                </div>
+
+                {/* Notas */}
+                <div>
+                  <label className="form-label">Notas</label>
+                  <textarea
+                    className="form-input"
+                    placeholder="Notas adicionales"
+                    value={editForm.notas}
+                    onChange={(e) => setEditForm({ ...editForm, notas: e.target.value })}
+                    disabled={editingPago.conciliado}
+                    style={editingPago.conciliado ? { background: '#f8fafc', cursor: 'not-allowed' } : {}}
+                    rows={3}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="modal-footer">
+              <button className="btn btn-outline" onClick={() => setShowEditModal(false)}>
+                <X size={16} /> Cancelar
+              </button>
+              <button className="btn btn-primary" onClick={handleSaveEdit}>
+                <Edit2 size={16} /> Guardar Cambios
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
