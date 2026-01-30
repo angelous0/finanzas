@@ -55,9 +55,8 @@ export const Empresas = () => {
 
   const handleEdit = (empresa) => {
     setFormData({
+      nombre: empresa.nombre || '',
       ruc: empresa.ruc || '',
-      razon_social: empresa.razon_social || '',
-      nombre_comercial: empresa.nombre_comercial || '',
       direccion: empresa.direccion || '',
       telefono: empresa.telefono || '',
       email: empresa.email || ''
