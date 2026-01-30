@@ -2729,6 +2729,127 @@ async def get_presupuesto_endpoint(id: int):
 # =====================
 # CONCILIACION BANCARIA
 # =====================
+@api_router.post("/conciliacion/previsualizar-excel")
+async def previsualizar_excel_banco(
+    file: UploadFile = File(...),
+    banco: str = Query(...)
+):
+    """Preview bank movements from Excel before importing"""
+    import io
+    from datetime import datetime as dt
+    
+    try:
+        content = await file.read()
+        
+        import openpyxl
+        wb = openpyxl.load_workbook(io.BytesIO(content))
+        ws = wb.active
+        
+        # Find header row
+        header_row = 1
+        for idx, row in enumerate(ws.iter_rows(min_row=1, max_row=10, values_only=True), 1):
+            if row and any(row):
+                row_str = ' '.join([str(c or '') for c in row]).lower()
+                if 'fecha' in row_str or 'f. valor' in row_str:
+                    header_row = idx
+                    break
+        
+        preview_data = []
+        
+        for row in ws.iter_rows(min_row=header_row + 1, max_row=header_row + 51, values_only=True):
+            if not row or not any(row):
+                continue
+            
+            fecha = None
+            descripcion = None
+            referencia = None
+            banco_nombre = None
+            monto = None
+            
+            try:
+                if banco == 'BCP':
+                    fecha = row[1] if len(row) > 1 else None
+                    descripcion = row[3] if len(row) > 3 else None
+                    monto_val = row[4] if len(row) > 4 else None
+                    banco_nombre = row[6] if len(row) > 6 else None
+                    referencia = row[7] if len(row) > 7 else None
+                    
+                    if monto_val:
+                        monto = float(monto_val) if not isinstance(monto_val, str) else float(str(monto_val).replace(',', ''))
+                            
+                elif banco == 'BBVA':
+                    fecha = row[1] if len(row) > 1 else None
+                    descripcion = row[4] if len(row) > 4 else None
+                    referencia = row[3] if len(row) > 3 else None
+                    importe = row[5] if len(row) > 5 else None
+                    banco_nombre = row[6] if len(row) > 6 else None
+                    
+                    if importe:
+                        monto = float(importe) if not isinstance(importe, str) else float(str(importe).replace(',', ''))
+                            
+                elif banco == 'IBK':
+                    fecha = row[1] if len(row) > 1 else None
+                    descripcion = row[4] if len(row) > 4 else None
+                    referencia = row[3] if len(row) > 3 else None
+                    banco_nombre = row[5] if len(row) > 5 else None
+                    cargo = row[6] if len(row) > 6 else None
+                    abono = row[7] if len(row) > 7 else None
+                    
+                    if cargo:
+                        cargo_val = float(cargo) if not isinstance(cargo, str) else float(str(cargo).replace(',', ''))
+                        monto = -cargo_val
+                    elif abono:
+                        abono_val = float(abono) if not isinstance(abono, str) else float(str(abono).replace(',', ''))
+                        monto = abono_val
+                        
+                else:
+                    # PERSONALIZADO
+                    fecha = row[0] if len(row) > 0 else None
+                    descripcion = row[1] if len(row) > 1 else None
+                    referencia = row[2] if len(row) > 2 else None
+                    banco_nombre = row[3] if len(row) > 3 else None
+                    monto = row[4] if len(row) > 4 else None
+                
+                # Parse date
+                if fecha:
+                    if isinstance(fecha, dt):
+                        fecha = fecha.date().isoformat()
+                    elif hasattr(fecha, 'date'):
+                        fecha = fecha.date().isoformat()
+                    elif isinstance(fecha, str):
+                        for fmt in ['%d/%m/%Y', '%d-%m-%Y', '%Y-%m-%d', '%d.%m.%Y']:
+                            try:
+                                fecha = dt.strptime(fecha.strip(), fmt).date().isoformat()
+                                break
+                            except:
+                                continue
+                
+                if not fecha or monto is None:
+                    continue
+                
+                preview_data.append({
+                    "fecha": fecha,
+                    "banco": str(banco_nombre)[:100] if banco_nombre else banco,
+                    "referencia": str(referencia)[:200] if referencia else "",
+                    "descripcion": str(descripcion)[:500] if descripcion else "",
+                    "monto": float(monto) if monto else 0.0
+                })
+                
+                if len(preview_data) >= 50:
+                    break
+                    
+            except Exception as row_error:
+                continue
+        
+        return {
+            "preview": preview_data,
+            "total_rows": len(preview_data)
+        }
+        
+    except Exception as e:
+        logger.error(f"Error previewing Excel: {e}")
+        raise HTTPException(500, f"Error al previsualizar: {str(e)}")
+
 @api_router.post("/conciliacion/importar-excel")
 async def importar_excel_banco(
     file: UploadFile = File(...),
