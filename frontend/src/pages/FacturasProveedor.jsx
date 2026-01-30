@@ -366,7 +366,18 @@ export const FacturasProveedor = () => {
       loadData();
     } catch (error) {
       console.error('Error saving factura:', error);
-      toast.error(error.response?.data?.detail || 'Error al guardar factura');
+      // Handle Pydantic validation errors (array of objects)
+      const detail = error.response?.data?.detail;
+      if (Array.isArray(detail)) {
+        // Extract first error message
+        const firstError = detail[0];
+        const errorMsg = firstError?.msg || firstError?.message || 'Error de validación';
+        toast.error(errorMsg);
+      } else if (typeof detail === 'string') {
+        toast.error(detail);
+      } else {
+        toast.error('Error al guardar factura');
+      }
     }
   };
 
