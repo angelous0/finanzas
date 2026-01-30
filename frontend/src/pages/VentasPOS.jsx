@@ -37,10 +37,20 @@ export const VentasPOS = () => {
   const [syncing, setSyncing] = useState(false);
   const [activeTab, setActiveTab] = useState('pendiente');
   
-  // Filtros
+  // Helper: Get yesterday's date in Lima timezone (UTC-5)
+  const getYesterdayInLima = () => {
+    const now = new Date();
+    // Convert to Lima time (UTC-5)
+    const limaTime = new Date(now.getTime() - (5 * 60 * 60 * 1000));
+    // Get yesterday
+    limaTime.setDate(limaTime.getDate() - 1);
+    return limaTime.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+  };
+  
+  // Filtros - Default to yesterday in Lima timezone
   const [filtroEmpresa, setFiltroEmpresa] = useState('');
-  const [fechaDesde, setFechaDesde] = useState('');
-  const [fechaHasta, setFechaHasta] = useState('');
+  const [fechaDesde, setFechaDesde] = useState(getYesterdayInLima());
+  const [fechaHasta, setFechaHasta] = useState(getYesterdayInLima());
   const [search, setSearch] = useState('');
 
   useEffect(() => {
