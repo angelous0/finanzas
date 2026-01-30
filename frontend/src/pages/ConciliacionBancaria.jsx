@@ -599,23 +599,21 @@ export const ConciliacionBancaria = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {movimientosBanco.filter(m => filtroBanco === 'pendientes' ? !m.procesado : m.procesado).map(mov => (
+                      {movimientosBanco.filter(m => !m.procesado).map(mov => (
                         <tr 
                           key={mov.id}
                           className={selectedBanco.includes(mov.id) ? 'selected' : ''}
-                          onClick={() => filtroBanco === 'pendientes' && handleSelectBanco(mov.id)}
-                          style={{ cursor: filtroBanco === 'pendientes' ? 'pointer' : 'default' }}
+                          onClick={() => handleSelectBanco(mov.id)}
+                          style={{ cursor: 'pointer' }}
                         >
-                          {filtroBanco === 'pendientes' && (
-                            <td onClick={(e) => e.stopPropagation()}>
-                              <input 
-                                type="checkbox" 
-                                checked={selectedBanco.includes(mov.id)}
-                                onChange={() => handleSelectBanco(mov.id)}
-                                style={{ width: '16px', height: '16px' }}
-                              />
-                            </td>
-                          )}
+                          <td onClick={(e) => e.stopPropagation()}>
+                            <input 
+                              type="checkbox" 
+                              checked={selectedBanco.includes(mov.id)}
+                              onChange={() => handleSelectBanco(mov.id)}
+                              style={{ width: '16px', height: '16px' }}
+                            />
+                          </td>
                           <td>{formatDate(mov.fecha)}</td>
                           <td>{mov.banco_excel || mov.banco || '-'}</td>
                           <td style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.75rem' }}>
