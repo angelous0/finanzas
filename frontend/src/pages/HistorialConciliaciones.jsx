@@ -20,8 +20,8 @@ export const HistorialConciliaciones = () => {
   
   // Filters
   const [searchTerm, setSearchTerm] = useState('');
-  const [fechaDesde, setFechaDesde] = useState('2024-01-01');
-  const [fechaHasta, setFechaHasta] = useState('2026-12-31');
+  const [fechaDesde, setFechaDesde] = useState('');
+  const [fechaHasta, setFechaHasta] = useState('');
 
   useEffect(() => {
     loadConciliaciones();
