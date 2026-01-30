@@ -779,6 +779,178 @@ h1, h2, h3, h4, h5, h6 {
   to { transform: rotate(360deg); }
 }
 
+/* Factura Modal - Estilo específico */
+.factura-modal {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  width: 95%;
+  max-width: 950px;
+  max-height: 95vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.factura-modal-header {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+}
+
+.factura-modal-body {
+  padding: 1.5rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.factura-modal-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #fff;
+}
+
+.form-row {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.form-row .form-group {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+/* Factura Section */
+.factura-section {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  overflow: hidden;
+}
+
+.factura-section-header {
+  padding: 0.75rem 1rem;
+  background: #f8fafc;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+}
+
+/* Factura Table */
+.factura-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.factura-table th {
+  background: #f8fafc;
+  padding: 0.625rem 0.75rem;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+}
+
+.factura-table td {
+  padding: 0;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+.factura-table input,
+.factura-table select {
+  width: 100%;
+  padding: 0.625rem 0.75rem;
+  border: none;
+  background: transparent;
+  font-size: 0.875rem;
+  outline: none;
+}
+
+.factura-table input:focus,
+.factura-table select:focus {
+  background: #fffbeb;
+}
+
+.factura-table .row-number {
+  background: #f8fafc;
+  text-align: center;
+  font-weight: 500;
+  color: var(--muted);
+  padding: 0.625rem;
+}
+
+.factura-table .actions-cell {
+  text-align: center;
+  background: #f8fafc;
+  padding: 0.5rem;
+  display: flex;
+  gap: 0.25rem;
+  justify-content: center;
+}
+
+.btn-icon-small {
+  background: transparent;
+  border: none;
+  padding: 0.375rem;
+  cursor: pointer;
+  color: var(--muted);
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-icon-small:hover {
+  background: #e2e8f0;
+  color: #374151;
+}
+
+.btn-icon-small:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* Factura Totales */
+.factura-totales {
+  min-width: 280px;
+  background: #f8fafc;
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+}
+
+.factura-totales .totales-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  font-size: 0.875rem;
+}
+
+.factura-totales .totales-row span:last-child {
+  font-family: 'JetBrains Mono', monospace;
+  text-align: right;
+}
+
+.factura-totales .totales-row.total {
+  font-weight: 600;
+  font-size: 1rem;
+  border-top: 2px solid var(--border);
+  padding-top: 0.75rem;
+  margin-top: 0.5rem;
+}
+
 /* Responsive */
 @media (max-width: 1024px) {
   .sidebar {
@@ -790,6 +962,10 @@ h1, h2, h3, h4, h5, h6 {
   }
   
   .main-content {
+    margin-left: 0;
+  }
+  
+  .app-layout.sidebar-collapsed .main-content {
     margin-left: 0;
   }
 }
