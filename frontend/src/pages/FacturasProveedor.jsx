@@ -731,15 +731,17 @@ export const FacturasProveedor = () => {
               <div className="loading">
                 <div className="loading-spinner"></div>
               </div>
-            ) : facturas.length === 0 ? (
+            ) : facturasFiltradas.length === 0 ? (
               <div className="empty-state">
                 <FileText className="empty-state-icon" />
-                <div className="empty-state-title">No hay facturas registradas</div>
-                <div className="empty-state-description">Crea tu primera factura de proveedor</div>
-                <button className="btn btn-primary" onClick={() => setShowModal(true)}>
-                  <Plus size={18} />
-                  Crear primera factura
-                </button>
+                <div className="empty-state-title">{facturas.length === 0 ? 'No hay facturas registradas' : 'No se encontraron facturas con los filtros aplicados'}</div>
+                <div className="empty-state-description">{facturas.length === 0 ? 'Crea tu primera factura de proveedor' : 'Intenta cambiar los criterios de búsqueda'}</div>
+                {facturas.length === 0 && (
+                  <button className="btn btn-primary" onClick={() => setShowModal(true)}>
+                    <Plus size={18} />
+                    Crear primera factura
+                  </button>
+                )}
               </div>
             ) : (
               <table className="data-table" data-testid="facturas-table">
@@ -756,7 +758,7 @@ export const FacturasProveedor = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {facturas.map((factura) => {
+                  {facturasFiltradas.map((factura) => {
                     const saldo = parseFloat(factura.saldo_pendiente) || 0;
                     const total = parseFloat(factura.total) || 0;
                     const pagado = total - saldo;
