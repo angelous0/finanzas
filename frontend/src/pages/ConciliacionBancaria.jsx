@@ -87,7 +87,7 @@ export const ConciliacionBancaria = () => {
       const [bancoPendientesRes, bancoConciliadosRes, sistemaRes, concilRes] = await Promise.all([
         getMovimientosBanco({ cuenta_financiera_id: cuentaSeleccionada, procesado: false }),
         getMovimientosBanco({ cuenta_financiera_id: cuentaSeleccionada, procesado: true }),
-        getPagos({ cuenta_financiera_id: cuentaSeleccionada, fecha_desde: fechaDesde, fecha_hasta: fechaHasta }),
+        getPagos({ cuenta_financiera_id: cuentaSeleccionada, fecha_desde: fechaDesde, fecha_hasta: fechaHasta, conciliado: false }), // FILTRAR SOLO NO CONCILIADOS
         getConciliaciones(cuentaSeleccionada)
       ]);
       
