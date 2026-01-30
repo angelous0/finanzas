@@ -182,6 +182,21 @@ h1, h2, h3, h4, h5, h6 {
   margin: 0;
 }
 
+/* Sidebar collapsed toggle button - ensure it's always visible and clickable */
+.sidebar.collapsed .sidebar-toggle {
+  position: relative;
+  z-index: 10;
+  min-width: 32px;
+  min-height: 32px;
+}
+
+/* Hide text elements when collapsed */
+.sidebar.collapsed .sidebar-logo-text,
+.sidebar.collapsed .nav-section-title,
+.sidebar.collapsed .nav-item span {
+  display: none;
+}
+
 .nav-subitems {
   padding-left: 1rem;
 }
