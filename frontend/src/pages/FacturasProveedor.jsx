@@ -346,8 +346,16 @@ export const FacturasProveedor = () => {
         }))
       };
       
-      await createFacturaProveedor(dataToSend);
-      toast.success('Factura creada exitosamente');
+      if (editingFactura) {
+        // Update existing factura
+        await updateFacturaProveedor(editingFactura.id, dataToSend);
+        toast.success('Factura actualizada exitosamente');
+        setEditingFactura(null);
+      } else {
+        // Create new factura
+        await createFacturaProveedor(dataToSend);
+        toast.success('Factura creada exitosamente');
+      }
       
       if (createNew) {
         resetForm();
@@ -357,8 +365,8 @@ export const FacturasProveedor = () => {
       }
       loadData();
     } catch (error) {
-      console.error('Error creating factura:', error);
-      toast.error('Error al crear factura');
+      console.error('Error saving factura:', error);
+      toast.error(error.response?.data?.detail || 'Error al guardar factura');
     }
   };
 
