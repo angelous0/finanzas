@@ -109,6 +109,7 @@ function App() {
             <Route path="/empleados" element={<Empleados />} />
             <Route path="/adelantos" element={<Adelantos />} />
             <Route path="/planillas" element={<Planilla />} />
+            <Route path="/planilla" element={<Planilla />} />
             
             {/* Presupuestos */}
             <Route path="/presupuestos" element={<Presupuestos />} />
