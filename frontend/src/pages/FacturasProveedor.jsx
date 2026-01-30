@@ -646,16 +646,14 @@ export const FacturasProveedor = () => {
                         <tr key={index}>
                           <td className="row-number">{index + 1}</td>
                           <td>
-                            <select
+                            <TableSearchSelect
+                              options={categorias}
                               value={linea.categoria_id}
-                              onChange={(e) => handleLineaChange(index, 'categoria_id', e.target.value)}
-                              data-testid={`linea-categoria-${index}`}
-                            >
-                              <option value="">Categoría</option>
-                              {categorias.map(c => (
-                                <option key={c.id} value={c.id}>{c.nombre}</option>
-                              ))}
-                            </select>
+                              onChange={(value) => handleLineaChange(index, 'categoria_id', value)}
+                              placeholder="Categoría"
+                              displayKey="nombre"
+                              valueKey="id"
+                            />
                           </td>
                           <td>
                             <input
@@ -666,15 +664,14 @@ export const FacturasProveedor = () => {
                             />
                           </td>
                           <td>
-                            <select
+                            <TableSearchSelect
+                              options={lineasNegocio}
                               value={linea.linea_negocio_id}
-                              onChange={(e) => handleLineaChange(index, 'linea_negocio_id', e.target.value)}
-                            >
-                              <option value="">Línea</option>
-                              {lineasNegocio.map(l => (
-                                <option key={l.id} value={l.id}>{l.nombre}</option>
-                              ))}
-                            </select>
+                              onChange={(value) => handleLineaChange(index, 'linea_negocio_id', value)}
+                              placeholder="Línea"
+                              displayKey="nombre"
+                              valueKey="id"
+                            />
                           </td>
                           <td>
                             <input
