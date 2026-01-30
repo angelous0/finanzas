@@ -1014,6 +1014,10 @@ export default function OrdenesCompra() {
             <div className="modal-header no-print">
               <h2 className="modal-title">Orden de Compra {selectedOC.numero}</h2>
               <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <button className="btn btn-outline btn-sm" onClick={() => handleDownloadPDF(selectedOC)} title="Descargar PDF">
+                  <Download size={16} />
+                  PDF
+                </button>
                 <button className="btn btn-outline btn-sm" onClick={handlePrint} title="Imprimir">
                   <Printer size={16} />
                   Imprimir
