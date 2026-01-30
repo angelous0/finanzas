@@ -169,7 +169,7 @@ export const Adelantos = () => {
           
           <div class="field">
             <div class="field-label">Estado</div>
-            <div class="field-value">${adelanto.estado?.toUpperCase() || 'PENDIENTE'}</div>
+            <div class="field-value">${adelanto.descontado ? 'DESCONTADO' : 'PENDIENTE'}</div>
           </div>
         </div>
         
