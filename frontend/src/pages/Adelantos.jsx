@@ -408,6 +408,8 @@ export const Adelantos = () => {
                     <th>Empleado</th>
                     <th className="text-right">Monto</th>
                     <th>Motivo</th>
+                    <th className="text-center">Pago</th>
+                    <th className="text-center">Planilla</th>
                     <th className="text-center">Estado</th>
                     <th className="text-center">Acciones</th>
                   </tr>
