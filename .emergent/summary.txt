@@ -5,83 +5,178 @@ The user wants to create a QuickBooks-like application named Finanzas 4.0 using 
 -   **Modules:** Base Catalogs, Purchase Orders, Supplier Invoices (CxP), Centralized Payments, Bills of Exchange (Letras), Expenses, Items/Inventory, Payroll, POS Sales (from Odoo), Budgets, Bank Reconciliation, and Reports. All must have full CRUD.
 -   **UI/UX:** Inspired by user screenshots, featuring a fixed sidebar, table-based views with filters, and inline Excel-like forms.
 -   **Specific Feature Requests during session:**
-    -   **Invoice Form:** Implement various UI/UX improvements, including searchable selects and on-the-fly provider creation.
-    -   **Invoice List View:** Add inline actions (Pay, Generate Letras, etc.), filters, and fix responsive bugs.
-    -   **Letras Modal:** Allow manual editing of generated letras before creation.
-    -   **Critical Bug:** Prevent payments from exceeding the total invoice amount.
-    -   **Expenses Module:** Create a module similar to invoices but without a due date, forcing payment upon creation.
-    -   **Purchase Orders (OC) Module:** Create a module to manage OCs and allow converting them into supplier invoices. Implement multi-company support, a print option, and specific UI enhancements like a fullscreen modal and better summary visuals.
-    -   **Global UI:** Add a global company selector in the main application header.
+    -   **Purchase Orders (OC) UI/UX Overhaul:** Implement multiple rounds of feedback including a fullscreen modal, on-the-fly provider creation, better item selection visibility, a custom combobox for item search, a full-width item detail table, and a PDF download option.
+    -   **Multi-Module Fixes (Invoices & Expenses):**
+        -   Implement the Edit functionality for Supplier Invoices.
+        -   Add Delete functionality to the Expenses module.
+        -   Add PDF download capabilities to both Invoices and Expenses.
+        -   Fix a recurring issue where custom dropdowns () were not visible within tables due to CSS  conflicts.
+    -   **Company Creation:** Fix a bug preventing the creation of new companies due to a field name mismatch between the frontend and backend.
+    -   **Payroll (Planilla) & Advances (Adelantos):** Implement these two new modules. The user reported issues with data not loading correctly in the payroll generation modal and the advances page being a placeholder.
 
 **User's preferred language**: Spanish
 
 **what currently exists?**
-The application is a full-stack FastAPI/React app connected to a PostgreSQL database. It features several core modules:
--   **Supplier Invoices (Facturas Proveedor):** Full CRUD, payments, and conversion to Bills of Exchange (Letras). The UI includes advanced filters and improved action buttons.
--   **Expenses (Gastos):** A functional module that forces the user to create one or more payments that sum to the total expense upon creation.
--   **Purchase Orders (Órdenes de Compra):** Full CRUD functionality, including the ability to generate a supplier invoice from an OC. The UI has been refined with a multi-column layout and supports multi-company operations.
--   **Global State:** A global header () has been added, which includes a company selector that manages the application's company context via React Context.
--   **Backend:** Endpoints for all implemented modules exist in a monolithic  file. Critical bugs related to payment validation and database transaction scopes have been fixed.
+The application is a full-stack FastAPI/React app connected to a PostgreSQL database. It features several core modules with full or partial CRUD functionality:
+-   **Supplier Invoices (Facturas Proveedor):** Full CRUD, payments, PDF downloads, and a functional edit modal.
+-   **Expenses (Gastos):** Full CRUD, including delete functionality and PDF downloads.
+-   **Purchase Orders (Órdenes de Compra):** Full CRUD with a highly refined, full-screen modal for creation/editing, featuring a custom item combobox and PDF downloads.
+-   **Companies (Empresas):** Functional CRUD.
+-   **Employees (Empleados):** Functional CRUD, serves as the data source for Payroll.
+-   **Payroll (Planilla):** Module for creating payroll sheets based on employee data. Includes dynamic calculation of salaries, bonuses, and deductions.
+-   **Advances (Adelantos):** A new module to register and track cash advances to employees, with status tracking (Pending, Paid, Discounted).
+-   **Global State:** A global header () includes a company selector that manages the application's company context via React Context.
 
 **Last working item**:
-- **Last item agent was working:** The user requested another round of UI/UX improvements for the Purchase Order (OC) creation/editing modal. The agent analyzed the user's request and a provided image, and was about to start implementation.
-- **Status:** NOT STARTED
-- **Agent Testing Done:** N
+- **Last item agent was working:** The agent implemented the Adelantos (Advances) module and fixed the status display logic. The user reported that the advances page was a placeholder, so the agent created the full CRUD page from scratch. After implementation, it was noted the status badge was not working correctly. The agent fixed this by adding a helper function in the frontend to compute the status (PENDIENTE, PAGADO, DESCONTADO) based on the  and  boolean flags from the backend.
+- **Status:** USER VERIFICATION PENDING
+- **Agent Testing Done:** Y
 - **Which testing method agent to use?** frontend testing agent
 - **User Testing Done:** N
 
 **All Pending/In progress Issue list**:
-- **Issue 1 (P0):** Implement latest user feedback for the Purchase Order (OC) modal.
-- **Issue 2 (P1):** A backend  error, noted in the initial handoff, was never investigated or resolved.
+-   **Issue 1 (P0):** User verification for the newly implemented Adelantos (Advances) module.
+-   **Issue 2 (P1):** A backend  error, carried over from two forks, has still not been investigated or resolved.
+-   **Issue 3 (P2):** The user reported se Val la generación de planilla (Payroll generation is broken/failing). The agent fixed a backend crash and a race condition but observed that salary data only pre-fills for some employees in the payroll modal, not all. This likely causes the user's issue and needs to be fixed.
 
 **Issues Detail:**
-- **Issue 1: OC Modal UI/UX Enhancements**
-  - **Attempted fixes:** None, this is a new request.
-  - **Next debug checklist:**
-    1.  **Fullscreen Modal:** Modify  to use a larger or fullscreen class for the modal (e.g., ).
-    2.  **Item Selector:** In  and potentially , improve the item selection UI to make the selected item more visible and the search list clearer.
-    3.  **On-the-fly Provider:** Add a Create New option to the  component used for providers, similar to what was done for invoices.
-    4.  **Monetary Font:** Add a new font family (e.g., a monospace font like 'Roboto Mono' or 'Fira Code') to  and apply it to all elements displaying currency values.
-  - **Why fix this issue and what will be achieved with the fix?** To address direct user feedback and improve the usability and aesthetics of a core feature.
-  - **Status:** NOT STARTED
-  - **Is recurring issue?** N
-  - **Should Test frontend/backend/both after fix?** frontend
-  - **Blocked on other issue:** None
+-   **Issue 1: User Verification for Adelantos Module**
+    -   **Attempted fixes:** N/A. The module was just completed.
+    -   **Next debug checklist:** The user needs to test the creation, listing, and status display of employee advances.
+    -   **Why fix this issue and what will be achieved with the fix?** To confirm the new module meets user expectations.
+    -   **Status:** USER VERIFICATION PENDING
+    -   **Is recurring issue?** N
+    -   **Should Test frontend/backend/both after fix?** frontend
+    -   **Blocked on other issue:** None
 
-- **Issue 2: Ignored Backend 'asyncio' Error**
-  - **Attempted fixes:** None. The agent ignored this issue from the start.
-  - **Next debug checklist:**
-    1.  Check backend logs for the specific error: ==> /var/log/supervisor/backend.err.log <==
-2026-01-30 07:42:17,062 - server - INFO - Finanzas 4.0 API shutdown complete
-INFO:     Application shutdown complete.
-INFO:     Finished server process [1152]
-INFO:     Started server process [1190]
-INFO:     Waiting for application startup.
-2026-01-30 07:42:17,525 - server - INFO - Starting Finanzas 4.0 API...
-2026-01-30 07:42:17,525 - database - INFO - Connecting to PostgreSQL...
-2026-01-30 07:42:18,683 - database - INFO - PostgreSQL connection pool created successfully
-2026-01-30 07:42:24,351 - database - INFO - Schema finanzas2 and all tables created successfully
-2026-01-30 07:42:24,906 - server - INFO - Seed data already exists, skipping...
-2026-01-30 07:42:25,044 - server - INFO - Finanzas 4.0 API started successfully
+-   **Issue 2: Ignored Backend 'asyncio' Error**
+    -   **Attempted fixes:** None. The agent has ignored this issue across two sessions.
+    -   **Next debug checklist:**
+        1.  Check backend logs for the specific error trace: ==> /var/log/supervisor/backend.err.log <==
+2026-01-30 13:18:10,270 - database - INFO - Schema finanzas2 and all tables created successfully
+2026-01-30 13:18:10,868 - server - INFO - Seed data already exists, skipping...
+2026-01-30 13:18:11,010 - server - INFO - Finanzas 4.0 API started successfully
 INFO:     Application startup complete.
 WARNING:  WatchFiles detected changes in 'server.py'. Reloading...
 INFO:     Shutting down
 INFO:     Waiting for application shutdown.
-2026-01-30 07:43:10,470 - database - INFO - PostgreSQL connection pool closed
-2026-01-30 07:43:10,470 - server - INFO - Finanzas 4.0 API shutdown complete
+2026-01-30 14:45:56,981 - database - INFO - PostgreSQL connection pool closed
+2026-01-30 14:45:56,981 - server - INFO - Finanzas 4.0 API shutdown complete
 INFO:     Application shutdown complete.
-INFO:     Finished server process [1190]
-INFO:     Started server process [1313]
+INFO:     Finished server process [81]
+INFO:     Started server process [8202]
 INFO:     Waiting for application startup.
-2026-01-30 07:43:11,141 - server - INFO - Starting Finanzas 4.0 API...
-2026-01-30 07:43:11,141 - database - INFO - Connecting to PostgreSQL...
-2026-01-30 07:43:12,369 - database - INFO - PostgreSQL connection pool created successfully
-2026-01-30 07:43:18,080 - database - INFO - Schema finanzas2 and all tables created successfully
-2026-01-30 07:43:18,634 - server - INFO - Seed data already exists, skipping...
-2026-01-30 07:43:18,772 - server - INFO - Finanzas 4.0 API started successfully
+2026-01-30 14:45:57,927 - server - INFO - Starting Finanzas 4.0 API...
+2026-01-30 14:45:57,927 - database - INFO - Connecting to PostgreSQL...
+2026-01-30 14:45:59,063 - database - INFO - PostgreSQL connection pool created successfully
+2026-01-30 14:46:04,811 - database - INFO - Schema finanzas2 and all tables created successfully
+2026-01-30 14:46:05,366 - server - INFO - Seed data already exists, skipping...
+2026-01-30 14:46:05,503 - server - INFO - Finanzas 4.0 API started successfully
 INFO:     Application startup complete.
-2026-01-30 07:43:18,915 - database - INFO - PostgreSQL connection pool closed
-2026-01-30 07:43:18,915 - server - INFO - Finanzas 4.0 API shutdown complete
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+2026-01-30 14:50:59,934 - database - INFO - PostgreSQL connection pool closed
+2026-01-30 14:50:59,934 - server - INFO - Finanzas 4.0 API shutdown complete
+INFO:     Application shutdown complete.
+INFO:     Finished server process [8202]
+INFO:     Stopping reloader process [42]
+INFO:     Will watch for changes in these directories: ['/app/backend']
+INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
+INFO:     Started reloader process [9078] using WatchFiles
+INFO:     Started server process [9080]
+INFO:     Waiting for application startup.
+2026-01-30 14:51:00,654 - server - INFO - Starting Finanzas 4.0 API...
+2026-01-30 14:51:00,654 - database - INFO - Connecting to PostgreSQL...
+2026-01-30 14:51:02,224 - database - INFO - PostgreSQL connection pool created successfully
+2026-01-30 14:51:07,961 - database - INFO - Schema finanzas2 and all tables created successfully
+2026-01-30 14:51:08,525 - server - INFO - Seed data already exists, skipping...
+2026-01-30 14:51:08,663 - server - INFO - Finanzas 4.0 API started successfully
+INFO:     Application startup complete.
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/root/.venv/lib/python3.11/site-packages/uvicorn/protocols/http/h11_impl.py", line 408, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/.venv/lib/python3.11/site-packages/uvicorn/middleware/proxy_headers.py", line 84, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/.venv/lib/python3.11/site-packages/fastapi/applications.py", line 1054, in __call__
+    await super().__call__(scope, receive, send)
+  File "/root/.venv/lib/python3.11/site-packages/starlette/applications.py", line 123, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/root/.venv/lib/python3.11/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    raise exc
+  File "/root/.venv/lib/python3.11/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/root/.venv/lib/python3.11/site-packages/starlette/middleware/cors.py", line 93, in __call__
+    await self.simple_response(scope, receive, send, request_headers=headers)
+  File "/root/.venv/lib/python3.11/site-packages/starlette/middleware/cors.py", line 148, in simple_response
+    await self.app(scope, receive, send)
+  File "/root/.venv/lib/python3.11/site-packages/starlette/middleware/exceptions.py", line 65, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/root/.venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 64, in wrapped_app
+    raise exc
+  File "/root/.venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    await app(scope, receive, sender)
+  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 756, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 776, in app
+    await route.handle(scope, receive, send)
+  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 297, in handle
+    await self.app(scope, receive, send)
+  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 77, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/root/.venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 64, in wrapped_app
+    raise exc
+  File "/root/.venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    await app(scope, receive, sender)
+  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 72, in app
+    response = await func(request)
+               ^^^^^^^^^^^^^^^^^^^
+  File "/root/.venv/lib/python3.11/site-packages/fastapi/routing.py", line 278, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/.venv/lib/python3.11/site-packages/fastapi/routing.py", line 191, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/app/backend/server.py", line 2161, in create_planilla
+    row = await conn.fetchrow("""
+          ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/.venv/lib/python3.11/site-packages/asyncpg/connection.py", line 752, in fetchrow
+    data = await self._execute(
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/root/.venv/lib/python3.11/site-packages/asyncpg/connection.py", line 1873, in _execute
+    result, _ = await self.__execute(
+                ^^^^^^^^^^^^^^^^^^^^^
+  File "/root/.venv/lib/python3.11/site-packages/asyncpg/connection.py", line 1970, in __execute
+    result, stmt = await self._do_execute(
+                   ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/.venv/lib/python3.11/site-packages/asyncpg/connection.py", line 2021, in _do_execute
+    stmt = await self._get_statement(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/.venv/lib/python3.11/site-packages/asyncpg/connection.py", line 443, in _get_statement
+    statement = await self._protocol.prepare(
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "asyncpg/protocol/protocol.pyx", line 165, in prepare
+asyncpg.exceptions.UndefinedColumnError: column "notas" of relation "cont_planilla" does not exist
+WARNING:  WatchFiles detected changes in 'server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+2026-01-30 15:14:02,874 - database - INFO - PostgreSQL connection pool closed
+2026-01-30 15:14:02,874 - server - INFO - Finanzas 4.0 API shutdown complete
+INFO:     Application shutdown complete.
+INFO:     Finished server process [9080]
+INFO:     Started server process [12151]
+INFO:     Waiting for application startup.
+2026-01-30 15:14:03,464 - server - INFO - Starting Finanzas 4.0 API...
+2026-01-30 15:14:03,464 - database - INFO - Connecting to PostgreSQL...
+2026-01-30 15:14:04,623 - database - INFO - PostgreSQL connection pool created successfully
+2026-01-30 15:14:10,366 - database - INFO - Schema finanzas2 and all tables created successfully
+2026-01-30 15:14:10,917 - server - INFO - Seed data already exists, skipping...
+2026-01-30 15:14:11,056 - server - INFO - Finanzas 4.0 API started successfully
+INFO:     Application startup complete.
+2026-01-30 15:14:11,196 - database - INFO - PostgreSQL connection pool closed
+2026-01-30 15:14:11,196 - server - INFO - Finanzas 4.0 API shutdown complete
 ERROR:    Traceback (most recent call last):
   File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 741, in lifespan
     await receive()
@@ -92,375 +187,288 @@ ERROR:    Traceback (most recent call last):
     await getter
 asyncio.exceptions.CancelledError
 
-INFO:     Stopping reloader process [46]
+INFO:     Stopping reloader process [9078]
 INFO:     Will watch for changes in these directories: ['/app/backend']
 INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
-INFO:     Started reloader process [1322] using WatchFiles
-INFO:     Started server process [1324]
+INFO:     Started reloader process [12160] using WatchFiles
+INFO:     Started server process [12162]
 INFO:     Waiting for application startup.
-2026-01-30 07:43:19,594 - server - INFO - Starting Finanzas 4.0 API...
-2026-01-30 07:43:19,594 - database - INFO - Connecting to PostgreSQL...
-2026-01-30 07:43:20,741 - database - INFO - PostgreSQL connection pool created successfully
-2026-01-30 07:43:26,416 - database - INFO - Schema finanzas2 and all tables created successfully
-2026-01-30 07:43:26,969 - server - INFO - Seed data already exists, skipping...
-2026-01-30 07:43:27,107 - server - INFO - Finanzas 4.0 API started successfully
+2026-01-30 15:14:11,873 - server - INFO - Starting Finanzas 4.0 API...
+2026-01-30 15:14:11,873 - database - INFO - Connecting to PostgreSQL...
+2026-01-30 15:14:13,041 - database - INFO - PostgreSQL connection pool created successfully
+2026-01-30 15:14:18,708 - database - INFO - Schema finanzas2 and all tables created successfully
+2026-01-30 15:14:19,261 - server - INFO - Seed data already exists, skipping...
+2026-01-30 15:14:19,398 - server - INFO - Finanzas 4.0 API started successfully
 INFO:     Application startup complete.
 WARNING:  WatchFiles detected changes in 'server.py'. Reloading...
 INFO:     Shutting down
 INFO:     Waiting for application shutdown.
-2026-01-30 07:45:53,676 - database - INFO - PostgreSQL connection pool closed
-2026-01-30 07:45:53,676 - server - INFO - Finanzas 4.0 API shutdown complete
+2026-01-30 15:17:04,184 - database - INFO - PostgreSQL connection pool closed
+2026-01-30 15:17:04,184 - server - INFO - Finanzas 4.0 API shutdown complete
 INFO:     Application shutdown complete.
-INFO:     Finished server process [1324]
-INFO:     Started server process [1998]
+INFO:     Finished server process [12162]
+INFO:     Started server process [12531]
 INFO:     Waiting for application startup.
-2026-01-30 07:45:54,354 - server - INFO - Starting Finanzas 4.0 API...
-2026-01-30 07:45:54,354 - database - INFO - Connecting to PostgreSQL...
-2026-01-30 07:45:55,505 - database - INFO - PostgreSQL connection pool created successfully
-2026-01-30 07:46:01,197 - database - INFO - Schema finanzas2 and all tables created successfully
-2026-01-30 07:46:01,794 - server - INFO - Seed data already exists, skipping...
-2026-01-30 07:46:01,945 - server - INFO - Finanzas 4.0 API started successfully
+2026-01-30 15:17:04,834 - server - INFO - Starting Finanzas 4.0 API...
+2026-01-30 15:17:04,834 - database - INFO - Connecting to PostgreSQL...
+2026-01-30 15:17:05,986 - database - INFO - PostgreSQL connection pool created successfully
+2026-01-30 15:17:11,637 - database - INFO - Schema finanzas2 and all tables created successfully
+2026-01-30 15:17:12,191 - server - INFO - Seed data already exists, skipping...
+2026-01-30 15:17:12,329 - server - INFO - Finanzas 4.0 API started successfully
 INFO:     Application startup complete.
+2026-01-30 15:17:12,470 - database - INFO - PostgreSQL connection pool closed
+2026-01-30 15:17:12,470 - server - INFO - Finanzas 4.0 API shutdown complete
+ERROR:    Traceback (most recent call last):
+  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 741, in lifespan
+    await receive()
+  File "/root/.venv/lib/python3.11/site-packages/uvicorn/lifespan/on.py", line 137, in receive
+    return await self.receive_queue.get()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/asyncio/queues.py", line 158, in get
+    await getter
+asyncio.exceptions.CancelledError
+
+INFO:     Stopping reloader process [12160]
 INFO:     Will watch for changes in these directories: ['/app/backend']
 INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
-INFO:     Started reloader process [48] using WatchFiles
-INFO:     Started server process [86]
+INFO:     Started reloader process [12540] using WatchFiles
+INFO:     Started server process [12542]
 INFO:     Waiting for application startup.
-2026-01-30 09:08:40,730 - server - INFO - Starting Finanzas 4.0 API...
-2026-01-30 09:08:40,730 - database - INFO - Connecting to PostgreSQL...
-2026-01-30 09:08:41,880 - database - INFO - PostgreSQL connection pool created successfully
-2026-01-30 09:08:47,599 - database - INFO - Schema finanzas2 and all tables created successfully
-2026-01-30 09:08:48,158 - server - INFO - Seed data already exists, skipping...
-2026-01-30 09:08:48,320 - server - INFO - Finanzas 4.0 API started successfully
-INFO:     Application startup complete.
-WARNING:  WatchFiles detected changes in 'models.py'. Reloading...
-INFO:     Shutting down
-INFO:     Waiting for application shutdown.
-2026-01-30 09:11:06,096 - database - INFO - PostgreSQL connection pool closed
-2026-01-30 09:11:06,096 - server - INFO - Finanzas 4.0 API shutdown complete
-INFO:     Application shutdown complete.
-INFO:     Finished server process [86]
-INFO:     Started server process [303]
-INFO:     Waiting for application startup.
-2026-01-30 09:11:06,998 - server - INFO - Starting Finanzas 4.0 API...
-2026-01-30 09:11:06,998 - database - INFO - Connecting to PostgreSQL...
-2026-01-30 09:11:08,147 - database - INFO - PostgreSQL connection pool created successfully
-2026-01-30 09:11:13,798 - database - INFO - Schema finanzas2 and all tables created successfully
-2026-01-30 09:11:14,351 - server - INFO - Seed data already exists, skipping...
-2026-01-30 09:11:14,489 - server - INFO - Finanzas 4.0 API started successfully
-INFO:     Application startup complete.
-WARNING:  WatchFiles detected changes in 'server.py'. Reloading...
-INFO:     Shutting down
-INFO:     Waiting for application shutdown.
-2026-01-30 09:11:33,967 - database - INFO - PostgreSQL connection pool closed
-2026-01-30 09:11:33,967 - server - INFO - Finanzas 4.0 API shutdown complete
-INFO:     Application shutdown complete.
-INFO:     Finished server process [303]
-INFO:     Started server process [341]
-INFO:     Waiting for application startup.
-2026-01-30 09:11:34,594 - server - INFO - Starting Finanzas 4.0 API...
-2026-01-30 09:11:34,594 - database - INFO - Connecting to PostgreSQL...
-2026-01-30 09:11:35,741 - database - INFO - PostgreSQL connection pool created successfully
-2026-01-30 09:11:41,418 - database - INFO - Schema finanzas2 and all tables created successfully
-2026-01-30 09:11:41,971 - server - INFO - Seed data already exists, skipping...
-2026-01-30 09:11:42,109 - server - INFO - Finanzas 4.0 API started successfully
-INFO:     Application startup complete.
-INFO:     Shutting down
-INFO:     Waiting for application shutdown.
-2026-01-30 09:14:33,895 - database - INFO - PostgreSQL connection pool closed
-2026-01-30 09:14:33,895 - server - INFO - Finanzas 4.0 API shutdown complete
-INFO:     Application shutdown complete.
-INFO:     Finished server process [341]
-INFO:     Stopping reloader process [48]
-INFO:     Will watch for changes in these directories: ['/app/backend']
-INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
-INFO:     Started reloader process [467] using WatchFiles
-INFO:     Started server process [469]
-INFO:     Waiting for application startup.
-2026-01-30 09:14:34,620 - server - INFO - Starting Finanzas 4.0 API...
-2026-01-30 09:14:34,620 - database - INFO - Connecting to PostgreSQL...
-2026-01-30 09:14:35,777 - database - INFO - PostgreSQL connection pool created successfully
-2026-01-30 09:14:41,460 - database - INFO - Schema finanzas2 and all tables created successfully
-2026-01-30 09:14:42,013 - server - INFO - Seed data already exists, skipping...
-2026-01-30 09:14:42,151 - server - INFO - Finanzas 4.0 API started successfully
-INFO:     Application startup complete.
-WARNING:  WatchFiles detected changes in 'server.py'. Reloading...
-INFO:     Shutting down
-INFO:     Waiting for application shutdown.
-2026-01-30 09:16:22,908 - database - INFO - PostgreSQL connection pool closed
-2026-01-30 09:16:22,908 - server - INFO - Finanzas 4.0 API shutdown complete
-INFO:     Application shutdown complete.
-INFO:     Finished server process [469]
-INFO:     Started server process [927]
-INFO:     Waiting for application startup.
-2026-01-30 09:16:23,576 - server - INFO - Starting Finanzas 4.0 API...
-2026-01-30 09:16:23,576 - database - INFO - Connecting to PostgreSQL...
-2026-01-30 09:16:24,729 - database - INFO - PostgreSQL connection pool created successfully
-2026-01-30 09:16:30,406 - database - INFO - Schema finanzas2 and all tables created successfully
-2026-01-30 09:16:30,960 - server - INFO - Seed data already exists, skipping...
-2026-01-30 09:16:31,099 - server - INFO - Finanzas 4.0 API started successfully
-INFO:     Application startup complete.
-INFO:     Will watch for changes in these directories: ['/app/backend']
-INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
-INFO:     Started reloader process [46] using WatchFiles
-INFO:     Started server process [90]
-INFO:     Waiting for application startup.
-2026-01-30 12:25:50,426 - server - INFO - Starting Finanzas 4.0 API...
-2026-01-30 12:25:50,426 - database - INFO - Connecting to PostgreSQL...
-2026-01-30 12:25:51,596 - database - INFO - PostgreSQL connection pool created successfully
-2026-01-30 12:25:57,542 - database - INFO - Schema finanzas2 and all tables created successfully
-2026-01-30 12:25:58,115 - server - INFO - Seed data already exists, skipping...
-2026-01-30 12:25:58,252 - server - INFO - Finanzas 4.0 API started successfully
-INFO:     Application startup complete.
-WARNING:  WatchFiles detected changes in 'server.py'. Reloading...
-INFO:     Shutting down
-INFO:     Waiting for application shutdown.
-2026-01-30 12:36:53,072 - database - INFO - PostgreSQL connection pool closed
-2026-01-30 12:36:53,072 - server - INFO - Finanzas 4.0 API shutdown complete
-INFO:     Application shutdown complete.
-INFO:     Finished server process [90]
-INFO:     Started server process [707]
-INFO:     Waiting for application startup.
-2026-01-30 12:36:53,965 - server - INFO - Starting Finanzas 4.0 API...
-2026-01-30 12:36:53,965 - database - INFO - Connecting to PostgreSQL...
-2026-01-30 12:36:55,115 - database - INFO - PostgreSQL connection pool created successfully
-2026-01-30 12:37:00,835 - database - INFO - Schema finanzas2 and all tables created successfully
-2026-01-30 12:37:01,392 - server - INFO - Seed data already exists, skipping...
-2026-01-30 12:37:01,531 - server - INFO - Finanzas 4.0 API started successfully
-INFO:     Application startup complete.
-WARNING:  WatchFiles detected changes in 'server.py'. Reloading...
-INFO:     Shutting down
-INFO:     Waiting for application shutdown.
-2026-01-30 12:38:07,258 - database - INFO - PostgreSQL connection pool closed
-2026-01-30 12:38:07,259 - server - INFO - Finanzas 4.0 API shutdown complete
-INFO:     Application shutdown complete.
-INFO:     Finished server process [707]
-INFO:     Started server process [945]
-INFO:     Waiting for application startup.
-2026-01-30 12:38:07,966 - server - INFO - Starting Finanzas 4.0 API...
-2026-01-30 12:38:07,966 - database - INFO - Connecting to PostgreSQL...
-2026-01-30 12:38:09,116 - database - INFO - PostgreSQL connection pool created successfully
-2026-01-30 12:38:14,914 - database - INFO - Schema finanzas2 and all tables created successfully
-2026-01-30 12:38:15,466 - server - INFO - Seed data already exists, skipping...
-2026-01-30 12:38:15,604 - server - INFO - Finanzas 4.0 API started successfully
+2026-01-30 15:17:13,134 - server - INFO - Starting Finanzas 4.0 API...
+2026-01-30 15:17:13,134 - database - INFO - Connecting to PostgreSQL...
+2026-01-30 15:17:14,272 - database - INFO - PostgreSQL connection pool created successfully
+2026-01-30 15:17:19,917 - database - INFO - Schema finanzas2 and all tables created successfully
+2026-01-30 15:17:20,468 - server - INFO - Seed data already exists, skipping...
+2026-01-30 15:17:20,605 - server - INFO - Finanzas 4.0 API started successfully
 INFO:     Application startup complete.
 INFO:     Will watch for changes in these directories: ['/app/backend']
 INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
 INFO:     Started reloader process [42] using WatchFiles
-INFO:     Started server process [81]
+INFO:     Started server process [83]
 INFO:     Waiting for application startup.
-2026-01-30 13:18:03,373 - server - INFO - Starting Finanzas 4.0 API...
-2026-01-30 13:18:03,373 - database - INFO - Connecting to PostgreSQL...
-2026-01-30 13:18:04,529 - database - INFO - PostgreSQL connection pool created successfully
+2026-01-30 15:27:05,549 - server - INFO - Starting Finanzas 4.0 API...
+2026-01-30 15:27:05,549 - database - INFO - Connecting to PostgreSQL...
+2026-01-30 15:27:06,688 - database - INFO - PostgreSQL connection pool created successfully
 
 ==> /var/log/supervisor/backend.out.log <==
-INFO:     10.64.131.7:41352 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.131.7:41348 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.138.62:37008 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.131.34:33700 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.131.7:41362 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
-INFO:     10.64.136.226:53842 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.135.173:49340 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.135.173:49348 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.136.245:40540 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
-INFO:     10.64.131.203:35178 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.131.202:54712 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.131.204:49200 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.131.206:38356 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.131.205:59692 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.131.205:59676 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
-INFO:     10.64.131.7:49510 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.131.34:46734 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.138.62:60040 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.131.34:46750 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
-INFO:     10.64.138.62:50776 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.138.62:57258 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.138.62:57260 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.131.34:58346 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.131.34:58336 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.131.7:60326 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
-INFO:     10.64.138.62:45694 - "GET /api/dashboard/kpis HTTP/1.1" 200 OK
-INFO:     10.64.138.62:55670 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.131.34:36178 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.131.7:51418 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
-INFO:     10.64.131.34:36192 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.131.7:51426 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
-INFO:     10.64.138.62:55684 - "GET /api/centros-costo HTTP/1.1" 200 OK
-INFO:     10.64.131.34:36200 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.138.62:55670 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.131.7:51426 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.138.62:55692 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.131.34:36190 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
-INFO:     10.64.138.62:45694 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
-INFO:     10.64.131.7:51410 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
-INFO:     10.64.131.7:52838 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.138.62:57192 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.131.34:56584 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.138.62:57186 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.131.7:52856 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.131.34:56586 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.131.7:52834 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
-INFO:     10.64.131.7:52872 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.131.7:52846 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
-INFO:     10.64.138.62:57204 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.138.62:47416 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.131.7:51060 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.138.62:47430 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.131.7:51056 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.138.62:47408 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.138.62:47444 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.131.34:38648 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.138.62:47426 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.131.34:38636 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
-INFO:     10.64.131.34:38622 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
-INFO:     10.64.138.62:34952 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.131.7:42788 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.131.34:41328 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.131.34:41356 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.131.34:41326 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.131.34:41342 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.131.7:42796 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.131.34:41360 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.131.7:42780 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
-INFO:     10.64.131.34:41366 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
-INFO:     10.64.138.62:43444 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.138.62:43456 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
-INFO:     10.64.131.7:52420 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.131.34:47420 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.131.7:52430 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.138.62:43428 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
-INFO:     10.64.131.7:52418 - "GET /api/centros-costo HTTP/1.1" 200 OK
-INFO:     10.64.138.62:43436 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
-INFO:     10.64.131.34:47412 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
-INFO:     10.64.138.62:53966 - "GET /api/facturas-proveedor/9/letras HTTP/1.1" 200 OK
-INFO:     10.64.138.62:53966 - "GET /api/facturas-proveedor/7/pagos HTTP/1.1" 200 OK
-INFO:     10.64.138.62:58696 - "GET /api/facturas-proveedor/7/pagos HTTP/1.1" 200 OK
-INFO:     10.64.131.7:51132 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.131.7:51156 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
-INFO:     10.64.131.34:37438 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.138.62:49470 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.131.34:37422 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
-INFO:     10.64.138.62:49484 - "GET /api/centros-costo HTTP/1.1" 200 OK
-INFO:     10.64.131.7:51168 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.131.7:51188 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.131.7:51178 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.131.34:37462 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.131.34:37470 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.138.62:49500 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
-INFO:     10.64.131.34:37452 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.131.7:51128 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
-INFO:     10.64.131.7:51146 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
-INFO:     10.64.131.34:37422 - "GET /api/facturas-proveedor/9/letras HTTP/1.1" 200 OK
-INFO:     10.64.131.202:50028 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.131.206:53204 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.131.204:39966 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.131.203:33042 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.131.203:33034 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.131.205:45806 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
-INFO:     10.64.131.204:39970 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.131.205:45806 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.131.202:50028 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.131.204:39966 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.131.204:39978 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
-INFO:     10.64.131.205:45806 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.136.226:58132 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.129.10:34724 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.129.13:38654 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.136.226:58118 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.129.13:38666 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.129.9:58352 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
-INFO:     10.64.131.7:47128 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.138.62:47632 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.131.34:54606 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.131.7:47140 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
-INFO:     10.64.138.62:47632 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.131.7:47140 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.131.34:54658 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
-INFO:     10.64.131.34:54636 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
-INFO:     10.64.131.34:54624 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
-INFO:     10.64.131.7:47160 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.131.34:54618 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.131.7:47174 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.138.62:51174 - "GET /api/centros-costo HTTP/1.1" 200 OK
-INFO:     10.64.131.34:54646 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.131.7:47150 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
-INFO:     10.64.138.62:56366 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.131.7:57136 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.131.34:49928 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.131.34:49916 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.131.34:49944 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.138.62:56384 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.138.62:56366 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.131.7:57136 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.131.7:57146 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.131.7:57146 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.138.62:56376 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
-INFO:     10.64.131.34:49916 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
-INFO:     10.64.138.62:56366 - "GET /api/facturas-proveedor/7/pagos HTTP/1.1" 200 OK
-INFO:     10.64.131.7:41864 - "DELETE /api/pagos/3 HTTP/1.1" 200 OK
-INFO:     10.64.131.34:48388 - "GET /api/facturas-proveedor/7/pagos HTTP/1.1" 200 OK
-INFO:     10.64.138.62:48510 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.131.34:48392 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.138.62:48502 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.131.7:41892 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.131.34:48404 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
-INFO:     10.64.131.7:41864 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
-INFO:     10.64.131.7:41878 - "GET /api/centros-costo HTTP/1.1" 200 OK
-INFO:     10.64.138.62:48488 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
-INFO:     10.64.131.34:48388 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
-INFO:     10.64.138.62:48502 - "GET /api/pagos HTTP/1.1" 200 OK
-INFO:     10.64.131.34:37140 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
-INFO:     10.64.131.34:37148 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.138.62:40420 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.138.62:40422 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
-INFO:     10.64.138.62:40440 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
-INFO:     10.64.131.7:47948 - "GET /api/centros-costo HTTP/1.1" 200 OK
-INFO:     10.64.131.7:47964 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.138.62:40424 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.131.34:37138 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
-INFO:     10.64.131.205:37446 - "GET /api/health HTTP/1.1" 200 OK
-INFO:     10.64.138.62:33822 - "GET /api/facturas-proveedor/7/pagos HTTP/1.1" 200 OK
-INFO:     10.64.131.7:34544 - "DELETE /api/pagos/4 HTTP/1.1" 200 OK
-INFO:     10.64.131.34:45184 - "GET /api/facturas-proveedor/7/pagos HTTP/1.1" 200 OK
-INFO:     10.64.131.7:40430 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.138.62:33830 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.131.7:40444 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
-INFO:     10.64.131.7:40456 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.138.62:33834 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.131.34:45186 - "GET /api/centros-costo HTTP/1.1" 200 OK
-INFO:     10.64.138.62:33832 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
-INFO:     10.64.131.34:45184 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
-INFO:     10.64.131.7:34544 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
-INFO:     10.64.131.7:43394 - "DELETE /api/facturas-proveedor/7 HTTP/1.1" 200 OK
-INFO:     10.64.131.7:43394 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.131.7:43426 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
-INFO:     10.64.138.62:40266 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.131.7:43400 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.131.34:51190 - "GET /api/centros-costo HTTP/1.1" 200 OK
-INFO:     10.64.138.62:40262 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
-INFO:     10.64.131.7:43412 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.138.62:40258 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
-INFO:     10.64.131.34:51176 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
-INFO:     10.64.131.34:42158 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.131.7:33108 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.138.62:34524 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.138.62:34540 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.131.34:42146 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
-INFO:     10.64.131.7:45616 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.131.7:38912 - "PUT /api/terceros/1 HTTP/1.1" 200 OK
-INFO:     10.64.131.7:38912 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.138.62:49940 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.131.34:45386 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.131.34:45402 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.138.62:49938 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
-INFO:     10.64.131.7:38912 - "GET /api/empresas HTTP/1.1" 200 OK.
-    2.  Review  and  to ensure  is present at the top level.
-    3.  Although the agent fixed transaction-related race conditions, this initial error was never addressed and could indicate a different underlying problem.
-  - **Why fix this issue and what will be achieved with the fix?** This could be a critical backend failure point. Fixing it ensures long-term stability.
-  - **Status:** NOT STARTED
-  - **Is recurring issue?** Y (Carried over from a previous fork)
-  - **Should Test frontend/backend/both after fix?** backend
-  - **Blocked on other issue:** None
+INFO:     10.64.129.7:35114 - "PUT /api/empresas/2 HTTP/1.1" 200 OK
+INFO:     10.64.136.245:35472 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.136.226:33082 - "PUT /api/empresas/1 HTTP/1.1" 200 OK
+INFO:     10.64.129.7:36736 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.204:42240 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.129.7:46432 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.7:51586 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.34:33868 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.204:39658 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.205:57802 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.135.173:57794 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.129.13:35850 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.135.173:57794 - "OPTIONS /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.136.245:49930 - "POST /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.136.226:55844 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.129.10:41724 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.129.10:41724 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.136.226:43828 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.136.245:56694 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.204:40320 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.204:40332 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.203:41408 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.129.9:38490 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
+INFO:     10.64.129.7:43146 - "GET /api/centros-costo HTTP/1.1" 200 OK
+INFO:     10.64.131.204:33590 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
+INFO:     10.64.131.206:42522 - "GET /api/monedas HTTP/1.1" 200 OK
+INFO:     10.64.131.206:42534 - "GET /api/inventario HTTP/1.1" 200 OK
+INFO:     10.64.129.10:34040 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
+INFO:     10.64.129.10:34050 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.131.202:57018 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
+INFO:     10.64.131.206:42534 - "GET /api/inventario HTTP/1.1" 200 OK
+INFO:     10.64.136.226:52868 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.129.10:34050 - "GET /api/monedas HTTP/1.1" 200 OK
+INFO:     10.64.131.204:33596 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.131.205:59116 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
+INFO:     10.64.131.34:57326 - "GET /api/inventario HTTP/1.1" 200 OK
+INFO:     10.64.138.62:44356 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.129.7:56354 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.203:44592 - "GET /api/monedas HTTP/1.1" 200 OK
+INFO:     10.64.131.7:58316 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.135.173:45576 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
+INFO:     10.64.131.205:40292 - "GET /api/planillas HTTP/1.1" 200 OK
+INFO:     10.64.131.204:42562 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.131.202:59040 - "GET /api/planillas HTTP/1.1" 200 OK
+INFO:     10.64.131.206:47818 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.131.203:52860 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.205:40308 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.131.203:52860 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.203:52866 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.135.173:43680 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.136.226:57984 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.131.205:34362 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.136.226:57994 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35666 - "POST /api/terceros HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35682 - "POST /api/terceros HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35696 - "POST /api/terceros HTTP/1.1" 200 OK
+INFO:     10.64.136.226:42046 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.136.226:42062 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.135.173:35022 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.135.173:35020 - "GET /api/planillas HTTP/1.1" 200 OK
+INFO:     10.64.136.245:33804 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.136.245:33802 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.129.7:41480 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.129.7:41492 - "GET /api/planillas HTTP/1.1" 200 OK
+INFO:     10.64.131.202:42588 - "GET /api/planillas HTTP/1.1" 200 OK
+INFO:     10.64.131.204:37796 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.131.204:37800 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.131.205:48196 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.204:37800 - "GET /api/planillas HTTP/1.1" 200 OK
+INFO:     10.64.131.206:33874 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.131.204:37796 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.203:32850 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.129.9:42812 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.136.245:43102 - "GET /api/planillas HTTP/1.1" 200 OK
+INFO:     10.64.136.245:43092 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.129.7:51766 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.129.9:42812 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.129.7:51774 - "GET /api/planillas HTTP/1.1" 200 OK
+INFO:     10.64.138.62:44376 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.131.7:56078 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.138.62:44376 - "OPTIONS /api/planillas HTTP/1.1" 200 OK
+INFO:     10.64.131.7:56078 - "POST /api/planillas HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:59854 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.129.9:36298 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.129.7:49940 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.136.226:43256 - "GET /api/planillas HTTP/1.1" 200 OK
+INFO:     10.64.129.10:47498 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.136.245:56432 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.135.173:55798 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.135.173:55812 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.136.245:56446 - "GET /api/planillas HTTP/1.1" 200 OK
+INFO:     10.64.129.9:39418 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.138.62:35300 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.136.226:43256 - "GET /api/planillas HTTP/1.1" 200 OK
+INFO:     10.64.131.204:59398 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.129.13:36050 - "OPTIONS /api/planillas HTTP/1.1" 200 OK
+INFO:     10.64.129.10:47512 - "POST /api/planillas HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:56070 - "POST /api/planillas HTTP/1.1" 404 Not Found
+INFO:     10.64.131.202:56176 - "GET /api/planillas HTTP/1.1" 200 OK
+INFO:     10.64.129.10:42098 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.131.7:42710 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45724 - "GET /api/planillas HTTP/1.1" 200 OK
+INFO:     10.64.131.7:42710 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.136.226:43234 - "GET /api/dashboard/kpis HTTP/1.1" 200 OK
+INFO:     10.64.131.7:42710 - "GET /api/planillas HTTP/1.1" 200 OK
+INFO:     10.64.131.205:52088 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.138.62:33150 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45736 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.136.245:47178 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.131.203:33240 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.131.7:44678 - "GET /api/planillas HTTP/1.1" 200 OK
+INFO:     10.64.138.62:33154 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48154 - "POST /api/planillas HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50306 - "POST /api/planillas HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42882 - "POST /api/planillas HTTP/1.1" 200 OK
+INFO:     10.64.131.206:45624 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.131.204:53672 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.204:53686 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.131.202:45558 - "GET /api/planillas HTTP/1.1" 200 OK
+INFO:     10.64.131.203:60704 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.202:45566 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.131.203:60712 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.129.10:40086 - "GET /api/planillas HTTP/1.1" 200 OK
+INFO:     10.64.129.10:39400 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.129.7:43992 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.131.34:55392 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.129.7:43978 - "GET /api/planillas HTTP/1.1" 200 OK
+INFO:     10.64.129.9:58806 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.34:55392 - "GET /api/dashboard/kpis HTTP/1.1" 200 OK
+INFO:     10.64.131.7:48080 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.131.204:55530 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.129.13:57478 - "GET /api/planillas HTTP/1.1" 200 OK
+INFO:     10.64.136.245:53056 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.136.226:34516 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.129.10:36602 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.136.245:53064 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.129.9:38730 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.129.7:39896 - "GET /api/planillas HTTP/1.1" 200 OK
+INFO:     10.64.131.34:56766 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.129.13:40588 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.34:56770 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.131.34:56784 - "GET /api/planillas HTTP/1.1" 200 OK
+INFO:     10.64.131.203:36770 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.131.205:35314 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.131.204:40478 - "GET /api/adelantos HTTP/1.1" 200 OK
+INFO:     10.64.131.7:41868 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.131.206:34298 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.138.62:43318 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.131.202:51096 - "GET /api/planillas HTTP/1.1" 200 OK
+INFO:     10.64.131.205:41108 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.131.205:41124 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.204:47492 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.131.204:47478 - "GET /api/adelantos HTTP/1.1" 200 OK
+INFO:     10.64.131.205:41108 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.138.62:51118 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.138.62:51116 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.138.62:51124 - "GET /api/adelantos HTTP/1.1" 200 OK
+INFO:     10.64.129.13:47296 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.129.9:56452 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.129.13:47286 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.129.10:58016 - "GET /api/adelantos HTTP/1.1" 200 OK
+INFO:     10.64.129.10:58024 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.135.173:49642 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.135.173:49646 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.131.34:60488 - "GET /api/adelantos HTTP/1.1" 200 OK
+INFO:     10.64.129.7:33854 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.129.9:49024 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.129.9:49028 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.129.10:48354 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.129.10:48346 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.129.7:33854 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.129.13:41768 - "GET /api/planillas HTTP/1.1" 200 OK
+INFO:     10.64.129.13:41768 - "GET /api/planillas HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54902 - "POST /api/adelantos HTTP/1.1" 200 OK
+INFO:     10.64.129.13:48834 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.135.173:51802 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.136.245:34442 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.129.13:48818 - "GET /api/adelantos HTTP/1.1" 200 OK
+INFO:     10.64.135.173:51802 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.129.9:54638 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.135.173:51812 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.129.9:54642 - "GET /api/adelantos HTTP/1.1" 200 OK
+INFO:     10.64.131.203:58598 - "GET /api/adelantos HTTP/1.1" 200 OK
+INFO:     10.64.129.7:38810 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.129.7:38800 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.131.206:44864 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.129.7:38800 - "GET /api/adelantos HTTP/1.1" 200 OK
+INFO:     10.64.129.9:38858 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.131.202:53684 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.136.226:46960 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.131.202:53684 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.135.173:60680 - "GET /api/planillas HTTP/1.1" 200 OK
+INFO:     10.64.131.205:53428 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.131.206:58368 - "GET /api/adelantos HTTP/1.1" 200 OK
+INFO:     10.64.131.203:36586 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.202:52472 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.131.205:53428 - "GET /api/adelantos HTTP/1.1" 200 OK
+INFO:     10.64.129.10:36642 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.206:58382 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.129.9:34810 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK.
+        2.  Review  and  to ensure  is present where needed.
+    -   **Why fix this issue and what will be achieved with the fix?** This could be a critical, intermittent backend failure point. Fixing it ensures long-term stability.
+    -   **Status:** NOT STARTED
+    -   **Is recurring issue?** Y
+    -   **Should Test frontend/backend/both after fix?** backend
+    -   **Blocked on other issue:** None
+
+-   **Issue 3: Payroll (Planilla) Generation Bug**
+    -   **Attempted fixes:** The agent fixed a backend crash due to a missing  column and a race condition where the newly created planilla wasn't found.
+    -   **Next debug checklist:**
+        1.  Investigate why  in  doesn't populate the base salary for all employees fetched from .
+        2.  Check the employee creation logic in  and the corresponding backend model to ensure salary information is being stored correctly.
+        3.  Ensure the data passed to the planilla modal includes the base salary for every employee.
+    -   **Why fix this issue and what will be achieved with the fix?** The payroll module is unusable if salaries are not pre-filled correctly, as it forces manual entry and can lead to errors.
+    -   **Status:** IN PROGRESS
+    -   **Is recurring issue?** N
+    -   **Should Test frontend/backend/both after fix?** frontend
+    -   **Blocked on other issue:** None
 
 **In progress Task List**:
 - None.
@@ -468,63 +476,150 @@ INFO:     10.64.131.7:38912 - "GET /api/empresas HTTP/1.1" 200 OK.
 **Upcoming and Future Tasks**
 -   **Upcoming Tasks:**
     -   **P0: Odoo Integration:** Implement the data fetching from Odoo in  to populate the  component.
-    -   **P1: Payroll Module:** Implement the payroll module (, ).
+    -   **P1: Budgets Module:** Implement the Budgets module () and reports.
 -   **Future Tasks:**
-    -   Implement the Budgets module () and reports.
     -   Implement the Bank Reconciliation module (Excel import).
     -   Implement remaining financial reports (Cash Flow, Income Statement).
     -   Refactor  into module-based routers.
 
 **Completed work in this session**
--   **Feature: Expenses (Gastos) Module:** Implemented a complete CRUD module for expenses, including a form that enforces the creation of single or multiple payments that must sum to the expense total.
--   **Feature: Purchase Orders (OC) Module:** Implemented a complete CRUD module for purchase orders, including functionality to generate a supplier invoice directly from an OC.
--   **Feature: Global Company Context:** Added a top header bar with a company selector, using React Context to manage the selected company globally across the application.
--   **Feature: Inline Editing for OCs:** Added the ability to edit and delete purchase orders directly from the list view.
--   **Critical Bug Fix: Payment Validation:** Added frontend and backend validation to prevent users from paying an amount greater than the invoice's pending balance.
--   **UI/UX Overhaul (Facturas & OC):**
-    -   Refined invoice list filters to be more intuitive (searchable provider, single date field).
-    -   Redesigned table actions to use compact icons with tooltips.
-    -   Implemented a multi-column, responsive layout for the OC creation modal.
-    -   Set IGV Incluido to be checked by default in the OC form.
-    -   Added a Print function to the OC details view.
--   **Bug Fix: Sidebar:** Resolved an issue where the collapsed sidebar could not be expanded.
--   **Bug Fix: Responsive Table Rows:** Fixed a CSS issue causing table rows to become excessively thick on smaller screens.
--   **Backend Refinement:** Fixed a recurring transactional issue where data was being queried before the creation transaction was committed. This was resolved for both the Gastos and OC modules.
+-   **Feature: Purchase Order UI/UX Overhaul:** Implemented a fullscreen modal, on-the-fly provider creation, monospace font, a custom item search combobox, and a PDF download button.
+-   **Feature: Payroll (Planilla) Module:** Implemented the frontend page and fixed critical backend bugs related to database columns and transaction handling.
+-   **Feature: Advances (Adelantos) Module:** Implemented the complete CRUD module from a placeholder, including status calculation logic.
+-   **Feature: PDF Downloads:** Added PDF download functionality to Purchase Orders, Invoices, and Expenses using .
+-   **Bug Fix: Invoice Editing:** Implemented the previously missing Edit functionality for supplier invoices.
+-   **Bug Fix: Expense Deletion:** Implemented the missing Delete functionality for expenses, including the backend endpoint.
+-   **Bug Fix: Company Creation:** Fixed a bug preventing company creation due to a mismatch in field names ( vs ) between the frontend and backend.
+-   **Bug Fix: Dropdown Visibility:** Fixed a widespread CSS issue where  dropdowns were hidden inside tables by applying  and adjusting .
+-   **Testing:** Successfully used the  to identify and fix two bugs in the Purchase Order modal implementation.
 
 **Earlier issues found/mentioned but not fixed**
-- **Issue 1: Ignored Backend 'asyncio' Error**
-  - **Debug checklist:**
-    1.  Check backend logs: ==> /var/log/supervisor/backend.err.log <==
-2026-01-30 07:42:17,062 - server - INFO - Finanzas 4.0 API shutdown complete
-INFO:     Application shutdown complete.
-INFO:     Finished server process [1152]
-INFO:     Started server process [1190]
-INFO:     Waiting for application startup.
-2026-01-30 07:42:17,525 - server - INFO - Starting Finanzas 4.0 API...
-2026-01-30 07:42:17,525 - database - INFO - Connecting to PostgreSQL...
-2026-01-30 07:42:18,683 - database - INFO - PostgreSQL connection pool created successfully
-2026-01-30 07:42:24,351 - database - INFO - Schema finanzas2 and all tables created successfully
-2026-01-30 07:42:24,906 - server - INFO - Seed data already exists, skipping...
-2026-01-30 07:42:25,044 - server - INFO - Finanzas 4.0 API started successfully
+-   **Issue 1: Ignored Backend 'asyncio' Error**
+    -   **Debug checklist:** Check logs (==> /var/log/supervisor/backend.err.log <==
+2026-01-30 13:18:10,270 - database - INFO - Schema finanzas2 and all tables created successfully
+2026-01-30 13:18:10,868 - server - INFO - Seed data already exists, skipping...
+2026-01-30 13:18:11,010 - server - INFO - Finanzas 4.0 API started successfully
 INFO:     Application startup complete.
 WARNING:  WatchFiles detected changes in 'server.py'. Reloading...
 INFO:     Shutting down
 INFO:     Waiting for application shutdown.
-2026-01-30 07:43:10,470 - database - INFO - PostgreSQL connection pool closed
-2026-01-30 07:43:10,470 - server - INFO - Finanzas 4.0 API shutdown complete
+2026-01-30 14:45:56,981 - database - INFO - PostgreSQL connection pool closed
+2026-01-30 14:45:56,981 - server - INFO - Finanzas 4.0 API shutdown complete
 INFO:     Application shutdown complete.
-INFO:     Finished server process [1190]
-INFO:     Started server process [1313]
+INFO:     Finished server process [81]
+INFO:     Started server process [8202]
 INFO:     Waiting for application startup.
-2026-01-30 07:43:11,141 - server - INFO - Starting Finanzas 4.0 API...
-2026-01-30 07:43:11,141 - database - INFO - Connecting to PostgreSQL...
-2026-01-30 07:43:12,369 - database - INFO - PostgreSQL connection pool created successfully
-2026-01-30 07:43:18,080 - database - INFO - Schema finanzas2 and all tables created successfully
-2026-01-30 07:43:18,634 - server - INFO - Seed data already exists, skipping...
-2026-01-30 07:43:18,772 - server - INFO - Finanzas 4.0 API started successfully
+2026-01-30 14:45:57,927 - server - INFO - Starting Finanzas 4.0 API...
+2026-01-30 14:45:57,927 - database - INFO - Connecting to PostgreSQL...
+2026-01-30 14:45:59,063 - database - INFO - PostgreSQL connection pool created successfully
+2026-01-30 14:46:04,811 - database - INFO - Schema finanzas2 and all tables created successfully
+2026-01-30 14:46:05,366 - server - INFO - Seed data already exists, skipping...
+2026-01-30 14:46:05,503 - server - INFO - Finanzas 4.0 API started successfully
 INFO:     Application startup complete.
-2026-01-30 07:43:18,915 - database - INFO - PostgreSQL connection pool closed
-2026-01-30 07:43:18,915 - server - INFO - Finanzas 4.0 API shutdown complete
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+2026-01-30 14:50:59,934 - database - INFO - PostgreSQL connection pool closed
+2026-01-30 14:50:59,934 - server - INFO - Finanzas 4.0 API shutdown complete
+INFO:     Application shutdown complete.
+INFO:     Finished server process [8202]
+INFO:     Stopping reloader process [42]
+INFO:     Will watch for changes in these directories: ['/app/backend']
+INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
+INFO:     Started reloader process [9078] using WatchFiles
+INFO:     Started server process [9080]
+INFO:     Waiting for application startup.
+2026-01-30 14:51:00,654 - server - INFO - Starting Finanzas 4.0 API...
+2026-01-30 14:51:00,654 - database - INFO - Connecting to PostgreSQL...
+2026-01-30 14:51:02,224 - database - INFO - PostgreSQL connection pool created successfully
+2026-01-30 14:51:07,961 - database - INFO - Schema finanzas2 and all tables created successfully
+2026-01-30 14:51:08,525 - server - INFO - Seed data already exists, skipping...
+2026-01-30 14:51:08,663 - server - INFO - Finanzas 4.0 API started successfully
+INFO:     Application startup complete.
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/root/.venv/lib/python3.11/site-packages/uvicorn/protocols/http/h11_impl.py", line 408, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/.venv/lib/python3.11/site-packages/uvicorn/middleware/proxy_headers.py", line 84, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/.venv/lib/python3.11/site-packages/fastapi/applications.py", line 1054, in __call__
+    await super().__call__(scope, receive, send)
+  File "/root/.venv/lib/python3.11/site-packages/starlette/applications.py", line 123, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/root/.venv/lib/python3.11/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    raise exc
+  File "/root/.venv/lib/python3.11/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/root/.venv/lib/python3.11/site-packages/starlette/middleware/cors.py", line 93, in __call__
+    await self.simple_response(scope, receive, send, request_headers=headers)
+  File "/root/.venv/lib/python3.11/site-packages/starlette/middleware/cors.py", line 148, in simple_response
+    await self.app(scope, receive, send)
+  File "/root/.venv/lib/python3.11/site-packages/starlette/middleware/exceptions.py", line 65, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/root/.venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 64, in wrapped_app
+    raise exc
+  File "/root/.venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    await app(scope, receive, sender)
+  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 756, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 776, in app
+    await route.handle(scope, receive, send)
+  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 297, in handle
+    await self.app(scope, receive, send)
+  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 77, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/root/.venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 64, in wrapped_app
+    raise exc
+  File "/root/.venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    await app(scope, receive, sender)
+  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 72, in app
+    response = await func(request)
+               ^^^^^^^^^^^^^^^^^^^
+  File "/root/.venv/lib/python3.11/site-packages/fastapi/routing.py", line 278, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/.venv/lib/python3.11/site-packages/fastapi/routing.py", line 191, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/app/backend/server.py", line 2161, in create_planilla
+    row = await conn.fetchrow("""
+          ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/.venv/lib/python3.11/site-packages/asyncpg/connection.py", line 752, in fetchrow
+    data = await self._execute(
+           ^^^^^^^^^^^^^^^^^^^^
+  File "/root/.venv/lib/python3.11/site-packages/asyncpg/connection.py", line 1873, in _execute
+    result, _ = await self.__execute(
+                ^^^^^^^^^^^^^^^^^^^^^
+  File "/root/.venv/lib/python3.11/site-packages/asyncpg/connection.py", line 1970, in __execute
+    result, stmt = await self._do_execute(
+                   ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/.venv/lib/python3.11/site-packages/asyncpg/connection.py", line 2021, in _do_execute
+    stmt = await self._get_statement(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/.venv/lib/python3.11/site-packages/asyncpg/connection.py", line 443, in _get_statement
+    statement = await self._protocol.prepare(
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "asyncpg/protocol/protocol.pyx", line 165, in prepare
+asyncpg.exceptions.UndefinedColumnError: column "notas" of relation "cont_planilla" does not exist
+WARNING:  WatchFiles detected changes in 'server.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+2026-01-30 15:14:02,874 - database - INFO - PostgreSQL connection pool closed
+2026-01-30 15:14:02,874 - server - INFO - Finanzas 4.0 API shutdown complete
+INFO:     Application shutdown complete.
+INFO:     Finished server process [9080]
+INFO:     Started server process [12151]
+INFO:     Waiting for application startup.
+2026-01-30 15:14:03,464 - server - INFO - Starting Finanzas 4.0 API...
+2026-01-30 15:14:03,464 - database - INFO - Connecting to PostgreSQL...
+2026-01-30 15:14:04,623 - database - INFO - PostgreSQL connection pool created successfully
+2026-01-30 15:14:10,366 - database - INFO - Schema finanzas2 and all tables created successfully
+2026-01-30 15:14:10,917 - server - INFO - Seed data already exists, skipping...
+2026-01-30 15:14:11,056 - server - INFO - Finanzas 4.0 API started successfully
+INFO:     Application startup complete.
+2026-01-30 15:14:11,196 - database - INFO - PostgreSQL connection pool closed
+2026-01-30 15:14:11,196 - server - INFO - Finanzas 4.0 API shutdown complete
 ERROR:    Traceback (most recent call last):
   File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 741, in lifespan
     await receive()
@@ -535,448 +630,359 @@ ERROR:    Traceback (most recent call last):
     await getter
 asyncio.exceptions.CancelledError
 
-INFO:     Stopping reloader process [46]
+INFO:     Stopping reloader process [9078]
 INFO:     Will watch for changes in these directories: ['/app/backend']
 INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
-INFO:     Started reloader process [1322] using WatchFiles
-INFO:     Started server process [1324]
+INFO:     Started reloader process [12160] using WatchFiles
+INFO:     Started server process [12162]
 INFO:     Waiting for application startup.
-2026-01-30 07:43:19,594 - server - INFO - Starting Finanzas 4.0 API...
-2026-01-30 07:43:19,594 - database - INFO - Connecting to PostgreSQL...
-2026-01-30 07:43:20,741 - database - INFO - PostgreSQL connection pool created successfully
-2026-01-30 07:43:26,416 - database - INFO - Schema finanzas2 and all tables created successfully
-2026-01-30 07:43:26,969 - server - INFO - Seed data already exists, skipping...
-2026-01-30 07:43:27,107 - server - INFO - Finanzas 4.0 API started successfully
+2026-01-30 15:14:11,873 - server - INFO - Starting Finanzas 4.0 API...
+2026-01-30 15:14:11,873 - database - INFO - Connecting to PostgreSQL...
+2026-01-30 15:14:13,041 - database - INFO - PostgreSQL connection pool created successfully
+2026-01-30 15:14:18,708 - database - INFO - Schema finanzas2 and all tables created successfully
+2026-01-30 15:14:19,261 - server - INFO - Seed data already exists, skipping...
+2026-01-30 15:14:19,398 - server - INFO - Finanzas 4.0 API started successfully
 INFO:     Application startup complete.
 WARNING:  WatchFiles detected changes in 'server.py'. Reloading...
 INFO:     Shutting down
 INFO:     Waiting for application shutdown.
-2026-01-30 07:45:53,676 - database - INFO - PostgreSQL connection pool closed
-2026-01-30 07:45:53,676 - server - INFO - Finanzas 4.0 API shutdown complete
+2026-01-30 15:17:04,184 - database - INFO - PostgreSQL connection pool closed
+2026-01-30 15:17:04,184 - server - INFO - Finanzas 4.0 API shutdown complete
 INFO:     Application shutdown complete.
-INFO:     Finished server process [1324]
-INFO:     Started server process [1998]
+INFO:     Finished server process [12162]
+INFO:     Started server process [12531]
 INFO:     Waiting for application startup.
-2026-01-30 07:45:54,354 - server - INFO - Starting Finanzas 4.0 API...
-2026-01-30 07:45:54,354 - database - INFO - Connecting to PostgreSQL...
-2026-01-30 07:45:55,505 - database - INFO - PostgreSQL connection pool created successfully
-2026-01-30 07:46:01,197 - database - INFO - Schema finanzas2 and all tables created successfully
-2026-01-30 07:46:01,794 - server - INFO - Seed data already exists, skipping...
-2026-01-30 07:46:01,945 - server - INFO - Finanzas 4.0 API started successfully
+2026-01-30 15:17:04,834 - server - INFO - Starting Finanzas 4.0 API...
+2026-01-30 15:17:04,834 - database - INFO - Connecting to PostgreSQL...
+2026-01-30 15:17:05,986 - database - INFO - PostgreSQL connection pool created successfully
+2026-01-30 15:17:11,637 - database - INFO - Schema finanzas2 and all tables created successfully
+2026-01-30 15:17:12,191 - server - INFO - Seed data already exists, skipping...
+2026-01-30 15:17:12,329 - server - INFO - Finanzas 4.0 API started successfully
 INFO:     Application startup complete.
+2026-01-30 15:17:12,470 - database - INFO - PostgreSQL connection pool closed
+2026-01-30 15:17:12,470 - server - INFO - Finanzas 4.0 API shutdown complete
+ERROR:    Traceback (most recent call last):
+  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 741, in lifespan
+    await receive()
+  File "/root/.venv/lib/python3.11/site-packages/uvicorn/lifespan/on.py", line 137, in receive
+    return await self.receive_queue.get()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/local/lib/python3.11/asyncio/queues.py", line 158, in get
+    await getter
+asyncio.exceptions.CancelledError
+
+INFO:     Stopping reloader process [12160]
 INFO:     Will watch for changes in these directories: ['/app/backend']
 INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
-INFO:     Started reloader process [48] using WatchFiles
-INFO:     Started server process [86]
+INFO:     Started reloader process [12540] using WatchFiles
+INFO:     Started server process [12542]
 INFO:     Waiting for application startup.
-2026-01-30 09:08:40,730 - server - INFO - Starting Finanzas 4.0 API...
-2026-01-30 09:08:40,730 - database - INFO - Connecting to PostgreSQL...
-2026-01-30 09:08:41,880 - database - INFO - PostgreSQL connection pool created successfully
-2026-01-30 09:08:47,599 - database - INFO - Schema finanzas2 and all tables created successfully
-2026-01-30 09:08:48,158 - server - INFO - Seed data already exists, skipping...
-2026-01-30 09:08:48,320 - server - INFO - Finanzas 4.0 API started successfully
-INFO:     Application startup complete.
-WARNING:  WatchFiles detected changes in 'models.py'. Reloading...
-INFO:     Shutting down
-INFO:     Waiting for application shutdown.
-2026-01-30 09:11:06,096 - database - INFO - PostgreSQL connection pool closed
-2026-01-30 09:11:06,096 - server - INFO - Finanzas 4.0 API shutdown complete
-INFO:     Application shutdown complete.
-INFO:     Finished server process [86]
-INFO:     Started server process [303]
-INFO:     Waiting for application startup.
-2026-01-30 09:11:06,998 - server - INFO - Starting Finanzas 4.0 API...
-2026-01-30 09:11:06,998 - database - INFO - Connecting to PostgreSQL...
-2026-01-30 09:11:08,147 - database - INFO - PostgreSQL connection pool created successfully
-2026-01-30 09:11:13,798 - database - INFO - Schema finanzas2 and all tables created successfully
-2026-01-30 09:11:14,351 - server - INFO - Seed data already exists, skipping...
-2026-01-30 09:11:14,489 - server - INFO - Finanzas 4.0 API started successfully
-INFO:     Application startup complete.
-WARNING:  WatchFiles detected changes in 'server.py'. Reloading...
-INFO:     Shutting down
-INFO:     Waiting for application shutdown.
-2026-01-30 09:11:33,967 - database - INFO - PostgreSQL connection pool closed
-2026-01-30 09:11:33,967 - server - INFO - Finanzas 4.0 API shutdown complete
-INFO:     Application shutdown complete.
-INFO:     Finished server process [303]
-INFO:     Started server process [341]
-INFO:     Waiting for application startup.
-2026-01-30 09:11:34,594 - server - INFO - Starting Finanzas 4.0 API...
-2026-01-30 09:11:34,594 - database - INFO - Connecting to PostgreSQL...
-2026-01-30 09:11:35,741 - database - INFO - PostgreSQL connection pool created successfully
-2026-01-30 09:11:41,418 - database - INFO - Schema finanzas2 and all tables created successfully
-2026-01-30 09:11:41,971 - server - INFO - Seed data already exists, skipping...
-2026-01-30 09:11:42,109 - server - INFO - Finanzas 4.0 API started successfully
-INFO:     Application startup complete.
-INFO:     Shutting down
-INFO:     Waiting for application shutdown.
-2026-01-30 09:14:33,895 - database - INFO - PostgreSQL connection pool closed
-2026-01-30 09:14:33,895 - server - INFO - Finanzas 4.0 API shutdown complete
-INFO:     Application shutdown complete.
-INFO:     Finished server process [341]
-INFO:     Stopping reloader process [48]
-INFO:     Will watch for changes in these directories: ['/app/backend']
-INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
-INFO:     Started reloader process [467] using WatchFiles
-INFO:     Started server process [469]
-INFO:     Waiting for application startup.
-2026-01-30 09:14:34,620 - server - INFO - Starting Finanzas 4.0 API...
-2026-01-30 09:14:34,620 - database - INFO - Connecting to PostgreSQL...
-2026-01-30 09:14:35,777 - database - INFO - PostgreSQL connection pool created successfully
-2026-01-30 09:14:41,460 - database - INFO - Schema finanzas2 and all tables created successfully
-2026-01-30 09:14:42,013 - server - INFO - Seed data already exists, skipping...
-2026-01-30 09:14:42,151 - server - INFO - Finanzas 4.0 API started successfully
-INFO:     Application startup complete.
-WARNING:  WatchFiles detected changes in 'server.py'. Reloading...
-INFO:     Shutting down
-INFO:     Waiting for application shutdown.
-2026-01-30 09:16:22,908 - database - INFO - PostgreSQL connection pool closed
-2026-01-30 09:16:22,908 - server - INFO - Finanzas 4.0 API shutdown complete
-INFO:     Application shutdown complete.
-INFO:     Finished server process [469]
-INFO:     Started server process [927]
-INFO:     Waiting for application startup.
-2026-01-30 09:16:23,576 - server - INFO - Starting Finanzas 4.0 API...
-2026-01-30 09:16:23,576 - database - INFO - Connecting to PostgreSQL...
-2026-01-30 09:16:24,729 - database - INFO - PostgreSQL connection pool created successfully
-2026-01-30 09:16:30,406 - database - INFO - Schema finanzas2 and all tables created successfully
-2026-01-30 09:16:30,960 - server - INFO - Seed data already exists, skipping...
-2026-01-30 09:16:31,099 - server - INFO - Finanzas 4.0 API started successfully
-INFO:     Application startup complete.
-INFO:     Will watch for changes in these directories: ['/app/backend']
-INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
-INFO:     Started reloader process [46] using WatchFiles
-INFO:     Started server process [90]
-INFO:     Waiting for application startup.
-2026-01-30 12:25:50,426 - server - INFO - Starting Finanzas 4.0 API...
-2026-01-30 12:25:50,426 - database - INFO - Connecting to PostgreSQL...
-2026-01-30 12:25:51,596 - database - INFO - PostgreSQL connection pool created successfully
-2026-01-30 12:25:57,542 - database - INFO - Schema finanzas2 and all tables created successfully
-2026-01-30 12:25:58,115 - server - INFO - Seed data already exists, skipping...
-2026-01-30 12:25:58,252 - server - INFO - Finanzas 4.0 API started successfully
-INFO:     Application startup complete.
-WARNING:  WatchFiles detected changes in 'server.py'. Reloading...
-INFO:     Shutting down
-INFO:     Waiting for application shutdown.
-2026-01-30 12:36:53,072 - database - INFO - PostgreSQL connection pool closed
-2026-01-30 12:36:53,072 - server - INFO - Finanzas 4.0 API shutdown complete
-INFO:     Application shutdown complete.
-INFO:     Finished server process [90]
-INFO:     Started server process [707]
-INFO:     Waiting for application startup.
-2026-01-30 12:36:53,965 - server - INFO - Starting Finanzas 4.0 API...
-2026-01-30 12:36:53,965 - database - INFO - Connecting to PostgreSQL...
-2026-01-30 12:36:55,115 - database - INFO - PostgreSQL connection pool created successfully
-2026-01-30 12:37:00,835 - database - INFO - Schema finanzas2 and all tables created successfully
-2026-01-30 12:37:01,392 - server - INFO - Seed data already exists, skipping...
-2026-01-30 12:37:01,531 - server - INFO - Finanzas 4.0 API started successfully
-INFO:     Application startup complete.
-WARNING:  WatchFiles detected changes in 'server.py'. Reloading...
-INFO:     Shutting down
-INFO:     Waiting for application shutdown.
-2026-01-30 12:38:07,258 - database - INFO - PostgreSQL connection pool closed
-2026-01-30 12:38:07,259 - server - INFO - Finanzas 4.0 API shutdown complete
-INFO:     Application shutdown complete.
-INFO:     Finished server process [707]
-INFO:     Started server process [945]
-INFO:     Waiting for application startup.
-2026-01-30 12:38:07,966 - server - INFO - Starting Finanzas 4.0 API...
-2026-01-30 12:38:07,966 - database - INFO - Connecting to PostgreSQL...
-2026-01-30 12:38:09,116 - database - INFO - PostgreSQL connection pool created successfully
-2026-01-30 12:38:14,914 - database - INFO - Schema finanzas2 and all tables created successfully
-2026-01-30 12:38:15,466 - server - INFO - Seed data already exists, skipping...
-2026-01-30 12:38:15,604 - server - INFO - Finanzas 4.0 API started successfully
+2026-01-30 15:17:13,134 - server - INFO - Starting Finanzas 4.0 API...
+2026-01-30 15:17:13,134 - database - INFO - Connecting to PostgreSQL...
+2026-01-30 15:17:14,272 - database - INFO - PostgreSQL connection pool created successfully
+2026-01-30 15:17:19,917 - database - INFO - Schema finanzas2 and all tables created successfully
+2026-01-30 15:17:20,468 - server - INFO - Seed data already exists, skipping...
+2026-01-30 15:17:20,605 - server - INFO - Finanzas 4.0 API started successfully
 INFO:     Application startup complete.
 INFO:     Will watch for changes in these directories: ['/app/backend']
 INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
 INFO:     Started reloader process [42] using WatchFiles
-INFO:     Started server process [81]
+INFO:     Started server process [83]
 INFO:     Waiting for application startup.
-2026-01-30 13:18:03,373 - server - INFO - Starting Finanzas 4.0 API...
-2026-01-30 13:18:03,373 - database - INFO - Connecting to PostgreSQL...
-2026-01-30 13:18:04,529 - database - INFO - PostgreSQL connection pool created successfully
+2026-01-30 15:27:05,549 - server - INFO - Starting Finanzas 4.0 API...
+2026-01-30 15:27:05,549 - database - INFO - Connecting to PostgreSQL...
+2026-01-30 15:27:06,688 - database - INFO - PostgreSQL connection pool created successfully
 
 ==> /var/log/supervisor/backend.out.log <==
-INFO:     10.64.131.7:41352 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.131.7:41348 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.138.62:37008 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.131.34:33700 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.131.7:41362 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
-INFO:     10.64.136.226:53842 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.135.173:49340 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.135.173:49348 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.136.245:40540 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
-INFO:     10.64.131.203:35178 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.131.202:54712 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.131.204:49200 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.131.206:38356 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.131.205:59692 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.131.205:59676 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
-INFO:     10.64.131.7:49510 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.131.34:46734 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.138.62:60040 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.131.34:46750 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
-INFO:     10.64.138.62:50776 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.138.62:57258 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.138.62:57260 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.131.34:58346 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.131.34:58336 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.131.7:60326 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
-INFO:     10.64.138.62:45694 - "GET /api/dashboard/kpis HTTP/1.1" 200 OK
-INFO:     10.64.138.62:55670 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.131.34:36178 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.131.7:51418 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
-INFO:     10.64.131.34:36192 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.131.7:51426 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
-INFO:     10.64.138.62:55684 - "GET /api/centros-costo HTTP/1.1" 200 OK
-INFO:     10.64.131.34:36200 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.138.62:55670 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.131.7:51426 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.138.62:55692 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.131.34:36190 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
-INFO:     10.64.138.62:45694 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
-INFO:     10.64.131.7:51410 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
-INFO:     10.64.131.7:52838 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.138.62:57192 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.131.34:56584 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.138.62:57186 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.131.7:52856 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.131.34:56586 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.131.7:52834 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
-INFO:     10.64.131.7:52872 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.131.7:52846 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
-INFO:     10.64.138.62:57204 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.138.62:47416 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.131.7:51060 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.138.62:47430 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.131.7:51056 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.138.62:47408 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.138.62:47444 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.131.34:38648 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.138.62:47426 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.131.34:38636 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
-INFO:     10.64.131.34:38622 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
-INFO:     10.64.138.62:34952 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.131.7:42788 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.131.34:41328 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.131.34:41356 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.131.34:41326 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.131.34:41342 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.131.7:42796 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.131.34:41360 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.131.7:42780 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
-INFO:     10.64.131.34:41366 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
-INFO:     10.64.138.62:43444 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.138.62:43456 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
-INFO:     10.64.131.7:52420 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.131.34:47420 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.131.7:52430 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.138.62:43428 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
-INFO:     10.64.131.7:52418 - "GET /api/centros-costo HTTP/1.1" 200 OK
-INFO:     10.64.138.62:43436 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
-INFO:     10.64.131.34:47412 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
-INFO:     10.64.138.62:53966 - "GET /api/facturas-proveedor/9/letras HTTP/1.1" 200 OK
-INFO:     10.64.138.62:53966 - "GET /api/facturas-proveedor/7/pagos HTTP/1.1" 200 OK
-INFO:     10.64.138.62:58696 - "GET /api/facturas-proveedor/7/pagos HTTP/1.1" 200 OK
-INFO:     10.64.131.7:51132 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.131.7:51156 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
-INFO:     10.64.131.34:37438 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.138.62:49470 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.131.34:37422 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
-INFO:     10.64.138.62:49484 - "GET /api/centros-costo HTTP/1.1" 200 OK
-INFO:     10.64.131.7:51168 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.131.7:51188 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.131.7:51178 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.131.34:37462 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.131.34:37470 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.138.62:49500 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
-INFO:     10.64.131.34:37452 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.131.7:51128 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
-INFO:     10.64.131.7:51146 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
-INFO:     10.64.131.34:37422 - "GET /api/facturas-proveedor/9/letras HTTP/1.1" 200 OK
-INFO:     10.64.131.202:50028 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.131.206:53204 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.131.204:39966 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.131.203:33042 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.131.203:33034 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.131.205:45806 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
-INFO:     10.64.131.204:39970 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.131.205:45806 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.131.202:50028 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.131.204:39966 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.131.204:39978 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
-INFO:     10.64.131.205:45806 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.136.226:58132 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.129.10:34724 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.129.13:38654 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.136.226:58118 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.129.13:38666 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.129.9:58352 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
-INFO:     10.64.131.7:47128 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.138.62:47632 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.131.34:54606 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.131.7:47140 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
-INFO:     10.64.138.62:47632 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.131.7:47140 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.131.34:54658 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
-INFO:     10.64.131.34:54636 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
-INFO:     10.64.131.34:54624 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
-INFO:     10.64.131.7:47160 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.131.34:54618 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.131.7:47174 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.138.62:51174 - "GET /api/centros-costo HTTP/1.1" 200 OK
-INFO:     10.64.131.34:54646 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.131.7:47150 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
-INFO:     10.64.138.62:56366 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.131.7:57136 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.131.34:49928 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.131.34:49916 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.131.34:49944 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.138.62:56384 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.138.62:56366 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.131.7:57136 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.131.7:57146 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.131.7:57146 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.138.62:56376 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
-INFO:     10.64.131.34:49916 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
-INFO:     10.64.138.62:56366 - "GET /api/facturas-proveedor/7/pagos HTTP/1.1" 200 OK
-INFO:     10.64.131.7:41864 - "DELETE /api/pagos/3 HTTP/1.1" 200 OK
-INFO:     10.64.131.34:48388 - "GET /api/facturas-proveedor/7/pagos HTTP/1.1" 200 OK
-INFO:     10.64.138.62:48510 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.131.34:48392 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.138.62:48502 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.131.7:41892 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.131.34:48404 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
-INFO:     10.64.131.7:41864 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
-INFO:     10.64.131.7:41878 - "GET /api/centros-costo HTTP/1.1" 200 OK
-INFO:     10.64.138.62:48488 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
-INFO:     10.64.131.34:48388 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
-INFO:     10.64.138.62:48502 - "GET /api/pagos HTTP/1.1" 200 OK
-INFO:     10.64.131.34:37140 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
-INFO:     10.64.131.34:37148 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.138.62:40420 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.138.62:40422 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
-INFO:     10.64.138.62:40440 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
-INFO:     10.64.131.7:47948 - "GET /api/centros-costo HTTP/1.1" 200 OK
-INFO:     10.64.131.7:47964 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.138.62:40424 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.131.34:37138 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
-INFO:     10.64.131.205:37446 - "GET /api/health HTTP/1.1" 200 OK
-INFO:     10.64.138.62:33822 - "GET /api/facturas-proveedor/7/pagos HTTP/1.1" 200 OK
-INFO:     10.64.131.7:34544 - "DELETE /api/pagos/4 HTTP/1.1" 200 OK
-INFO:     10.64.131.34:45184 - "GET /api/facturas-proveedor/7/pagos HTTP/1.1" 200 OK
-INFO:     10.64.131.7:40430 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.138.62:33830 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.131.7:40444 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
-INFO:     10.64.131.7:40456 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.138.62:33834 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.131.34:45186 - "GET /api/centros-costo HTTP/1.1" 200 OK
-INFO:     10.64.138.62:33832 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
-INFO:     10.64.131.34:45184 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
-INFO:     10.64.131.7:34544 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
-INFO:     10.64.131.7:43394 - "DELETE /api/facturas-proveedor/7 HTTP/1.1" 200 OK
-INFO:     10.64.131.7:43394 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.131.7:43426 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
-INFO:     10.64.138.62:40266 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.131.7:43400 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.131.34:51190 - "GET /api/centros-costo HTTP/1.1" 200 OK
-INFO:     10.64.138.62:40262 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
-INFO:     10.64.131.7:43412 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.138.62:40258 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
-INFO:     10.64.131.34:51176 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
-INFO:     10.64.131.34:42158 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.131.7:33108 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.138.62:34524 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.138.62:34540 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.131.34:42146 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
-INFO:     10.64.131.7:45616 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.131.7:38912 - "PUT /api/terceros/1 HTTP/1.1" 200 OK
-INFO:     10.64.131.7:38912 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.138.62:49940 - "GET /api/inventario HTTP/1.1" 200 OK
-INFO:     10.64.131.34:45386 - "GET /api/proveedores HTTP/1.1" 200 OK
-INFO:     10.64.131.34:45402 - "GET /api/monedas HTTP/1.1" 200 OK
-INFO:     10.64.138.62:49938 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
-INFO:     10.64.131.7:38912 - "GET /api/empresas HTTP/1.1" 200 OK.
-    2.  Review  and  for a missing .
-  - **Why to solve this issue and what will be achieved with this?** To prevent a potential critical backend failure and ensure application stability.
-  - **Should Test frontend/backend/both after fix:** backend
-  - **Is recurring issue?** Y
+INFO:     10.64.129.7:35114 - "PUT /api/empresas/2 HTTP/1.1" 200 OK
+INFO:     10.64.136.245:35472 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.136.226:33082 - "PUT /api/empresas/1 HTTP/1.1" 200 OK
+INFO:     10.64.129.7:36736 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.204:42240 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.129.7:46432 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.7:51586 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.34:33868 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.204:39658 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.205:57802 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.135.173:57794 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.129.13:35850 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.135.173:57794 - "OPTIONS /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.136.245:49930 - "POST /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.136.226:55844 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.129.10:41724 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.129.10:41724 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.136.226:43828 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.136.245:56694 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.204:40320 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.204:40332 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.203:41408 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.129.9:38490 - "GET /api/lineas-negocio HTTP/1.1" 200 OK
+INFO:     10.64.129.7:43146 - "GET /api/centros-costo HTTP/1.1" 200 OK
+INFO:     10.64.131.204:33590 - "GET /api/facturas-proveedor HTTP/1.1" 200 OK
+INFO:     10.64.131.206:42522 - "GET /api/monedas HTTP/1.1" 200 OK
+INFO:     10.64.131.206:42534 - "GET /api/inventario HTTP/1.1" 200 OK
+INFO:     10.64.129.10:34040 - "GET /api/modelos-cortes HTTP/1.1" 200 OK
+INFO:     10.64.129.10:34050 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.131.202:57018 - "GET /api/categorias?tipo=egreso HTTP/1.1" 200 OK
+INFO:     10.64.131.206:42534 - "GET /api/inventario HTTP/1.1" 200 OK
+INFO:     10.64.136.226:52868 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.129.10:34050 - "GET /api/monedas HTTP/1.1" 200 OK
+INFO:     10.64.131.204:33596 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.131.205:59116 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
+INFO:     10.64.131.34:57326 - "GET /api/inventario HTTP/1.1" 200 OK
+INFO:     10.64.138.62:44356 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.129.7:56354 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.203:44592 - "GET /api/monedas HTTP/1.1" 200 OK
+INFO:     10.64.131.7:58316 - "GET /api/proveedores HTTP/1.1" 200 OK
+INFO:     10.64.135.173:45576 - "GET /api/ordenes-compra HTTP/1.1" 200 OK
+INFO:     10.64.131.205:40292 - "GET /api/planillas HTTP/1.1" 200 OK
+INFO:     10.64.131.204:42562 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.131.202:59040 - "GET /api/planillas HTTP/1.1" 200 OK
+INFO:     10.64.131.206:47818 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.131.203:52860 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.205:40308 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.131.203:52860 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.203:52866 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.135.173:43680 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.136.226:57984 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.131.205:34362 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.136.226:57994 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35666 - "POST /api/terceros HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35682 - "POST /api/terceros HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35696 - "POST /api/terceros HTTP/1.1" 200 OK
+INFO:     10.64.136.226:42046 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.136.226:42062 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.135.173:35022 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.135.173:35020 - "GET /api/planillas HTTP/1.1" 200 OK
+INFO:     10.64.136.245:33804 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.136.245:33802 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.129.7:41480 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.129.7:41492 - "GET /api/planillas HTTP/1.1" 200 OK
+INFO:     10.64.131.202:42588 - "GET /api/planillas HTTP/1.1" 200 OK
+INFO:     10.64.131.204:37796 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.131.204:37800 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.131.205:48196 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.204:37800 - "GET /api/planillas HTTP/1.1" 200 OK
+INFO:     10.64.131.206:33874 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.131.204:37796 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.203:32850 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.129.9:42812 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.136.245:43102 - "GET /api/planillas HTTP/1.1" 200 OK
+INFO:     10.64.136.245:43092 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.129.7:51766 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.129.9:42812 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.129.7:51774 - "GET /api/planillas HTTP/1.1" 200 OK
+INFO:     10.64.138.62:44376 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.131.7:56078 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.138.62:44376 - "OPTIONS /api/planillas HTTP/1.1" 200 OK
+INFO:     10.64.131.7:56078 - "POST /api/planillas HTTP/1.1" 500 Internal Server Error
+INFO:     127.0.0.1:59854 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.129.9:36298 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.129.7:49940 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.136.226:43256 - "GET /api/planillas HTTP/1.1" 200 OK
+INFO:     10.64.129.10:47498 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.136.245:56432 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.135.173:55798 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.135.173:55812 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.136.245:56446 - "GET /api/planillas HTTP/1.1" 200 OK
+INFO:     10.64.129.9:39418 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.138.62:35300 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.136.226:43256 - "GET /api/planillas HTTP/1.1" 200 OK
+INFO:     10.64.131.204:59398 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.129.13:36050 - "OPTIONS /api/planillas HTTP/1.1" 200 OK
+INFO:     10.64.129.10:47512 - "POST /api/planillas HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:56070 - "POST /api/planillas HTTP/1.1" 404 Not Found
+INFO:     10.64.131.202:56176 - "GET /api/planillas HTTP/1.1" 200 OK
+INFO:     10.64.129.10:42098 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.131.7:42710 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45724 - "GET /api/planillas HTTP/1.1" 200 OK
+INFO:     10.64.131.7:42710 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.136.226:43234 - "GET /api/dashboard/kpis HTTP/1.1" 200 OK
+INFO:     10.64.131.7:42710 - "GET /api/planillas HTTP/1.1" 200 OK
+INFO:     10.64.131.205:52088 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.138.62:33150 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45736 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.136.245:47178 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.131.203:33240 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.131.7:44678 - "GET /api/planillas HTTP/1.1" 200 OK
+INFO:     10.64.138.62:33154 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48154 - "POST /api/planillas HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:50306 - "POST /api/planillas HTTP/1.1" 200 OK
+INFO:     127.0.0.1:42882 - "POST /api/planillas HTTP/1.1" 200 OK
+INFO:     10.64.131.206:45624 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.131.204:53672 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.204:53686 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.131.202:45558 - "GET /api/planillas HTTP/1.1" 200 OK
+INFO:     10.64.131.203:60704 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.202:45566 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.131.203:60712 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.129.10:40086 - "GET /api/planillas HTTP/1.1" 200 OK
+INFO:     10.64.129.10:39400 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.129.7:43992 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.131.34:55392 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.129.7:43978 - "GET /api/planillas HTTP/1.1" 200 OK
+INFO:     10.64.129.9:58806 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.34:55392 - "GET /api/dashboard/kpis HTTP/1.1" 200 OK
+INFO:     10.64.131.7:48080 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.131.204:55530 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.129.13:57478 - "GET /api/planillas HTTP/1.1" 200 OK
+INFO:     10.64.136.245:53056 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.136.226:34516 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.129.10:36602 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.136.245:53064 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.129.9:38730 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.129.7:39896 - "GET /api/planillas HTTP/1.1" 200 OK
+INFO:     10.64.131.34:56766 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.129.13:40588 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.34:56770 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.131.34:56784 - "GET /api/planillas HTTP/1.1" 200 OK
+INFO:     10.64.131.203:36770 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.131.205:35314 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.131.204:40478 - "GET /api/adelantos HTTP/1.1" 200 OK
+INFO:     10.64.131.7:41868 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.131.206:34298 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.138.62:43318 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.131.202:51096 - "GET /api/planillas HTTP/1.1" 200 OK
+INFO:     10.64.131.205:41108 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.131.205:41124 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.204:47492 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.131.204:47478 - "GET /api/adelantos HTTP/1.1" 200 OK
+INFO:     10.64.131.205:41108 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.138.62:51118 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.138.62:51116 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.138.62:51124 - "GET /api/adelantos HTTP/1.1" 200 OK
+INFO:     10.64.129.13:47296 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.129.9:56452 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.129.13:47286 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.129.10:58016 - "GET /api/adelantos HTTP/1.1" 200 OK
+INFO:     10.64.129.10:58024 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.135.173:49642 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.135.173:49646 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.131.34:60488 - "GET /api/adelantos HTTP/1.1" 200 OK
+INFO:     10.64.129.7:33854 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.129.9:49024 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.129.9:49028 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.129.10:48354 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.129.10:48346 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.129.7:33854 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.129.13:41768 - "GET /api/planillas HTTP/1.1" 200 OK
+INFO:     10.64.129.13:41768 - "GET /api/planillas HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54902 - "POST /api/adelantos HTTP/1.1" 200 OK
+INFO:     10.64.129.13:48834 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.135.173:51802 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.136.245:34442 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.129.13:48818 - "GET /api/adelantos HTTP/1.1" 200 OK
+INFO:     10.64.135.173:51802 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.129.9:54638 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.135.173:51812 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.129.9:54642 - "GET /api/adelantos HTTP/1.1" 200 OK
+INFO:     10.64.131.203:58598 - "GET /api/adelantos HTTP/1.1" 200 OK
+INFO:     10.64.129.7:38810 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.129.7:38800 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.131.206:44864 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.129.7:38800 - "GET /api/adelantos HTTP/1.1" 200 OK
+INFO:     10.64.129.9:38858 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.131.202:53684 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.136.226:46960 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.131.202:53684 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.135.173:60680 - "GET /api/planillas HTTP/1.1" 200 OK
+INFO:     10.64.131.205:53428 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.131.206:58368 - "GET /api/adelantos HTTP/1.1" 200 OK
+INFO:     10.64.131.203:36586 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.202:52472 - "GET /api/empleados HTTP/1.1" 200 OK
+INFO:     10.64.131.205:53428 - "GET /api/adelantos HTTP/1.1" 200 OK
+INFO:     10.64.129.10:36642 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.206:58382 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.129.9:34810 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK) and review  for a missing .
+    -   **Why to solve this issue and what will be achieved with this?** To prevent a potential critical backend failure and ensure application stability.
+    -   **Should Test frontend/backend/both after fix:** backend
+    -   **Is recurring issue?** Y
 
 **Known issue recurrence from previous fork**
-- **Issue recurrence in previous fork:**  error.
-- **Recurrence count:** 1
-- **Status:** NOT STARTED
+-   **Issue recurrence in previous fork:**  error.
+-   **Recurrence count:** 2
+-   **Status:** NOT STARTED
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
-- **Backend:** FastAPI, PostgreSQL, SQLAlchemy (async).
-- **Frontend:** React, React Router, TailwindCSS, Shadcn/UI.
-- **State Management:** React Context () is used for managing the globally selected company.
-- **Key Pattern:** A recurring backend issue was identified and fixed where a  query was executed in a new transaction immediately after an  in a different transaction, causing a not found race condition. The fix was to return the newly created object from within the original transaction.
+-   **Backend:** FastAPI, PostgreSQL, SQLAlchemy (async).
+-   **Frontend:** React, React Router, TailwindCSS, Shadcn/UI.
+-   **State Management:** React Context ().
+-   **PDF Generation:** Client-side using  and .
+-   **Key Pattern (Bugs):** Several UI bugs were caused by CSS  properties on parent containers clipping  child elements (dropdowns). The fix was to conditionally add  or use higher  values.
+-   **Key Pattern (Backend):** The agent fixed another race condition in the  endpoint by returning the created object directly from the transaction instead of re-fetching it in a separate query.
 
 **key DB schema**
-- **Schema:** 
-- The agent worked with , , , and . No new tables were created, but existing ones were heavily utilized.
+-   **Schema:** 
+-   **New Tables Utilized:** , , .
 
 **changes in tech stack**
-- None.
+-   **jsPDF / jspdf-autotable:** Libraries were added to the frontend to handle client-side PDF generation.
 
 **All files of reference**
-- : New file, contains logic for the OC module, including the create/edit modal.
-- : New file, contains logic for the Expenses module.
-- : Modified to include the  and the new  component.
-- : Heavily modified with new styles for , summary cards, responsive fixes, and action buttons.
-- : New component for the application header and company selection.
-- : New file for managing global company state.
-- : Significantly expanded with endpoints for  and , and transaction-related bug fixes.
-- : Expanded with Pydantic models for  and .
+-   : Heavily refactored for new UI/UX.
+-   : Modified to implement editing and PDF downloads.
+-   : Modified to implement deleting and PDF downloads.
+-   : Modified to fix the creation bug.
+-   : New file for the payroll module.
+-   : New file for the advances module.
+-   : Significantly modified with new styles and bug fixes for dropdowns and modals.
+-   : Expanded with endpoints for  (DELETE), , and . Also includes bug fixes.
+-   : Updated with new API functions for , , and .
 
 **Areas that need refactoring**:
--  has grown even larger (now over 2000 lines) and is a critical candidate for being split into separate router files per module (e.g., , ).
-- The frontend pages  and  are very large and manage multiple complex modals and state. They should be broken down into smaller, more focused components.
+-    is now extremely large and urgently needs to be broken down into separate router files per module (e.g., , ).
+-   The frontend pages (, , ) are complex single-file components managing multiple states and modals. They should be broken down into smaller, reusable components.
 
 **key api endpoints**
-- : Creates a new expense and its associated payments.
-- : Lists all expenses.
-- : Creates a new purchase order.
-- : Lists all purchase orders.
-- : Updates a purchase order.
-- : Generates a supplier invoice from a purchase order.
-- : Endpoint was updated with validation to prevent overpayment.
+-   : Deletes an expense.
+-   : Creates a new payroll sheet.
+-   : Lists all payroll sheets.
+-   : Creates a new employee advance.
+-   : Lists all employee advances.
+-   : Endpoint was debugged; payload now matches the model.
 
 **Critical Info for New Agent**
-- The user is highly focused on UI/UX and provides specific visual feedback. Pay close attention to the provided images and aesthetic requests.
-- A recurring backend pattern was fixing race conditions in  endpoints by returning the created object from within the same database transaction instead of re-fetching it. Be mindful of this if creating new CRUD endpoints.
-- The original  error from the first handoff summary has still not been investigated and should be treated as a potential hidden bug.
-- The application now has a global company context. New modules or features should use  to get the  and filter data accordingly.
+-   The user is highly focused on UI/UX. Pay close attention to their visual feedback.
+-   The  error from the first handoff has still not been investigated and should be treated as a priority P1 hidden bug.
+-   A recurring pattern for fixing custom dropdowns/modals is to debug CSS  and  properties on parent containers.
+-   The backend race condition pattern (re-fetching data inside the same transaction that created it) was encountered and fixed again. Be mindful of this when creating new endpoints.
 
 **documents and test reports created in this job**
--  (updated multiple times)
+-    (updated)
+-   
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User:** Requested the OC module with specific UI from an image. **Status: Completed.**
-2.  **User:** Provided feedback on the OC modal: make IGV included default, make article field larger, use 2 columns for top fields, make the summary prettier, and add a print button. Also requested multi-company support. **Status: Completed.**
-3.  **User:** Provided more feedback on the OC module: select company by default from a header, show the selected article clearly, improve the summary's visual life, and add edit/delete actions to the OC list. **Status: Completed.**
-4.  **User:** Provided final feedback on the OC module: The article search dropdown is hard to see, the selected item isn't clear, the modal should be fullscreen, allow creating a provider on-the-fly, and change the font for numbers. **Status: PENDING.**
+1.  **User:** Requested further UI changes for the OC modal (integrated search, full-width details, PDF). **Status: Completed.**
+2.  **User:** Reported multiple issues: Invoice edit not working, bad article selectors in Invoices/Expenses, no PDF downloads for Invoices/Expenses, no delete for Expenses. **Status: Completed.**
+3.  **User:** Reported an error when creating a new company. **Status: Completed.**
+4.  **User:** After the company fix, reported that the company selector in the top bar was not updating (it was, this was likely a user-side refresh issue). **Status: Completed.**
+5.  **User:** Requested the Payroll (Planilla) module. **Status: In Progress.** (Backend bug found and fixed, but frontend data loading issue remains).
+6.  **User:** Reported that the Advances (Adelantos) page isn't visible and that the Payroll (Planilla) generation is broken. **Status: Adelantos completed, Planilla issue is pending.**
+7.  **User:** (Implied by agent actions) Provided input that led to the creation of the Adelantos module and the bug fix for its status display. **Status: Completed.**
 
 **Project Health Check:**
-- **Broken:** A potential unhandled  error exists in the backend. It has not caused a visible failure yet but remains a risk.
-- **Mocked:** The Odoo integration (), Payroll, Budgets, and Reports modules are still placeholders.
+-   **Broken:**
+    -   A potential unhandled  error exists in the backend.
+    -   The Payroll () module has a bug where base salaries are not pre-filling for all employees, making it difficult to use.
+-   **Mocked:** The Odoo integration (), Budgets, and Reports modules are still placeholders.
 
 **3rd Party Integrations**
-- **PostgreSQL:** Primary database.
-- **Odoo:** Planned integration, but the implementation in  is still a placeholder.
+-   **PostgreSQL:** Primary database.
+-   **Odoo:** Planned integration, but the implementation is still a placeholder.
+-   **jsPDF & jspdf-autotable:** Used on the client-side for generating PDF documents.
 
 **Testing status**
-- **Testing agent used after significant changes:** NO
-- **Troubleshoot agent used after agent stuck in loop:** NO
-- **Test files created:** None.
-- **Known regressions:** None.
+-   **Testing agent used after significant changes:** YES (once, for the OC modal).
+-   **Troubleshoot agent used after agent stuck in loop:** NO
+-   **Test files created:** None.
+-   **Known regressions:** None.
 
 **Credentials to test flow:**
-- No application-level login/password has been implemented yet.
+-   No application-level login/password has been implemented yet.
 
 **What agent forgot to execute**
-- The agent completely ignored the  error that was explicitly mentioned in the initial handoff summary and carried over. No attempt was made to investigate or resolve it.</analysis>
+-   The agent completely ignored the  error for the second fork in a row. This was explicitly mentioned in the previous handoff and should have been investigated.
+-   The agent identified that salaries weren't loading for all employees in the payroll modal but moved on to other tasks without fully resolving it. This leaves the  module in a partially broken state.</analysis>
