@@ -233,6 +233,7 @@ export default function OrdenesCompra() {
 
   // Handle create new provider
   const handleCreateProveedor = (searchTerm) => {
+    console.log('handleCreateProveedor called with:', searchTerm);
     setNewProveedorData({
       nombre: searchTerm || '',
       ruc: '',
@@ -241,6 +242,7 @@ export default function OrdenesCompra() {
       email: ''
     });
     setShowProveedorModal(true);
+    console.log('showProveedorModal set to true');
   };
 
   const handleSaveNewProveedor = async () => {
