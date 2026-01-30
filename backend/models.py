@@ -419,11 +419,16 @@ class Letra(LetraBase):
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
+class LetraPersonalizada(BaseModel):
+    fecha_vencimiento: date
+    monto: float
+
 class GenerarLetrasRequest(BaseModel):
     factura_id: int
     cantidad_letras: int
     monto_por_letra: Optional[float] = None
     dias_entre_letras: int = 30
+    letras_personalizadas: Optional[List[LetraPersonalizada]] = None  # Para edición manual
 
 # =====================
 # GASTO
