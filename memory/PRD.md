@@ -115,6 +115,15 @@ Create a QuickBooks-like system for treasury, control, and minimal accounting ca
 - **Tablas responsive**: Filas no crecen en pantallas pequeñas
 - **Letras editables**: Permite modificar montos y fechas antes de crear letras
 
+## UI/UX Improvements - OC Module (2026-01-30) ✅ COMPLETE
+- **Modal Fullscreen**: El modal de crear/editar OC ahora es pantalla completa (z-index 9999)
+- **Badge Artículo Seleccionado**: Badge verde con checkmark que muestra el artículo seleccionado
+- **Búsqueda de Artículos**: Campo de búsqueda con ícono + dropdown filtrable
+- **Crear Proveedor al Vuelo**: Opción "+ Crear nuevo proveedor" en el selector que abre mini-modal
+- **Fuente Monoespaciada**: Todos los valores de moneda usan JetBrains Mono (clase .currency-display)
+- **Header Mejorado**: Botón "Guardar" posicionado a la derecha
+- **Resumen Visual**: Panel lateral con totales y contador de artículos
+
 ## Key Files
 - `/app/backend/server.py` - All API endpoints (monolithic, needs refactoring)
 - `/app/backend/models.py` - SQLAlchemy models
