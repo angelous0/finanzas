@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Plus, FileText, Trash2, Eye, X, FileCheck, ShoppingCart, ArrowLeft, Search } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Plus, FileText, Trash2, Eye, X, FileCheck, ShoppingCart, ArrowLeft, Printer } from 'lucide-react';
 import { toast } from 'sonner';
 import { 
   getOrdenesCompra, 
@@ -8,7 +8,8 @@ import {
   generarFacturaDesdeOC,
   getProveedores, 
   getMonedas,
-  getInventario
+  getInventario,
+  getEmpresas
 } from '../services/api';
 import SearchableSelect from '../components/SearchableSelect';
 
@@ -39,11 +40,13 @@ export default function OrdenesCompra() {
   const [showModal, setShowModal] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
   const [selectedOC, setSelectedOC] = useState(null);
+  const printRef = useRef();
   
   // Master data
   const [proveedores, setProveedores] = useState([]);
   const [monedas, setMonedas] = useState([]);
   const [articulos, setArticulos] = useState([]);
+  const [empresas, setEmpresas] = useState([]);
   
   // Filters
   const [filtroEstado, setFiltroEstado] = useState('');
@@ -54,8 +57,10 @@ export default function OrdenesCompra() {
     fecha: new Date().toISOString().split('T')[0],
     proveedor_id: '',
     moneda_id: '',
+    empresa_id: '',
     notas: '',
     condicion_pago: 'contado',
+    dias_credito: 0,
     direccion_entrega: ''
   });
   
@@ -70,7 +75,7 @@ export default function OrdenesCompra() {
     unidad: 'UND'
   }]);
   
-  const [igvIncluido, setIgvIncluido] = useState(false);
+  const [igvIncluido, setIgvIncluido] = useState(true); // Por defecto IGV incluido
 
   useEffect(() => {
     loadData();
@@ -83,20 +88,25 @@ export default function OrdenesCompra() {
       if (filtroEstado) params.estado = filtroEstado;
       if (filtroProveedor) params.proveedor_id = filtroProveedor;
       
-      const [ordenesRes, provRes, monRes, artRes] = await Promise.all([
+      const [ordenesRes, provRes, monRes, artRes, empRes] = await Promise.all([
         getOrdenesCompra(params),
         getProveedores(),
         getMonedas(),
-        getInventario()
+        getInventario(),
+        getEmpresas()
       ]);
       
       setOrdenes(ordenesRes.data);
       setProveedores(provRes.data);
       setMonedas(monRes.data);
       setArticulos(artRes.data);
+      setEmpresas(empRes.data);
       
       if (monRes.data.length > 0 && !formData.moneda_id) {
         setFormData(prev => ({ ...prev, moneda_id: monRes.data[0].id }));
+      }
+      if (empRes.data.length > 0 && !formData.empresa_id) {
+        setFormData(prev => ({ ...prev, empresa_id: empRes.data[0].id }));
       }
     } catch (error) {
       console.error('Error loading data:', error);
@@ -134,8 +144,10 @@ export default function OrdenesCompra() {
       fecha: new Date().toISOString().split('T')[0],
       proveedor_id: '',
       moneda_id: monedas[0]?.id || '',
+      empresa_id: empresas[0]?.id || '',
       notas: '',
       condicion_pago: 'contado',
+      dias_credito: 0,
       direccion_entrega: ''
     });
     setLineas([{
@@ -147,7 +159,7 @@ export default function OrdenesCompra() {
       codigo: '',
       unidad: 'UND'
     }]);
-    setIgvIncluido(false);
+    setIgvIncluido(true);
   };
 
   const handleAddLinea = () => {
@@ -258,9 +270,14 @@ export default function OrdenesCompra() {
     setShowViewModal(true);
   };
 
+  const handlePrint = () => {
+    window.print();
+  };
+
   const totales = calcularTotales();
   const monedaActual = monedas.find(m => m.id === parseInt(formData.moneda_id));
   const totalOrdenes = ordenes.reduce((sum, o) => sum + parseFloat(o.total || 0), 0);
+  const cantidadArticulos = lineas.filter(l => l.cantidad > 0 && (l.articulo_id || l.descripcion)).length;
 
   return (
     <div data-testid="ordenes-compra-page" className="page-container">
@@ -367,19 +384,15 @@ export default function OrdenesCompra() {
                       </td>
                       <td>
                         <div className="actions-row">
-                          {/* Generar Factura */}
                           {(oc.estado === 'borrador' || oc.estado === 'aprobada') && !oc.factura_generada_id && (
                             <button 
                               className="action-btn action-success"
                               onClick={() => handleGenerarFactura(oc)}
                               title="Generar Factura"
-                              data-testid={`generar-factura-${oc.id}`}
                             >
                               <FileCheck size={15} />
                             </button>
                           )}
-                          
-                          {/* Ver */}
                           <button 
                             className="action-btn"
                             onClick={() => handleView(oc)}
@@ -387,8 +400,6 @@ export default function OrdenesCompra() {
                           >
                             <Eye size={15} />
                           </button>
-                          
-                          {/* Eliminar */}
                           {oc.estado === 'borrador' && (
                             <button 
                               className="action-btn action-danger"
@@ -412,13 +423,15 @@ export default function OrdenesCompra() {
       {/* Modal Nueva OC */}
       {showModal && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
-          <div className="modal modal-xl" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '1100px' }}>
-            <div className="modal-header">
+          <div className="modal modal-xl" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '1200px' }}>
+            <div className="modal-header" style={{ borderBottom: '1px solid #e2e8f0' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                 <button type="button" className="btn btn-ghost btn-sm" onClick={() => setShowModal(false)} style={{ padding: '0.25rem' }}>
                   <ArrowLeft size={20} />
                 </button>
-                <h2 className="modal-title" style={{ margin: 0 }}>Nueva Orden de Compra</h2>
+                <div>
+                  <h2 className="modal-title" style={{ margin: 0 }}>Nueva Orden de Compra</h2>
+                </div>
               </div>
               <button type="button" className="btn btn-primary" onClick={handleSubmit}>
                 <FileCheck size={16} />
@@ -427,12 +440,26 @@ export default function OrdenesCompra() {
             </div>
             
             <form onSubmit={handleSubmit}>
-              <div className="modal-body" style={{ display: 'flex', gap: '1.5rem' }}>
+              <div className="modal-body" style={{ display: 'flex', gap: '1.5rem', padding: '1.5rem' }}>
                 {/* Left Column - Form */}
                 <div style={{ flex: 1 }}>
-                  {/* Header Info */}
+                  {/* Row 1: Empresa + Nº Orden */}
                   <div className="oc-section">
-                    <div className="form-grid form-grid-3">
+                    <div className="form-grid form-grid-2">
+                      <div className="form-group">
+                        <label className="form-label">Empresa *</label>
+                        <select
+                          className="form-input form-select"
+                          value={formData.empresa_id}
+                          onChange={(e) => setFormData({ ...formData, empresa_id: e.target.value })}
+                          required
+                        >
+                          <option value="">Seleccionar empresa...</option>
+                          {empresas.map(e => (
+                            <option key={e.id} value={e.id}>{e.nombre}</option>
+                          ))}
+                        </select>
+                      </div>
                       <div className="form-group">
                         <label className="form-label">N° Orden</label>
                         <input
@@ -443,6 +470,12 @@ export default function OrdenesCompra() {
                           style={{ background: '#f8fafc', color: '#94a3b8' }}
                         />
                       </div>
+                    </div>
+                  </div>
+
+                  {/* Row 2: Fecha + Moneda */}
+                  <div className="oc-section">
+                    <div className="form-grid form-grid-2">
                       <div className="form-group">
                         <label className="form-label">Fecha *</label>
                         <input
@@ -469,27 +502,39 @@ export default function OrdenesCompra() {
                     </div>
                   </div>
 
-                  {/* Proveedor */}
+                  {/* Row 3: Proveedor */}
+                  <div className="oc-section">
+                    <div className="form-group">
+                      <label className="form-label">Proveedor *</label>
+                      <SearchableSelect
+                        options={proveedores}
+                        value={formData.proveedor_id}
+                        onChange={(value) => setFormData({ ...formData, proveedor_id: value })}
+                        placeholder="Seleccionar proveedor..."
+                        searchPlaceholder="Buscar proveedor..."
+                        displayKey="nombre"
+                        valueKey="id"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Row 4: Condición Pago + Días Crédito */}
                   <div className="oc-section">
                     <div className="form-grid form-grid-2">
-                      <div className="form-group">
-                        <label className="form-label">Proveedor *</label>
-                        <SearchableSelect
-                          options={proveedores}
-                          value={formData.proveedor_id}
-                          onChange={(value) => setFormData({ ...formData, proveedor_id: value })}
-                          placeholder="Seleccionar proveedor..."
-                          searchPlaceholder="Buscar proveedor..."
-                          displayKey="nombre"
-                          valueKey="id"
-                        />
-                      </div>
                       <div className="form-group">
                         <label className="form-label">Condición de Pago</label>
                         <select
                           className="form-input form-select"
                           value={formData.condicion_pago}
-                          onChange={(e) => setFormData({ ...formData, condicion_pago: e.target.value })}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            let dias = 0;
+                            if (val === 'credito_15') dias = 15;
+                            else if (val === 'credito_30') dias = 30;
+                            else if (val === 'credito_45') dias = 45;
+                            else if (val === 'credito_60') dias = 60;
+                            setFormData({ ...formData, condicion_pago: val, dias_credito: dias });
+                          }}
                         >
                           <option value="contado">Contado</option>
                           <option value="credito_15">Crédito 15 días</option>
@@ -498,10 +543,20 @@ export default function OrdenesCompra() {
                           <option value="credito_60">Crédito 60 días</option>
                         </select>
                       </div>
+                      <div className="form-group">
+                        <label className="form-label">Días Crédito</label>
+                        <input
+                          type="number"
+                          className="form-input"
+                          value={formData.dias_credito}
+                          onChange={(e) => setFormData({ ...formData, dias_credito: parseInt(e.target.value) || 0 })}
+                          min="0"
+                        />
+                      </div>
                     </div>
                   </div>
 
-                  {/* Dirección y Notas */}
+                  {/* Row 5: Dirección Entrega */}
                   <div className="oc-section">
                     <div className="form-group">
                       <label className="form-label">Dirección de Entrega</label>
@@ -513,6 +568,10 @@ export default function OrdenesCompra() {
                         placeholder="Dirección donde entregar la mercadería"
                       />
                     </div>
+                  </div>
+
+                  {/* Row 6: Observaciones */}
+                  <div className="oc-section">
                     <div className="form-group">
                       <label className="form-label">Observaciones</label>
                       <textarea
@@ -520,23 +579,24 @@ export default function OrdenesCompra() {
                         rows={2}
                         value={formData.notas}
                         onChange={(e) => setFormData({ ...formData, notas: e.target.value })}
-                        placeholder="Notas adicionales..."
+                        placeholder="Notas adicionales para el proveedor..."
                       />
                     </div>
                   </div>
 
                   {/* Detalle de Artículos */}
-                  <div className="oc-section">
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                  <div className="oc-section" style={{ padding: '1rem 0 0' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', padding: '0 1rem' }}>
                       <h3 style={{ margin: 0, fontSize: '0.9375rem', fontWeight: 600 }}>Detalle de Artículos</h3>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8125rem', color: '#64748b' }}>
+                        <label className="toggle-switch">
                           <input
                             type="checkbox"
                             checked={igvIncluido}
                             onChange={(e) => setIgvIncluido(e.target.checked)}
                           />
-                          IGV incluido
+                          <span className="toggle-slider"></span>
+                          <span className="toggle-label">IGV incluido</span>
                         </label>
                         <button type="button" className="btn btn-outline btn-sm" onClick={handleAddLinea}>
                           <Plus size={14} /> Agregar Línea
@@ -544,18 +604,18 @@ export default function OrdenesCompra() {
                       </div>
                     </div>
                     
-                    <div className="items-table-wrapper">
+                    <div className="items-table-wrapper" style={{ maxHeight: '300px', overflowY: 'auto' }}>
                       <table className="data-table items-table">
                         <thead>
                           <tr>
                             <th style={{ width: '40px' }}>#</th>
-                            <th style={{ width: '200px' }}>Artículo</th>
+                            <th style={{ minWidth: '250px' }}>Artículo</th>
                             <th style={{ width: '100px' }}>Código</th>
-                            <th>Descripción</th>
-                            <th style={{ width: '70px' }}>Cant. *</th>
+                            <th style={{ minWidth: '200px' }}>Descripción *</th>
+                            <th style={{ width: '80px' }}>Cant. *</th>
                             <th style={{ width: '70px' }}>Unidad</th>
-                            <th style={{ width: '90px' }}>P. Unit. *</th>
-                            <th style={{ width: '100px' }}>Subtotal</th>
+                            <th style={{ width: '100px' }}>P. Unit. *</th>
+                            <th style={{ width: '110px' }}>Subtotal</th>
                             <th style={{ width: '40px' }}></th>
                           </tr>
                         </thead>
@@ -566,29 +626,29 @@ export default function OrdenesCompra() {
                               <tr key={index}>
                                 <td className="text-center" style={{ color: '#94a3b8' }}>{index + 1}</td>
                                 <td>
-                                  <select
-                                    className="form-input form-select"
+                                  <SearchableSelect
+                                    options={articulos}
                                     value={linea.articulo_id}
-                                    onChange={(e) => handleSelectArticulo(index, e.target.value)}
-                                    style={{ fontSize: '0.8125rem' }}
-                                  >
-                                    <option value="">Buscar artículo...</option>
-                                    {articulos.map(a => (
-                                      <option key={a.id} value={a.id}>
-                                        {a.codigo ? `[${a.codigo}] ` : ''}{a.nombre}
-                                      </option>
-                                    ))}
-                                  </select>
+                                    onChange={(value) => handleSelectArticulo(index, value)}
+                                    placeholder="Buscar artículo..."
+                                    searchPlaceholder="Escriba para buscar..."
+                                    displayKey="nombre"
+                                    valueKey="id"
+                                    renderOption={(a) => (
+                                      <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+                                        <span>{a.nombre}</span>
+                                        {a.codigo && <span style={{ color: '#94a3b8', fontSize: '0.75rem' }}>{a.codigo}</span>}
+                                      </div>
+                                    )}
+                                  />
                                 </td>
                                 <td>
                                   <input
                                     type="text"
-                                    className="form-input"
+                                    className="form-input text-center"
                                     value={linea.codigo}
-                                    onChange={(e) => handleLineaChange(index, 'codigo', e.target.value)}
-                                    placeholder="-"
-                                    style={{ fontSize: '0.8125rem', background: '#f8fafc' }}
                                     readOnly
+                                    style={{ fontSize: '0.8125rem', background: '#f8fafc', color: '#64748b' }}
                                   />
                                 </td>
                                 <td>
@@ -610,7 +670,6 @@ export default function OrdenesCompra() {
                                     value={linea.cantidad}
                                     onChange={(e) => handleLineaChange(index, 'cantidad', e.target.value)}
                                     style={{ fontSize: '0.8125rem' }}
-                                    required
                                   />
                                 </td>
                                 <td>
@@ -618,8 +677,8 @@ export default function OrdenesCompra() {
                                     type="text"
                                     className="form-input text-center"
                                     value={linea.unidad}
-                                    style={{ fontSize: '0.8125rem', background: '#f8fafc' }}
                                     readOnly
+                                    style={{ fontSize: '0.8125rem', background: '#f8fafc', color: '#64748b' }}
                                   />
                                 </td>
                                 <td>
@@ -631,10 +690,9 @@ export default function OrdenesCompra() {
                                     value={linea.precio_unitario}
                                     onChange={(e) => handleLineaChange(index, 'precio_unitario', e.target.value)}
                                     style={{ fontSize: '0.8125rem', fontFamily: "'JetBrains Mono', monospace" }}
-                                    required
                                   />
                                 </td>
-                                <td className="text-right" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.8125rem', fontWeight: 500 }}>
+                                <td className="text-right" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.8125rem', fontWeight: 500, padding: '0.5rem' }}>
                                   {formatCurrency(subtotal, monedaActual?.simbolo)}
                                 </td>
                                 <td>
@@ -660,35 +718,32 @@ export default function OrdenesCompra() {
 
                 {/* Right Column - Summary */}
                 <div style={{ width: '280px', flexShrink: 0 }}>
-                  <div className="oc-summary">
-                    <h3 style={{ margin: '0 0 1rem', fontSize: '0.9375rem', fontWeight: 600 }}>Resumen</h3>
+                  <div className="oc-summary-card">
+                    <h3 className="summary-title">Resumen</h3>
                     
-                    <div className="summary-row">
-                      <span>Subtotal</span>
-                      <span style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-                        {formatCurrency(totales.subtotal, monedaActual?.simbolo)}
-                      </span>
-                    </div>
-                    <div className="summary-row">
-                      <span>IGV (18%)</span>
-                      <span style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-                        {formatCurrency(totales.igv, monedaActual?.simbolo)}
-                      </span>
-                    </div>
-                    <div className="summary-row summary-total">
-                      <span>TOTAL</span>
-                      <span style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-                        {formatCurrency(totales.total, monedaActual?.simbolo)}
-                      </span>
+                    {igvIncluido && (
+                      <div className="summary-info-badge">
+                        Precios con IGV incluido
+                      </div>
+                    )}
+                    
+                    <div className="summary-rows">
+                      <div className="summary-row">
+                        <span>Subtotal:</span>
+                        <span>{monedaActual?.codigo || 'PEN'} {totales.subtotal.toFixed(2)}</span>
+                      </div>
+                      <div className="summary-row">
+                        <span>IGV (18%):</span>
+                        <span>{monedaActual?.codigo || 'PEN'} {totales.igv.toFixed(2)}</span>
+                      </div>
+                      <div className="summary-row summary-total">
+                        <span>Total:</span>
+                        <span>{monedaActual?.codigo || 'PEN'} {totales.total.toFixed(2)}</span>
+                      </div>
                     </div>
                     
-                    <div style={{ marginTop: '1.5rem', padding: '0.75rem', background: '#f0fdf4', borderRadius: '8px', border: '1px solid #86efac' }}>
-                      <div style={{ fontSize: '0.75rem', color: '#15803d', marginBottom: '0.25rem' }}>
-                        Artículos: {lineas.filter(l => l.cantidad > 0).length}
-                      </div>
-                      <div style={{ fontSize: '0.75rem', color: '#64748b' }}>
-                        Al guardar podrás generar la factura desde la lista
-                      </div>
+                    <div className="summary-count">
+                      {cantidadArticulos} artículo(s)
                     </div>
                   </div>
                 </div>
@@ -701,13 +756,26 @@ export default function OrdenesCompra() {
       {/* Modal Ver OC */}
       {showViewModal && selectedOC && (
         <div className="modal-overlay" onClick={() => setShowViewModal(false)}>
-          <div className="modal modal-lg" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
+          <div className="modal modal-lg print-content" onClick={(e) => e.stopPropagation()} ref={printRef}>
+            <div className="modal-header no-print">
               <h2 className="modal-title">Orden de Compra {selectedOC.numero}</h2>
-              <button className="modal-close" onClick={() => setShowViewModal(false)}>
-                <X size={20} />
-              </button>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <button className="btn btn-outline btn-sm" onClick={handlePrint} title="Imprimir">
+                  <Printer size={16} />
+                  Imprimir
+                </button>
+                <button className="modal-close" onClick={() => setShowViewModal(false)}>
+                  <X size={20} />
+                </button>
+              </div>
             </div>
+            
+            {/* Print Header */}
+            <div className="print-header">
+              <h1>ORDEN DE COMPRA</h1>
+              <p className="oc-number">{selectedOC.numero}</p>
+            </div>
+            
             <div className="modal-body">
               <div className="form-grid form-grid-4" style={{ marginBottom: '1rem' }}>
                 <div>
@@ -781,7 +849,7 @@ export default function OrdenesCompra() {
                 </div>
               )}
             </div>
-            <div className="modal-footer">
+            <div className="modal-footer no-print">
               {(selectedOC.estado === 'borrador' || selectedOC.estado === 'aprobada') && !selectedOC.factura_generada_id && (
                 <button 
                   className="btn btn-success"
