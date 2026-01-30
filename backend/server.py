@@ -2735,7 +2735,7 @@ async def importar_excel_banco(
     cuenta_financiera_id: int = Query(...),
     banco: str = Query(...)
 ):
-    """Import bank movements from Excel"""
+    """Import bank movements from Excel - UPSERT based on banco + referencia"""
     import io
     from datetime import datetime as dt
     
@@ -2744,7 +2744,6 @@ async def importar_excel_banco(
     try:
         content = await file.read()
         
-        # Try to parse with openpyxl
         import openpyxl
         wb = openpyxl.load_workbook(io.BytesIO(content))
         ws = wb.active
@@ -2752,13 +2751,23 @@ async def importar_excel_banco(
         async with pool.acquire() as conn:
             await conn.execute("SET search_path TO finanzas2, public")
             
+            # Ensure banco_excel column exists
+            try:
+                await conn.execute("""
+                    ALTER TABLE finanzas2.cont_banco_mov_raw 
+                    ADD COLUMN IF NOT EXISTS banco_excel VARCHAR(100)
+                """)
+            except:
+                pass
+            
             imported = 0
+            updated = 0
+            skipped = 0
             
             # Find header row and skip metadata rows
             header_row = 1
             for idx, row in enumerate(ws.iter_rows(min_row=1, max_row=10, values_only=True), 1):
                 if row and any(row):
-                    # Check if this looks like a header (contains date column name)
                     row_str = ' '.join([str(c or '') for c in row]).lower()
                     if 'fecha' in row_str or 'f. valor' in row_str:
                         header_row = idx
@@ -2774,18 +2783,20 @@ async def importar_excel_banco(
                 cargo = None
                 abono = None
                 saldo = None
+                banco_excel = None  # Columna banco del Excel
                 
                 try:
                     if banco == 'BCP':
-                        # BCP: Nº, Fecha, Fecha valuta, Descripción operación, Monto, Saldo
+                        # BCP: Nº, Fecha, Fecha valuta, Descripción operación, Monto, Saldo, Banco, Operación-Número
                         fecha = row[1] if len(row) > 1 else None
                         descripcion = row[3] if len(row) > 3 else None
                         monto = row[4] if len(row) > 4 else None
                         saldo = row[5] if len(row) > 5 else None
+                        banco_excel = row[6] if len(row) > 6 else None  # Columna Banco
                         referencia = row[7] if len(row) > 7 else None  # Operación - Número
                         
                         if monto:
-                            monto_float = float(monto) if not isinstance(monto, str) else float(monto.replace(',', ''))
+                            monto_float = float(monto) if not isinstance(monto, str) else float(str(monto).replace(',', ''))
                             if monto_float < 0:
                                 cargo = abs(monto_float)
                             else:
@@ -2793,10 +2804,11 @@ async def importar_excel_banco(
                                 
                     elif banco == 'BBVA':
                         # BBVA: F. Operación, F. Valor, Código, Nº. Doc., Concepto, Importe, Oficina, Saldo Final
-                        fecha = row[1] if len(row) > 1 else None  # F. Valor
-                        descripcion = row[4] if len(row) > 4 else None  # Concepto
+                        fecha = row[1] if len(row) > 1 else None
+                        descripcion = row[4] if len(row) > 4 else None
                         referencia = row[3] if len(row) > 3 else None  # Nº. Doc.
                         importe = row[5] if len(row) > 5 else None
+                        banco_excel = row[6] if len(row) > 6 else None  # Oficina (o código banco)
                         saldo = row[7] if len(row) > 7 else None
                         
                         if importe:
@@ -2808,28 +2820,31 @@ async def importar_excel_banco(
                                 
                     elif banco == 'IBK':
                         # IBK: Nº, Fecha operación, Fecha proceso, Nro operación, Descripción, Canal, Cargo, Abono, Saldo
-                        fecha = row[1] if len(row) > 1 else None  # Fecha de operación
+                        fecha = row[1] if len(row) > 1 else None
                         descripcion = row[4] if len(row) > 4 else None
                         referencia = row[3] if len(row) > 3 else None  # Nro. de operación
+                        banco_excel = row[5] if len(row) > 5 else None  # Canal
                         cargo = row[6] if len(row) > 6 else None
                         abono = row[7] if len(row) > 7 else None
                         saldo = row[8] if len(row) > 8 else None
                         
                     else:
-                        # PERSONALIZADO: fecha, descripcion, referencia, cargo, abono, saldo
+                        # PERSONALIZADO: fecha, descripcion, referencia, banco_excel, cargo, abono, saldo
                         fecha = row[0] if len(row) > 0 else None
                         descripcion = row[1] if len(row) > 1 else None
                         referencia = row[2] if len(row) > 2 else None
-                        cargo = row[3] if len(row) > 3 else None
-                        abono = row[4] if len(row) > 4 else None
-                        saldo = row[5] if len(row) > 5 else None
+                        banco_excel = row[3] if len(row) > 3 else None
+                        cargo = row[4] if len(row) > 4 else None
+                        abono = row[5] if len(row) > 5 else None
+                        saldo = row[6] if len(row) > 6 else None
                     
                     # Parse date
                     if fecha:
                         if isinstance(fecha, dt):
                             fecha = fecha.date()
+                        elif hasattr(fecha, 'date'):
+                            fecha = fecha.date()
                         elif isinstance(fecha, str):
-                            # Try different date formats
                             for fmt in ['%d/%m/%Y', '%d-%m-%Y', '%Y-%m-%d', '%d.%m.%Y']:
                                 try:
                                     fecha = dt.strptime(fecha.strip(), fmt).date()
@@ -2856,21 +2871,62 @@ async def importar_excel_banco(
                     abono = to_float(abono)
                     saldo = to_float(saldo)
                     
-                    await conn.execute("""
-                        INSERT INTO finanzas2.cont_banco_mov_raw 
-                        (cuenta_financiera_id, banco, fecha, descripcion, referencia, cargo, abono, saldo, procesado)
-                        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, FALSE)
-                    """, cuenta_financiera_id, banco, fecha, 
-                        str(descripcion)[:500] if descripcion else None,
-                        str(referencia)[:100] if referencia else None, 
-                        cargo, abono, saldo)
-                    imported += 1
+                    # Clean referencia for unique key
+                    ref_clean = str(referencia).strip() if referencia else ''
+                    banco_excel_clean = str(banco_excel).strip()[:100] if banco_excel else ''
+                    
+                    # Generate unique key: banco + referencia
+                    unique_key = f"{banco}_{ref_clean}"
+                    
+                    if not ref_clean:
+                        # Si no hay referencia, generar una basada en fecha y monto
+                        unique_key = f"{banco}_{fecha}_{cargo or 0}_{abono or 0}"
+                    
+                    # Check if exists and if it's already conciliated
+                    existing = await conn.fetchrow("""
+                        SELECT id, procesado FROM finanzas2.cont_banco_mov_raw 
+                        WHERE cuenta_financiera_id = $1 
+                          AND banco = $2 
+                          AND COALESCE(referencia, '') = $3
+                          AND fecha = $4
+                    """, cuenta_financiera_id, banco, ref_clean, fecha)
+                    
+                    if existing:
+                        if existing['procesado']:
+                            # Already conciliated, skip
+                            skipped += 1
+                            continue
+                        else:
+                            # Update existing record
+                            await conn.execute("""
+                                UPDATE finanzas2.cont_banco_mov_raw 
+                                SET descripcion = $1, cargo = $2, abono = $3, saldo = $4, banco_excel = $5
+                                WHERE id = $6
+                            """, str(descripcion)[:500] if descripcion else None,
+                                cargo, abono, saldo, banco_excel_clean, existing['id'])
+                            updated += 1
+                    else:
+                        # Insert new record
+                        await conn.execute("""
+                            INSERT INTO finanzas2.cont_banco_mov_raw 
+                            (cuenta_financiera_id, banco, fecha, descripcion, referencia, cargo, abono, saldo, banco_excel, procesado)
+                            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, FALSE)
+                        """, cuenta_financiera_id, banco, fecha, 
+                            str(descripcion)[:500] if descripcion else None,
+                            ref_clean if ref_clean else None, 
+                            cargo, abono, saldo, banco_excel_clean)
+                        imported += 1
                     
                 except Exception as row_error:
                     logger.warning(f"Error parsing row: {row_error}")
                     continue
         
-        return {"message": f"Se importaron {imported} movimientos", "imported": imported}
+        return {
+            "message": f"Importados: {imported}, Actualizados: {updated}, Omitidos (ya conciliados): {skipped}",
+            "imported": imported,
+            "updated": updated,
+            "skipped": skipped
+        }
         
     except Exception as e:
         logger.error(f"Error importing Excel: {e}")
