@@ -408,6 +408,100 @@ class FinanzasAPITester:
         
         return False
 
+    def test_bank_reconciliation_save(self):
+        """Test bank reconciliation save functionality"""
+        # First, get bank accounts
+        success, cuentas, status = self.make_request('GET', 'cuentas-financieras', params={'tipo': 'banco'})
+        if not success or not cuentas:
+            self.log_test("Bank Reconciliation - No Bank Account", False, "No bank accounts found")
+            return False
+        
+        cuenta_id = cuentas[0]['id']
+        
+        # Create test bank movements by importing sample data
+        # First check if we have any existing bank movements
+        success, movimientos_banco, status = self.make_request('GET', 'conciliacion/movimientos-banco', 
+                                                              params={'cuenta_financiera_id': cuenta_id, 'procesado': False})
+        
+        banco_ids = []
+        if success and movimientos_banco:
+            # Use existing movements if available
+            banco_ids = [mov['id'] for mov in movimientos_banco[:2]]  # Take first 2
+        
+        # Get system payments (pagos)
+        success, pagos, status = self.make_request('GET', 'pagos')
+        pago_ids = []
+        if success and pagos:
+            # Use existing payments if available
+            pago_ids = [pago['id'] for pago in pagos[:2]]  # Take first 2
+        
+        # If we don't have enough test data, create some
+        if len(banco_ids) == 0 or len(pago_ids) == 0:
+            self.log_test("Bank Reconciliation - Insufficient Data", False, 
+                         f"Need bank movements and payments. Found: {len(banco_ids)} bank, {len(pago_ids)} payments")
+            return False
+        
+        # Test the reconciliation endpoint
+        params = {}
+        for banco_id in banco_ids:
+            if 'banco_ids' not in params:
+                params['banco_ids'] = []
+            params['banco_ids'].append(banco_id)
+        
+        for pago_id in pago_ids:
+            if 'pago_ids' not in params:
+                params['pago_ids'] = []
+            params['pago_ids'].append(pago_id)
+        
+        # Convert to query string format
+        query_params = []
+        for banco_id in banco_ids:
+            query_params.append(f"banco_ids={banco_id}")
+        for pago_id in pago_ids:
+            query_params.append(f"pago_ids={pago_id}")
+        
+        query_string = "&".join(query_params)
+        
+        # Make the reconciliation request
+        success, data, status = self.make_request('POST', f'conciliacion/conciliar?{query_string}')
+        
+        if success and isinstance(data, dict):
+            expected_banco_count = len(banco_ids)
+            expected_pago_count = len(pago_ids)
+            
+            if (data.get('banco_conciliados') == expected_banco_count and 
+                data.get('sistema_conciliados') == expected_pago_count):
+                
+                self.log_test("Bank Reconciliation - Save Endpoint", True, 
+                            f"Reconciled {expected_banco_count} bank movements and {expected_pago_count} payments")
+                
+                # Verify database updates - check that bank movements are marked as procesado=TRUE
+                success, updated_movimientos, status = self.make_request('GET', 'conciliacion/movimientos-banco',
+                                                                        params={'cuenta_financiera_id': cuenta_id, 'procesado': True})
+                
+                if success:
+                    # Check if our reconciled movements are now marked as processed
+                    processed_ids = [mov['id'] for mov in updated_movimientos if mov.get('procesado')]
+                    reconciled_found = any(bid in processed_ids for bid in banco_ids)
+                    
+                    if reconciled_found:
+                        self.log_test("Bank Reconciliation - DB Update Verification", True,
+                                    "Bank movements correctly marked as procesado=TRUE")
+                        return True
+                    else:
+                        self.log_test("Bank Reconciliation - DB Update Verification", False,
+                                    "Bank movements not found in processed list")
+                else:
+                    self.log_test("Bank Reconciliation - DB Verification", False,
+                                f"Failed to verify database updates: {updated_movimientos}")
+            else:
+                self.log_test("Bank Reconciliation - Save Endpoint", False,
+                            f"Incorrect counts. Expected: {expected_banco_count}/{expected_pago_count}, Got: {data.get('banco_conciliados')}/{data.get('sistema_conciliados')}")
+        else:
+            self.log_test("Bank Reconciliation - Save Endpoint", False, f"Failed to reconcile: {data}")
+        
+        return False
+
     def cleanup_test_data(self):
         """Clean up created test data"""
         cleanup_count = 0
