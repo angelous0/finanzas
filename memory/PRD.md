@@ -104,6 +104,13 @@ Create a QuickBooks-like system for treasury, control, and minimal accounting ca
 
 ---
 
+## UI/UX Improvements (2026-01-30)
+- **Filtros avanzados**: N° documento, proveedor, fecha desde/hasta, estado
+- **Badges mejorados**: Estilos con gradientes y bordes para cada estado (pendiente, parcial, pagado, canjeado, anulada)
+- **Sidebar responsive**: Hamburger menu en móvil, toggle collapse/expand en desktop
+- **Tablas responsive**: Filas no crecen en pantallas pequeñas
+- **Letras editables**: Permite modificar montos y fechas antes de crear letras
+
 ## Key Files
 - `/app/backend/server.py` - All API endpoints (monolithic, needs refactoring)
 - `/app/backend/models.py` - SQLAlchemy models
