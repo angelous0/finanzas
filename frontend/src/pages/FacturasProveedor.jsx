@@ -658,6 +658,12 @@ export const FacturasProveedor = () => {
       await deshacerCanjeLetras(facturaParaVerLetras.id);
       toast.success('Canje deshecho exitosamente');
       setShowVerLetrasModal(false);
+      loadData();
+    } catch (error) {
+      console.error('Error deshaciendo canje:', error);
+      toast.error(error.response?.data?.detail || 'Error al deshacer canje');
+    }
+  };
 
   // Descargar PDF de factura
   const handleDownloadPDF = (factura) => {
