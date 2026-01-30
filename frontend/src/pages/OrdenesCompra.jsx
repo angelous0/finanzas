@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Plus, FileText, Trash2, Eye, X, FileCheck, ShoppingCart, ArrowLeft, Printer } from 'lucide-react';
+import { Plus, FileText, Trash2, Eye, X, FileCheck, ShoppingCart, ArrowLeft, Printer, Edit2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { 
   getOrdenesCompra, 
