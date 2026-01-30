@@ -290,7 +290,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .page-header {
-  padding: 1.5rem 2rem;
+  padding: 1.5rem 2.5rem;
   background: #fff;
   border-bottom: 1px solid var(--border);
   display: flex;
@@ -311,7 +311,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .page-content {
-  padding: 1.5rem 2rem;
+  padding: 1.5rem 2.5rem;
 }
 
 /* Cards */
