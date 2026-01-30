@@ -12,12 +12,18 @@ const formatCurrency = (value, symbol = 'S/') => {
 
 const formatDateTime = (dateStr) => {
   if (!dateStr) return '';
-  return new Date(dateStr).toLocaleString('es-PE', {
+  
+  // Parse as UTC and convert to Lima timezone (UTC-5)
+  const utcDate = new Date(dateStr);
+  const limaDate = new Date(utcDate.getTime() - (5 * 60 * 60 * 1000));
+  
+  return limaDate.toLocaleString('es-PE', {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
     hour: '2-digit',
-    minute: '2-digit'
+    minute: '2-digit',
+    timeZone: 'America/Lima'
   });
 };
 
