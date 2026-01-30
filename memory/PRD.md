@@ -131,22 +131,23 @@ Create a QuickBooks-like system for treasury, control, and minimal accounting ca
 
 ## Priority Backlog
 
-### P0 (Critical)
-1. Implement CxP auto-creation on invoice save
-2. Implement payment application logic
+### P0 (Critical) - ✅ COMPLETED
+1. ~~Implement CxP auto-creation on invoice save~~ ✅
+2. ~~Implement payment application logic~~ ✅
+3. ~~Payment validation (cannot exceed balance)~~ ✅
+4. ~~Bills of Exchange (Letras) module~~ ✅
 
 ### P1 (High)
-3. Odoo integration for POS sales
-4. Complete CRUD for base catalogs
-5. OC to Invoice conversion
+1. Odoo integration for POS sales
+2. OC to Invoice conversion
+3. Refactor server.py into multiple routers
+4. Refactor FacturasProveedor.jsx (1800+ lines)
 
 ### P2 (Medium)
-6. Bills of Exchange (Letras) module
-7. Expenses module with immediate payment
-8. Payroll module
+5. Expenses module with immediate payment
+6. Payroll module
+7. Budgets vs Actual
 
 ### P3 (Low)
-9. Budgets vs Actual
-10. Bank Reconciliation
-11. Financial Reports
-12. Refactor server.py into multiple routers
+8. Bank Reconciliation (Excel import)
+9. Financial Reports (Cash Flow, Income Statement, Balance Sheet)
