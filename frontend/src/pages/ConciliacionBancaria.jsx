@@ -772,11 +772,11 @@ export const ConciliacionBancaria = () => {
                       <td style={{ maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {mov.descripcion}
                       </td>
-                      <td className="text-right currency-display" style={{ color: '#dc2626' }}>
-                        {mov.cargo ? formatCurrency(mov.cargo) : '-'}
-                      </td>
-                      <td className="text-right currency-display" style={{ color: '#16a34a' }}>
-                        {mov.abono ? formatCurrency(mov.abono) : '-'}
+                      <td className="text-right currency-display" style={{ 
+                        color: mov.monto < 0 ? '#dc2626' : '#16a34a',
+                        fontWeight: 500
+                      }}>
+                        {formatCurrency(mov.monto, mov.monto < 0 ? '-S/' : 'S/')}
                       </td>
                       <td className="text-right currency-display">{mov.saldo ? formatCurrency(mov.saldo) : '-'}</td>
                       <td className="text-center">
