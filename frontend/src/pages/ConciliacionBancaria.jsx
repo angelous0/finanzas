@@ -405,74 +405,76 @@ export const ConciliacionBancaria = () => {
 
       {/* Tabs mejorados */}
       <div style={{ 
-        display: 'flex', 
-        gap: '0.5rem', 
-        marginBottom: '1.25rem',
-        background: '#f1f5f9',
-        padding: '0.375rem',
-        borderRadius: '10px',
-        width: 'fit-content'
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: '1.5rem',
+        padding: '0.75rem',
+        background: '#f8fafc',
+        borderRadius: '12px'
       }}>
-        <button 
-          onClick={() => setActiveTab('pendientes')}
-          style={{ 
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            padding: '0.625rem 1.25rem',
-            border: 'none',
-            borderRadius: '8px',
-            fontWeight: 500,
-            fontSize: '0.875rem',
-            cursor: 'pointer',
-            transition: 'all 0.2s',
-            background: activeTab === 'pendientes' ? 'white' : 'transparent',
-            color: activeTab === 'pendientes' ? '#1B4D3E' : '#64748b',
-            boxShadow: activeTab === 'pendientes' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'
-          }}
-        >
-          <Clock size={16} /> Pendientes
-        </button>
-        <button 
-          onClick={() => setActiveTab('banco')}
-          style={{ 
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            padding: '0.625rem 1.25rem',
-            border: 'none',
-            borderRadius: '8px',
-            fontWeight: 500,
-            fontSize: '0.875rem',
-            cursor: 'pointer',
-            transition: 'all 0.2s',
-            background: activeTab === 'banco' ? 'white' : 'transparent',
-            color: activeTab === 'banco' ? '#1B4D3E' : '#64748b',
-            boxShadow: activeTab === 'banco' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'
-          }}
-        >
-          <Building2 size={16} /> Movimientos Banco
-        </button>
-        <button 
-          onClick={() => setActiveTab('historial')}
-          style={{ 
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            padding: '0.625rem 1.25rem',
-            border: 'none',
-            borderRadius: '8px',
-            fontWeight: 500,
-            fontSize: '0.875rem',
-            cursor: 'pointer',
-            transition: 'all 0.2s',
-            background: activeTab === 'historial' ? 'white' : 'transparent',
-            color: activeTab === 'historial' ? '#1B4D3E' : '#64748b',
-            boxShadow: activeTab === 'historial' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'
-          }}
-        >
-          <CheckCircle size={16} /> Historial
-        </button>
+        {/* Tabs */}
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <button 
+            onClick={() => setActiveTab('pendientes')}
+            style={{ 
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              padding: '0.625rem 1.25rem',
+              border: 'none',
+              borderRadius: '8px',
+              fontWeight: 500,
+              fontSize: '0.875rem',
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              background: activeTab === 'pendientes' ? 'white' : 'transparent',
+              color: activeTab === 'pendientes' ? '#1B4D3E' : '#64748b',
+              boxShadow: activeTab === 'pendientes' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'
+            }}
+          >
+            <Clock size={16} /> Pendientes
+          </button>
+          <button 
+            onClick={() => setActiveTab('banco')}
+            style={{ 
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              padding: '0.625rem 1.25rem',
+              border: 'none',
+              borderRadius: '8px',
+              fontWeight: 500,
+              fontSize: '0.875rem',
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              background: activeTab === 'banco' ? 'white' : 'transparent',
+              color: activeTab === 'banco' ? '#1B4D3E' : '#64748b',
+              boxShadow: activeTab === 'banco' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'
+            }}
+          >
+            <Building2 size={16} /> Movimientos Banco
+          </button>
+          <button 
+            onClick={() => setActiveTab('historial')}
+            style={{ 
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              padding: '0.625rem 1.25rem',
+              border: 'none',
+              borderRadius: '8px',
+              fontWeight: 500,
+              fontSize: '0.875rem',
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              background: activeTab === 'historial' ? 'white' : 'transparent',
+              color: activeTab === 'historial' ? '#1B4D3E' : '#64748b',
+              boxShadow: activeTab === 'historial' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'
+            }}
+          >
+            <CheckCircle size={16} /> Historial
+          </button>
         </div>
 
         {/* Filter for Movimientos del Banco - Only show in Pendientes tab */}
