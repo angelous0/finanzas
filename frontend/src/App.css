@@ -1393,9 +1393,48 @@ input[type="number"] {
     padding: 1rem;
   }
   
+  /* Fix: Table rows should not grow in height */
+  .data-table td {
+    white-space: nowrap;
+  }
+  
+  .data-table td:nth-child(3) {
+    white-space: normal;
+    max-width: 150px;
+  }
+  
+  /* Fix: Buttons wrap should not make row taller */
+  .data-table td:last-child > div {
+    flex-wrap: nowrap;
+  }
+  
+  .data-table .btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.7rem;
+  }
+  
+  .data-table .btn-sm svg {
+    width: 12px;
+    height: 12px;
+  }
+  
+  /* Hide button text on mobile, show only icon */
+  .data-table .btn-sm span {
+    display: none;
+  }
+  
   /* Hide mobile menu button when menu is open */
   .app-layout.mobile-menu-open .mobile-menu-btn {
     display: none;
+  }
+  
+  /* Filters bar responsive */
+  .filters-bar {
+    flex-direction: column;
+  }
+  
+  .filters-bar .form-group {
+    flex: 1 1 100% !important;
   }
 }
 
