@@ -161,6 +161,7 @@ export default function OrdenesCompra() {
       unidad: 'UND'
     }]);
     setIgvIncluido(true);
+    setEditingOC(null);
   };
 
   const handleAddLinea = () => {
