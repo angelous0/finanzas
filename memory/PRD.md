@@ -122,6 +122,10 @@ Create a QuickBooks-like system for treasury, control, and minimal accounting ca
 - `GET /api/inventario` - List items from `public.prod_inventario`
 - `GET /api/modelos-cortes` - List modelos/cortes from `public.prod_registros`
 - `GET /api/modelos` - List models from `public.prod_modelos`
+- `POST /api/letras/generar` - Generate letras (supports custom letras_personalizadas)
+- `POST /api/letras/anular-canje/{factura_id}` - Reverse canje
+- `GET /api/facturas-proveedor/{id}/pagos` - Get payments for invoice
+- `GET /api/facturas-proveedor/{id}/letras` - Get letras for invoice
 
 ---
 
