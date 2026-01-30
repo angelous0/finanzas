@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Plus, FileText, Trash2, Eye, X, FileCheck, ShoppingCart, ArrowLeft, Printer, Edit2 } from 'lucide-react';
+import { Plus, FileText, Trash2, Eye, X, FileCheck, ShoppingCart, ArrowLeft, Printer, Edit2, Check, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import { 
   getOrdenesCompra, 
@@ -9,7 +9,8 @@ import {
   getProveedores, 
   getMonedas,
   getInventario,
-  getEmpresas
+  getEmpresas,
+  createTercero
 } from '../services/api';
 import SearchableSelect from '../components/SearchableSelect';
 
@@ -77,6 +78,20 @@ export default function OrdenesCompra() {
   }]);
   
   const [igvIncluido, setIgvIncluido] = useState(true); // Por defecto IGV incluido
+  
+  // State for create new provider modal
+  const [showProveedorModal, setShowProveedorModal] = useState(false);
+  const [newProveedorData, setNewProveedorData] = useState({
+    nombre: '',
+    ruc: '',
+    direccion: '',
+    telefono: '',
+    email: ''
+  });
+  const [creatingProveedor, setCreatingProveedor] = useState(false);
+  
+  // State for articulo search
+  const [articuloSearchTerm, setArticuloSearchTerm] = useState({});
 
   useEffect(() => {
     loadData();
@@ -201,6 +216,65 @@ export default function OrdenesCompra() {
           precio_unitario: articulo.precio || 0
         } : l
       ));
+      // Clear search term for this row
+      setArticuloSearchTerm(prev => ({ ...prev, [index]: '' }));
+    }
+  };
+
+  // Filter articles based on search term
+  const getFilteredArticulos = (index) => {
+    const term = articuloSearchTerm[index] || '';
+    if (!term) return articulos;
+    return articulos.filter(a => 
+      (a.nombre?.toLowerCase().includes(term.toLowerCase())) ||
+      (a.codigo?.toLowerCase().includes(term.toLowerCase()))
+    );
+  };
+
+  // Handle create new provider
+  const handleCreateProveedor = (searchTerm) => {
+    setNewProveedorData({
+      nombre: searchTerm || '',
+      ruc: '',
+      direccion: '',
+      telefono: '',
+      email: ''
+    });
+    setShowProveedorModal(true);
+  };
+
+  const handleSaveNewProveedor = async () => {
+    if (!newProveedorData.nombre.trim()) {
+      toast.error('El nombre del proveedor es requerido');
+      return;
+    }
+    
+    setCreatingProveedor(true);
+    try {
+      const payload = {
+        tipo: 'proveedor',
+        nombre: newProveedorData.nombre,
+        ruc: newProveedorData.ruc || null,
+        direccion: newProveedorData.direccion || null,
+        telefono: newProveedorData.telefono || null,
+        email: newProveedorData.email || null
+      };
+      
+      const response = await createTercero(payload);
+      const newProveedor = response.data;
+      
+      // Add to proveedores list and select it
+      setProveedores(prev => [...prev, newProveedor]);
+      setFormData(prev => ({ ...prev, proveedor_id: newProveedor.id }));
+      
+      toast.success(`Proveedor "${newProveedor.nombre}" creado exitosamente`);
+      setShowProveedorModal(false);
+      setNewProveedorData({ nombre: '', ruc: '', direccion: '', telefono: '', email: '' });
+    } catch (error) {
+      console.error('Error creating proveedor:', error);
+      toast.error(error.response?.data?.detail || 'Error al crear proveedor');
+    } finally {
+      setCreatingProveedor(false);
     }
   };
 
