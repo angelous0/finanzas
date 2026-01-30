@@ -202,7 +202,7 @@ export const ConciliacionBancaria = () => {
     
     for (const movBanco of movimientosBanco) {
       if (bancoUsados.has(movBanco.id)) continue;
-      const montoBanco = (movBanco.abono || 0) - (movBanco.cargo || 0);
+      const montoBanco = movBanco.monto || 0;
       
       for (const movSistema of movimientosSistema) {
         if (sistemaUsados.has(movSistema.id)) continue;
