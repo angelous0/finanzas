@@ -620,15 +620,16 @@ export const Adelantos = () => {
                     </div>
                   )}
                 </div>
+                )}
               </div>
 
               <div className="modal-footer">
-                <button type="button" className="btn btn-outline" onClick={() => setShowModal(false)}>
+                <button type="button" className="btn btn-outline" onClick={() => { setShowModal(false); setEditingId(null); }}>
                   Cancelar
                 </button>
                 <button type="submit" className="btn btn-primary">
                   <DollarSign size={16} />
-                  Registrar Adelanto
+                  {editingId ? 'Guardar Cambios' : 'Registrar Adelanto'}
                 </button>
               </div>
             </form>
