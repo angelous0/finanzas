@@ -382,6 +382,150 @@ export default function OrdenesCompra() {
     window.print();
   };
 
+  // Generate and download PDF
+  const handleDownloadPDF = (oc) => {
+    const empresa = empresas.find(e => e.id === oc.empresa_id);
+    const proveedor = proveedores.find(p => p.id === oc.proveedor_id);
+    const moneda = monedas.find(m => m.id === oc.moneda_id);
+    
+    // Create PDF content
+    const pdfContent = `
+      <html>
+      <head>
+        <title>OC-${oc.numero}</title>
+        <style>
+          @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+          * { box-sizing: border-box; margin: 0; padding: 0; }
+          body { font-family: 'Inter', sans-serif; padding: 40px; color: #1e293b; }
+          .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 2px solid #1B4D3E; }
+          .company-info { }
+          .company-name { font-size: 1.5rem; font-weight: 700; color: #1B4D3E; }
+          .company-details { font-size: 0.875rem; color: #64748b; margin-top: 4px; }
+          .doc-info { text-align: right; }
+          .doc-title { font-size: 1.25rem; font-weight: 700; color: #1B4D3E; }
+          .doc-number { font-family: 'JetBrains Mono', monospace; font-size: 1.125rem; font-weight: 600; margin-top: 4px; }
+          .doc-date { font-size: 0.875rem; color: #64748b; margin-top: 4px; }
+          .section { margin-bottom: 24px; }
+          .section-title { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; margin-bottom: 8px; }
+          .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+          .info-item label { font-size: 0.75rem; color: #64748b; display: block; }
+          .info-item p { font-size: 0.9375rem; font-weight: 500; }
+          table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+          th { background: #f1f5f9; padding: 10px 12px; text-align: left; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; color: #64748b; border-bottom: 2px solid #e2e8f0; }
+          td { padding: 10px 12px; border-bottom: 1px solid #e2e8f0; font-size: 0.875rem; }
+          .text-right { text-align: right; }
+          .text-center { text-align: center; }
+          .currency { font-family: 'JetBrains Mono', monospace; font-weight: 500; }
+          .totals { margin-top: 24px; display: flex; justify-content: flex-end; }
+          .totals-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px 24px; min-width: 280px; }
+          .totals-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 0.9375rem; }
+          .totals-row.total { border-top: 2px solid #1B4D3E; margin-top: 8px; padding-top: 12px; font-weight: 700; font-size: 1.125rem; }
+          .totals-row .currency { color: #1B4D3E; }
+          .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #e2e8f0; text-align: center; color: #64748b; font-size: 0.75rem; }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <div class="company-info">
+            <div class="company-name">${empresa?.nombre || 'Mi Empresa S.A.C.'}</div>
+            <div class="company-details">${empresa?.ruc ? 'RUC: ' + empresa.ruc : ''}</div>
+          </div>
+          <div class="doc-info">
+            <div class="doc-title">ORDEN DE COMPRA</div>
+            <div class="doc-number">${oc.numero}</div>
+            <div class="doc-date">Fecha: ${formatDate(oc.fecha)}</div>
+          </div>
+        </div>
+        
+        <div class="section">
+          <div class="section-title">Datos del Proveedor</div>
+          <div class="info-grid">
+            <div class="info-item">
+              <label>Proveedor</label>
+              <p>${oc.proveedor_nombre || proveedor?.nombre || '-'}</p>
+            </div>
+            <div class="info-item">
+              <label>Condición de Pago</label>
+              <p>${oc.condicion_pago || 'Contado'}${oc.dias_credito ? ` (${oc.dias_credito} días)` : ''}</p>
+            </div>
+            ${oc.direccion_entrega ? `
+            <div class="info-item">
+              <label>Dirección de Entrega</label>
+              <p>${oc.direccion_entrega}</p>
+            </div>` : ''}
+          </div>
+        </div>
+        
+        <div class="section">
+          <div class="section-title">Detalle de Artículos</div>
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 40px">#</th>
+                <th>Descripción</th>
+                <th class="text-center" style="width: 80px">Cant.</th>
+                <th class="text-center" style="width: 60px">Und.</th>
+                <th class="text-right" style="width: 100px">P. Unit.</th>
+                <th class="text-right" style="width: 110px">Subtotal</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${(oc.lineas || []).map((linea, i) => `
+              <tr>
+                <td class="text-center">${i + 1}</td>
+                <td>${linea.descripcion || '-'}</td>
+                <td class="text-center">${linea.cantidad}</td>
+                <td class="text-center">${linea.unidad || 'UND'}</td>
+                <td class="text-right currency">${formatCurrency(linea.precio_unitario, moneda?.simbolo || 'S/')}</td>
+                <td class="text-right currency">${formatCurrency(linea.subtotal, moneda?.simbolo || 'S/')}</td>
+              </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+        
+        <div class="totals">
+          <div class="totals-box">
+            <div class="totals-row">
+              <span>Subtotal:</span>
+              <span class="currency">${formatCurrency(oc.subtotal, moneda?.simbolo || 'S/')}</span>
+            </div>
+            <div class="totals-row">
+              <span>IGV (18%):</span>
+              <span class="currency">${formatCurrency(oc.igv, moneda?.simbolo || 'S/')}</span>
+            </div>
+            <div class="totals-row total">
+              <span>TOTAL:</span>
+              <span class="currency">${formatCurrency(oc.total, moneda?.simbolo || 'S/')}</span>
+            </div>
+          </div>
+        </div>
+        
+        ${oc.notas ? `
+        <div class="section" style="margin-top: 24px;">
+          <div class="section-title">Observaciones</div>
+          <p style="font-size: 0.875rem; color: #64748b;">${oc.notas}</p>
+        </div>` : ''}
+        
+        <div class="footer">
+          <p>Documento generado el ${new Date().toLocaleDateString('es-PE')} | Finanzas 4.0</p>
+        </div>
+      </body>
+      </html>
+    `;
+    
+    // Open in new window and trigger print
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(pdfContent);
+    printWindow.document.close();
+    printWindow.focus();
+    
+    // Auto print after content loads
+    printWindow.onload = () => {
+      printWindow.print();
+    };
+  };
+
   const totales = calcularTotales();
   const monedaActual = monedas.find(m => m.id === parseInt(formData.moneda_id));
   const totalOrdenes = ordenes.reduce((sum, o) => sum + parseFloat(o.total || 0), 0);
