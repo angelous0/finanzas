@@ -56,12 +56,12 @@ class OdooService:
         """
         Retrieve POS orders from Odoo
         
-        Fields requested:
+        Fields requested per user specification:
         - id, date_order, name, tipo_comp, num_comp
         - partner_id, x_tienda, vendedor_id, company_id
         - x_pagos, quantity_pos_order, amount_total, state
-        - x_reserva_pendientes, x_reserva_facturada, is_cancel
-        - order_cancel, reserva, is_credit, reserva_use_id
+        - x_reserva_pendiente, x_reserva_facturada
+        - is_cancel, order_cancel, reserva, is_credit, reserva_use_id
         """
         if not self.uid or not self.models:
             logger.error("Not authenticated with Odoo")
@@ -76,7 +76,7 @@ class OdooService:
             
             logger.info(f"Fetching POS orders from Odoo ({self.company}) from last {days_back} days")
             
-            # Get all fields from pos.order
+            # Request all fields as specified by user
             orders = self.models.execute_kw(
                 self.db,
                 self.uid,
@@ -89,58 +89,28 @@ class OdooService:
                         'id',
                         'date_order',
                         'name',
+                        'tipo_comp',
+                        'num_comp',
                         'partner_id',
+                        'x_tienda',
+                        'vendedor_id',
+                        'company_id',
+                        'x_pagos',
+                        'quantity_pos_order',
                         'amount_total',
                         'state',
-                        'company_id',
-                        'user_id',
-                        'session_id',
+                        'x_reserva_pendiente',
+                        'x_reserva_facturada',
+                        'is_cancel',
+                        'order_cancel',
+                        'reserva',
+                        'is_credit',
+                        'reserva_use_id',
                     ],
                     'limit': limit,
                     'order': 'date_order desc'
                 }
             )
-            
-            # Try to get custom fields if available
-            try:
-                orders_extended = self.models.execute_kw(
-                    self.db,
-                    self.uid,
-                    self.password,
-                    'pos.order',
-                    'search_read',
-                    [domain],
-                    {
-                        'fields': [
-                            'id',
-                            'date_order',
-                            'name',
-                            'x_tipo_comp',
-                            'x_num_comp',
-                            'partner_id',
-                            'x_tienda',
-                            'x_vendedor_id',
-                            'company_id',
-                            'x_pagos',
-                            'x_quantity_pos_order',
-                            'amount_total',
-                            'state',
-                            'x_reserva_pendientes',
-                            'x_reserva_facturada',
-                            'x_is_cancel',
-                            'x_order_cancel',
-                            'x_reserva',
-                            'x_is_credit',
-                            'x_reserva_use_id',
-                        ],
-                        'limit': limit,
-                        'order': 'date_order desc'
-                    }
-                )
-                if orders_extended:
-                    orders = orders_extended
-            except Exception as e:
-                logger.warning(f"Could not fetch extended fields: {e}")
             
             logger.info(f"Retrieved {len(orders)} POS orders from Odoo")
             return orders
