@@ -282,70 +282,151 @@ export const ConciliacionBancaria = () => {
           </button>
         </div>
       </div>
-        </div>
-      </div>
 
-      {/* Summary Cards */}
+      {/* Summary Stats */}
       <div style={{ 
         display: 'grid', 
         gridTemplateColumns: 'repeat(4, 1fr)', 
         gap: '1rem', 
         marginBottom: '1.5rem' 
       }}>
-        <div className="summary-card">
-          <div className="summary-card-icon" style={{ background: '#dbeafe' }}>
-            <Building2 size={20} color="#2563eb" />
+        <div style={{ 
+          background: 'linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)',
+          borderRadius: '12px',
+          padding: '1.25rem',
+          color: 'white'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+            <Building2 size={18} />
+            <span style={{ fontSize: '0.8125rem', opacity: 0.9 }}>Mov. Banco</span>
           </div>
-          <div className="summary-card-content">
-            <div className="summary-card-label">Mov. Banco</div>
-            <div className="summary-card-value">{pendientesBanco}</div>
-          </div>
-        </div>
-        <div className="summary-card">
-          <div className="summary-card-icon" style={{ background: '#fef3c7' }}>
-            <FileSpreadsheet size={20} color="#d97706" />
-          </div>
-          <div className="summary-card-content">
-            <div className="summary-card-label">Mov. Sistema</div>
-            <div className="summary-card-value">{pendientesSistema}</div>
+          <div style={{ fontSize: '2rem', fontWeight: 700 }}>{pendientesBanco}</div>
+          <div style={{ fontSize: '0.75rem', opacity: 0.8, marginTop: '0.25rem' }}>
+            {formatCurrency(totalBancoPendiente)}
           </div>
         </div>
-        <div className="summary-card">
-          <div className="summary-card-icon" style={{ background: '#dbeafe' }}>
-            <Banknote size={20} color="#2563eb" />
+        
+        <div style={{ 
+          background: 'linear-gradient(135deg, #d97706 0%, #f59e0b 100%)',
+          borderRadius: '12px',
+          padding: '1.25rem',
+          color: 'white'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+            <FileSpreadsheet size={18} />
+            <span style={{ fontSize: '0.8125rem', opacity: 0.9 }}>Mov. Sistema</span>
           </div>
-          <div className="summary-card-content">
-            <div className="summary-card-label">Total Banco</div>
-            <div className="summary-card-value currency-display" style={{ fontSize: '1.125rem' }}>
-              {formatCurrency(totalBancoPendiente)}
-            </div>
+          <div style={{ fontSize: '2rem', fontWeight: 700 }}>{pendientesSistema}</div>
+          <div style={{ fontSize: '0.75rem', opacity: 0.8, marginTop: '0.25rem' }}>
+            {formatCurrency(totalSistemaPendiente)}
           </div>
         </div>
-        <div className="summary-card">
-          <div className="summary-card-icon" style={{ background: diferencia === 0 ? '#dcfce7' : '#fee2e2' }}>
-            <ArrowDown size={20} color={diferencia === 0 ? '#16a34a' : '#dc2626'} />
+        
+        <div style={{ 
+          background: 'linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%)',
+          borderRadius: '12px',
+          padding: '1.25rem',
+          color: 'white'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+            <CheckCircle size={18} />
+            <span style={{ fontSize: '0.8125rem', opacity: 0.9 }}>Conciliados</span>
           </div>
-          <div className="summary-card-content">
-            <div className="summary-card-label">Diferencia</div>
-            <div className="summary-card-value currency-display" style={{ 
-              color: diferencia === 0 ? '#16a34a' : '#dc2626',
-              fontSize: '1.125rem'
-            }}>
-              {formatCurrency(Math.abs(diferencia))}
-            </div>
+          <div style={{ fontSize: '2rem', fontWeight: 700 }}>{conciliaciones.length}</div>
+          <div style={{ fontSize: '0.75rem', opacity: 0.8, marginTop: '0.25rem' }}>
+            Este período
+          </div>
+        </div>
+        
+        <div style={{ 
+          background: diferencia === 0 
+            ? 'linear-gradient(135deg, #16a34a 0%, #22c55e 100%)' 
+            : 'linear-gradient(135deg, #dc2626 0%, #ef4444 100%)',
+          borderRadius: '12px',
+          padding: '1.25rem',
+          color: 'white'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+            <ArrowDown size={18} />
+            <span style={{ fontSize: '0.8125rem', opacity: 0.9 }}>Diferencia</span>
+          </div>
+          <div style={{ fontSize: '2rem', fontWeight: 700, fontFamily: "'JetBrains Mono', monospace" }}>
+            {formatCurrency(Math.abs(diferencia))}
+          </div>
+          <div style={{ fontSize: '0.75rem', opacity: 0.8, marginTop: '0.25rem' }}>
+            {diferencia === 0 ? 'Cuadrado' : diferencia > 0 ? 'Banco mayor' : 'Sistema mayor'}
           </div>
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="tabs" style={{ marginBottom: '1rem' }}>
-        <button className={`tab ${activeTab === 'pendientes' ? 'active' : ''}`} onClick={() => setActiveTab('pendientes')}>
-          <Clock size={16} /> Pendientes de Conciliar
+      {/* Tabs mejorados */}
+      <div style={{ 
+        display: 'flex', 
+        gap: '0.5rem', 
+        marginBottom: '1.25rem',
+        background: '#f1f5f9',
+        padding: '0.375rem',
+        borderRadius: '10px',
+        width: 'fit-content'
+      }}>
+        <button 
+          onClick={() => setActiveTab('pendientes')}
+          style={{ 
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            padding: '0.625rem 1.25rem',
+            border: 'none',
+            borderRadius: '8px',
+            fontWeight: 500,
+            fontSize: '0.875rem',
+            cursor: 'pointer',
+            transition: 'all 0.2s',
+            background: activeTab === 'pendientes' ? 'white' : 'transparent',
+            color: activeTab === 'pendientes' ? '#1B4D3E' : '#64748b',
+            boxShadow: activeTab === 'pendientes' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'
+          }}
+        >
+          <Clock size={16} /> Pendientes
         </button>
-        <button className={`tab ${activeTab === 'banco' ? 'active' : ''}`} onClick={() => setActiveTab('banco')}>
+        <button 
+          onClick={() => setActiveTab('banco')}
+          style={{ 
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            padding: '0.625rem 1.25rem',
+            border: 'none',
+            borderRadius: '8px',
+            fontWeight: 500,
+            fontSize: '0.875rem',
+            cursor: 'pointer',
+            transition: 'all 0.2s',
+            background: activeTab === 'banco' ? 'white' : 'transparent',
+            color: activeTab === 'banco' ? '#1B4D3E' : '#64748b',
+            boxShadow: activeTab === 'banco' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'
+          }}
+        >
           <Building2 size={16} /> Movimientos Banco
         </button>
-        <button className={`tab ${activeTab === 'historial' ? 'active' : ''}`} onClick={() => setActiveTab('historial')}>
+        <button 
+          onClick={() => setActiveTab('historial')}
+          style={{ 
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            padding: '0.625rem 1.25rem',
+            border: 'none',
+            borderRadius: '8px',
+            fontWeight: 500,
+            fontSize: '0.875rem',
+            cursor: 'pointer',
+            transition: 'all 0.2s',
+            background: activeTab === 'historial' ? 'white' : 'transparent',
+            color: activeTab === 'historial' ? '#1B4D3E' : '#64748b',
+            boxShadow: activeTab === 'historial' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'
+          }}
+        >
           <CheckCircle size={16} /> Historial
         </button>
       </div>
