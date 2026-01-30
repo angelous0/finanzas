@@ -492,24 +492,22 @@ export const FacturasProveedor = () => {
                 <div className="form-row">
                   <div className="form-group" style={{ flex: 1 }}>
                     <label className="form-label required">Proveedor</label>
-                    <div style={{ position: 'relative' }}>
-                      <select
-                        className="form-input form-select"
-                        value={formData.proveedor_id}
-                        onChange={(e) => setFormData(prev => ({ 
-                          ...prev, 
-                          proveedor_id: e.target.value,
-                          // Clear beneficiario when proveedor is selected
-                          beneficiario_nombre: e.target.value ? '' : prev.beneficiario_nombre
-                        }))}
-                        data-testid="proveedor-select"
-                      >
-                        <option value="">Buscar proveedor...</option>
-                        {proveedores.map(p => (
-                          <option key={p.id} value={p.id}>{p.nombre}</option>
-                        ))}
-                      </select>
-                    </div>
+                    <SearchableSelect
+                      options={proveedores}
+                      value={formData.proveedor_id}
+                      onChange={(value) => setFormData(prev => ({ 
+                        ...prev, 
+                        proveedor_id: value,
+                        beneficiario_nombre: value ? '' : prev.beneficiario_nombre
+                      }))}
+                      placeholder="Buscar proveedor..."
+                      searchPlaceholder="Buscar por nombre..."
+                      displayKey="nombre"
+                      valueKey="id"
+                      onCreateNew={handleCreateProveedor}
+                      createNewLabel="Crear proveedor"
+                      data-testid="proveedor-select"
+                    />
                   </div>
                   
                   {/* Mostrar campo beneficiario solo si NO hay proveedor seleccionado */}
