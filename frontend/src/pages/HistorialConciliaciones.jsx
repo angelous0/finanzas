@@ -257,14 +257,14 @@ export const HistorialConciliaciones = () => {
               <thead>
                 <tr>
                   <th>Fecha</th>
-                  <th>Banco</th>
-                  <th>Nro Operación</th>
-                  <th>Descripción Banco</th>
-                  <th>Monto Banco</th>
-                  <th>Nro Doc Sistema</th>
-                  <th>Tipo</th>
-                  <th>Descripción Sistema</th>
-                  <th className="text-right">Monto Sistema</th>
+                  <th style={{ background: '#eff6ff', color: '#1e40af' }}>Banco</th>
+                  <th style={{ background: '#eff6ff', color: '#1e40af' }}>Nro Operación</th>
+                  <th style={{ background: '#eff6ff', color: '#1e40af' }}>Descripción Banco</th>
+                  <th style={{ background: '#eff6ff', color: '#1e40af' }}>Monto Banco</th>
+                  <th style={{ background: '#f0fdf4', color: '#15803d' }}>Nro Doc Sistema</th>
+                  <th style={{ background: '#f0fdf4', color: '#15803d' }}>Tipo</th>
+                  <th style={{ background: '#f0fdf4', color: '#15803d' }}>Descripción Sistema</th>
+                  <th className="text-right" style={{ background: '#f0fdf4', color: '#15803d' }}>Monto Sistema</th>
                   <th className="text-center">Acciones</th>
                 </tr>
               </thead>
@@ -272,31 +272,33 @@ export const HistorialConciliaciones = () => {
                 {conciliacionesFiltradas.map((conc, idx) => (
                   <tr key={idx}>
                     <td>{formatDate(conc.fecha_banco || conc.fecha_sistema)}</td>
-                    <td>{conc.banco}</td>
-                    <td style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.75rem' }}>
+                    <td style={{ background: '#f8faff' }}>{conc.banco}</td>
+                    <td style={{ background: '#f8faff', fontFamily: "'JetBrains Mono', monospace", fontSize: '0.75rem' }}>
                       {conc.ref_banco || '-'}
                     </td>
-                    <td style={{ maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <td style={{ background: '#f8faff', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {conc.descripcion_banco || '-'}
                     </td>
                     <td className="text-right currency-display" style={{ 
+                      background: '#f8faff',
                       color: conc.monto < 0 ? '#dc2626' : '#16a34a',
                       fontWeight: 500
                     }}>
                       {formatCurrency(conc.monto, conc.monto < 0 ? '-S/' : 'S/')}
                     </td>
-                    <td style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.75rem' }}>
+                    <td style={{ background: '#f7fef9', fontFamily: "'JetBrains Mono', monospace", fontSize: '0.75rem' }}>
                       {conc.numero_sistema || '-'}
                     </td>
-                    <td>
+                    <td style={{ background: '#f7fef9' }}>
                       <span className={`badge ${conc.tipo_sistema === 'ingreso' ? 'badge-success' : 'badge-danger'}`} style={{ fontSize: '0.6875rem' }}>
                         {conc.tipo_sistema === 'ingreso' ? 'INGRESO' : 'EGRESO'}
                       </span>
                     </td>
-                    <td style={{ maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <td style={{ background: '#f7fef9', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {conc.descripcion_sistema || '-'}
                     </td>
                     <td className="text-right currency-display" style={{ 
+                      background: '#f7fef9',
                       fontWeight: 500,
                       color: conc.tipo_sistema === 'ingreso' ? '#16a34a' : '#dc2626'
                     }}>
