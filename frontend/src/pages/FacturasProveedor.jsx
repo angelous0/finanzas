@@ -682,6 +682,8 @@ export const FacturasProveedor = () => {
                     const pagado = total - saldo;
                     const puedeGenerarLetras = factura.estado === 'pendiente' && saldo > 0;
                     const puedePagar = (factura.estado === 'pendiente' || factura.estado === 'parcial') && saldo > 0;
+                    const tienePagos = pagado > 0;
+                    const estaCanjeado = factura.estado === 'canjeado';
                     
                     return (
                       <tr key={factura.id} data-testid={`factura-row-${factura.id}`}>
@@ -693,11 +695,27 @@ export const FacturasProveedor = () => {
                         <td className="text-right" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
                           {formatCurrency(total, factura.moneda_simbolo)}
                         </td>
-                        <td className="text-right" style={{ fontFamily: "'JetBrains Mono', monospace", color: '#22C55E' }}>
-                          {formatCurrency(pagado, factura.moneda_simbolo)}
+                        <td className="text-right" style={{ fontFamily: "'JetBrains Mono', monospace", color: pagado > 0 ? '#22C55E' : '#64748b' }}>
+                          {pagado > 0 ? (
+                            <button 
+                              className="btn-link"
+                              onClick={() => handleVerPagos(factura)}
+                              style={{ color: '#22C55E', fontFamily: "'JetBrains Mono', monospace", fontWeight: 500 }}
+                              title="Ver pagos"
+                            >
+                              {formatCurrency(pagado, factura.moneda_simbolo)}
+                            </button>
+                          ) : (
+                            formatCurrency(pagado, factura.moneda_simbolo)
+                          )}
                         </td>
                         <td>
-                          <span className={estadoBadge(factura.estado)}>
+                          <span 
+                            className={estadoBadge(factura.estado)}
+                            style={{ cursor: estaCanjeado ? 'pointer' : 'default' }}
+                            onClick={() => estaCanjeado && handleVerLetras(factura)}
+                            title={estaCanjeado ? 'Ver letras vinculadas' : ''}
+                          >
                             {factura.estado}
                           </span>
                         </td>
@@ -711,7 +729,7 @@ export const FacturasProveedor = () => {
                         <td>
                           <div style={{ display: 'flex', gap: '0.25rem', justifyContent: 'center', flexWrap: 'wrap' }}>
                             {/* Botón Pagar - Solo si puede pagar y NO está canjeado */}
-                            {puedePagar && factura.estado !== 'canjeado' && (
+                            {puedePagar && !estaCanjeado && (
                               <button 
                                 className="btn btn-success btn-sm"
                                 onClick={() => handleOpenPago(factura)}
@@ -733,6 +751,32 @@ export const FacturasProveedor = () => {
                               >
                                 <FileSpreadsheet size={14} />
                                 Letras
+                              </button>
+                            )}
+                            
+                            {/* Botón Ver Letras - Si está canjeado */}
+                            {estaCanjeado && (
+                              <button 
+                                className="btn btn-outline btn-sm"
+                                onClick={() => handleVerLetras(factura)}
+                                title="Ver letras vinculadas"
+                                data-testid={`ver-letras-${factura.id}`}
+                              >
+                                <FileSpreadsheet size={14} />
+                                Ver Letras
+                              </button>
+                            )}
+                            
+                            {/* Botón Ver Pagos - Si tiene pagos */}
+                            {tienePagos && !estaCanjeado && (
+                              <button 
+                                className="btn btn-outline btn-sm"
+                                onClick={() => handleVerPagos(factura)}
+                                title="Ver historial de pagos"
+                                data-testid={`ver-pagos-${factura.id}`}
+                              >
+                                <History size={14} />
+                                Pagos
                               </button>
                             )}
                             
