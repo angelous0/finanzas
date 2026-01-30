@@ -266,6 +266,36 @@ export default function OrdenesCompra() {
     }
   };
 
+  const handleEdit = (oc) => {
+    // Pre-fill form with OC data
+    setFormData({
+      fecha: oc.fecha?.split('T')[0] || new Date().toISOString().split('T')[0],
+      proveedor_id: oc.proveedor_id || '',
+      moneda_id: oc.moneda_id || '',
+      empresa_id: oc.empresa_id || empresas[0]?.id || '',
+      notas: oc.notas || '',
+      condicion_pago: oc.condicion_pago || 'contado',
+      dias_credito: oc.dias_credito || 0,
+      direccion_entrega: oc.direccion_entrega || ''
+    });
+    
+    // Set lineas
+    if (oc.lineas && oc.lineas.length > 0) {
+      setLineas(oc.lineas.map(l => ({
+        articulo_id: l.articulo_id || '',
+        descripcion: l.descripcion || '',
+        cantidad: l.cantidad || 1,
+        precio_unitario: l.precio_unitario || 0,
+        igv_aplica: l.igv_aplica !== false,
+        codigo: l.codigo || '',
+        unidad: l.unidad || 'UND'
+      })));
+    }
+    
+    setEditingOC(oc);
+    setShowModal(true);
+  };
+
   const handleView = (oc) => {
     setSelectedOC(oc);
     setShowViewModal(true);
