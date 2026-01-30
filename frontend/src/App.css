@@ -1587,74 +1587,103 @@ input[type="number"] {
 .oc-summary-card {
   position: sticky;
   top: 0;
-  padding: 1.25rem;
-  background: #fff;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  padding: 1.5rem;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.06);
 }
 
 .summary-title {
   margin: 0 0 1rem;
-  font-size: 1rem;
-  font-weight: 600;
-  color: #1e293b;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.summary-title::before {
+  content: '';
+  width: 4px;
+  height: 20px;
+  background: linear-gradient(180deg, #1B4D3E 0%, #22c55e 100%);
+  border-radius: 2px;
 }
 
 .summary-info-badge {
   background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
   color: #1d4ed8;
-  padding: 0.5rem 0.75rem;
-  border-radius: 8px;
-  font-size: 0.75rem;
-  font-weight: 500;
-  margin-bottom: 1rem;
+  padding: 0.625rem 1rem;
+  border-radius: 10px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  margin-bottom: 1.25rem;
   text-align: center;
+  border: 1px solid #93c5fd;
 }
 
 .summary-rows {
-  border-top: 1px solid #e2e8f0;
-  padding-top: 1rem;
+  background: #fff;
+  border-radius: 12px;
+  padding: 1rem;
+  border: 1px solid #e2e8f0;
 }
 
 .summary-row {
   display: flex;
   justify-content: space-between;
-  padding: 0.5rem 0;
-  font-size: 0.875rem;
+  align-items: center;
+  padding: 0.75rem 0;
+  font-size: 0.9375rem;
+  border-bottom: 1px dashed #e2e8f0;
+}
+
+.summary-row:last-child {
+  border-bottom: none;
+}
+
+.summary-row span:first-child {
   color: #64748b;
+  font-weight: 500;
 }
 
 .summary-row span:last-child {
   font-family: 'JetBrains Mono', monospace;
-  color: #334155;
-}
-
-.summary-total {
-  padding-top: 0.75rem;
-  margin-top: 0.5rem;
-  border-top: 2px solid #e2e8f0;
-  font-size: 1.125rem;
+  color: #1e293b;
   font-weight: 600;
 }
 
+.summary-total {
+  padding: 1rem 0 0.5rem;
+  margin-top: 0.5rem;
+  border-top: 2px solid #1B4D3E;
+  border-bottom: none !important;
+  font-size: 1.25rem;
+}
+
 .summary-total span:first-child {
-  color: #1e293b;
+  color: #0f172a;
+  font-weight: 700;
 }
 
 .summary-total span:last-child {
   color: #1B4D3E;
-  font-weight: 700;
+  font-weight: 800;
+  font-size: 1.375rem;
 }
 
 .summary-count {
-  margin-top: 1rem;
-  padding: 0.5rem;
-  background: #f8fafc;
-  border-radius: 6px;
+  margin-top: 1.25rem;
+  padding: 0.875rem;
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  border: 1px solid #86efac;
+  border-radius: 10px;
   text-align: center;
-  font-size: 0.8125rem;
-  color: #64748b;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #15803d;
 }
 
 /* Toggle Switch */
