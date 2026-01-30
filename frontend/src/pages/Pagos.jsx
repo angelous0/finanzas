@@ -155,6 +155,7 @@ export const Pagos = () => {
                     <th>Cuenta</th>
                     <th className="text-right">Monto</th>
                     <th>Referencia</th>
+                    <th>Estado</th>
                     <th className="text-center">Acciones</th>
                   </tr>
                 </thead>
@@ -176,14 +177,35 @@ export const Pagos = () => {
                         {pago.tipo === 'egreso' ? '-' : '+'}{formatCurrency(pago.monto_total)}
                       </td>
                       <td>{pago.referencia || '-'}</td>
+                      <td>
+                        {pago.conciliado ? (
+                          <span className="badge badge-success" style={{ fontSize: '0.75rem' }}>
+                            Conciliado
+                          </span>
+                        ) : (
+                          <span className="badge" style={{ fontSize: '0.75rem', background: '#e2e8f0', color: '#64748b' }}>
+                            Pendiente
+                          </span>
+                        )}
+                      </td>
                       <td className="text-center">
-                        <button 
-                          className="btn btn-outline btn-sm btn-icon"
-                          onClick={() => handleDelete(pago.id)}
-                          title="Eliminar y revertir"
-                        >
-                          <Trash2 size={14} />
-                        </button>
+                        <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
+                          <button 
+                            className="btn btn-outline btn-sm btn-icon"
+                            onClick={() => handleEdit(pago)}
+                            title={pago.conciliado ? "Editar referencia" : "Editar pago"}
+                          >
+                            <Edit2 size={14} />
+                          </button>
+                          <button 
+                            className="btn btn-outline btn-sm btn-icon"
+                            onClick={() => handleDelete(pago)}
+                            title={pago.conciliado ? "No se puede eliminar (conciliado)" : "Eliminar y revertir"}
+                            style={pago.conciliado ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
