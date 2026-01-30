@@ -6,7 +6,7 @@ import {
 import { 
   Upload, Search, RefreshCw, Check, X, FileSpreadsheet, 
   AlertCircle, CheckCircle, Clock, ArrowDown, Download,
-  Building2, Banknote, Link2, ChevronDown, ChevronUp
+  Building2, Link2, ChevronDown, ChevronUp
 } from 'lucide-react';
 import { toast } from 'sonner';
 
