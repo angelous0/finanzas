@@ -86,6 +86,10 @@ export const FacturasProveedor = () => {
   
   // Filtros
   const [filtroEstado, setFiltroEstado] = useState('');
+  const [filtroNumero, setFiltroNumero] = useState('');
+  const [filtroProveedorId, setFiltroProveedorId] = useState('');
+  const [filtroFechaDesde, setFiltroFechaDesde] = useState('');
+  const [filtroFechaHasta, setFiltroFechaHasta] = useState('');
   
   // Form state
   const [formData, setFormData] = useState({
@@ -105,7 +109,7 @@ export const FacturasProveedor = () => {
 
   useEffect(() => {
     loadData();
-  }, [filtroEstado]);
+  }, [filtroEstado, filtroProveedorId, filtroFechaDesde, filtroFechaHasta]);
 
   // Calculate fecha_vencimiento when fecha_factura or terminos change
   useEffect(() => {
@@ -122,8 +126,14 @@ export const FacturasProveedor = () => {
   const loadData = async () => {
     try {
       setLoading(true);
+      const params = {};
+      if (filtroEstado) params.estado = filtroEstado;
+      if (filtroProveedorId) params.proveedor_id = filtroProveedorId;
+      if (filtroFechaDesde) params.fecha_desde = filtroFechaDesde;
+      if (filtroFechaHasta) params.fecha_hasta = filtroFechaHasta;
+      
       const [facturasRes, proveedoresRes, monedasRes, categoriasRes, lineasRes, centrosRes, inventarioRes, modelosRes, cuentasRes] = await Promise.all([
-        getFacturasProveedor({ estado: filtroEstado || undefined }),
+        getFacturasProveedor(params),
         getProveedores(),
         getMonedas(),
         getCategorias('egreso'),
@@ -387,6 +397,12 @@ export const FacturasProveedor = () => {
     }
     if (pagoData.monto <= 0) {
       toast.error('El monto debe ser mayor a 0');
+      return;
+    }
+    
+    const saldoPendiente = parseFloat(facturaParaPago.saldo_pendiente) || 0;
+    if (parseFloat(pagoData.monto) > saldoPendiente) {
+      toast.error(`El monto no puede ser mayor al saldo pendiente (${formatCurrency(saldoPendiente)})`);
       return;
     }
     
