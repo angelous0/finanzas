@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { getPagos, deletePago } from '../services/api';
-import { Trash2, DollarSign, TrendingUp, TrendingDown } from 'lucide-react';
+import { getPagos, deletePago, updatePago } from '../services/api';
+import { Trash2, DollarSign, TrendingUp, TrendingDown, Edit2, X, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 
 const formatCurrency = (value, symbol = 'S/') => {
@@ -16,6 +16,15 @@ export const Pagos = () => {
   const [pagos, setPagos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filtroTipo, setFiltroTipo] = useState('');
+  
+  // Edit modal states
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingPago, setEditingPago] = useState(null);
+  const [editForm, setEditForm] = useState({
+    fecha: '',
+    referencia: '',
+    notas: ''
+  });
 
   useEffect(() => {
     loadData();
@@ -34,10 +43,38 @@ export const Pagos = () => {
     }
   };
 
-  const handleDelete = async (id) => {
+  const handleEdit = (pago) => {
+    setEditingPago(pago);
+    setEditForm({
+      fecha: pago.fecha ? pago.fecha.split('T')[0] : '',
+      referencia: pago.referencia || '',
+      notas: pago.notas || ''
+    });
+    setShowEditModal(true);
+  };
+
+  const handleSaveEdit = async () => {
+    try {
+      await updatePago(editingPago.id, editForm);
+      toast.success('Pago actualizado exitosamente');
+      setShowEditModal(false);
+      loadData();
+    } catch (error) {
+      console.error('Error updating pago:', error);
+      toast.error(error.response?.data?.detail || 'Error al actualizar pago');
+    }
+  };
+
+  const handleDelete = async (pago) => {
+    // Check if conciliado
+    if (pago.conciliado) {
+      toast.error('No se puede eliminar un pago que ya está conciliado. Primero desconcilie el movimiento.');
+      return;
+    }
+
     if (!window.confirm('¿Eliminar este pago? Se revertirán los cambios en saldos.')) return;
     try {
-      await deletePago(id);
+      await deletePago(pago.id);
       toast.success('Pago eliminado y revertido');
       loadData();
     } catch (error) {
