@@ -811,7 +811,9 @@ export const ConciliacionBancaria = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {movimientosBanco.map(mov => (
+                  {movimientosBanco
+                    .filter(m => filtroBanco === 'pendientes' ? !m.procesado : m.procesado)
+                    .map(mov => (
                     <tr key={mov.id}>
                       <td>{formatDate(mov.fecha)}</td>
                       <td style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.8125rem' }}>
