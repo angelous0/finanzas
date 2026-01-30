@@ -821,90 +821,86 @@ export const FacturasProveedor = () => {
                           {formatCurrency(saldo, factura.moneda_simbolo)}
                         </td>
                         <td>
-                          <div style={{ display: 'flex', gap: '0.25rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-                            {/* Botón Pagar - Solo si puede pagar y NO está canjeado */}
+                          <div className="actions-row">
+                            {/* Pagar */}
                             {puedePagar && !estaCanjeado && (
                               <button 
-                                className="btn btn-success btn-sm"
+                                className="action-btn action-success"
                                 onClick={() => handleOpenPago(factura)}
-                                title="Registrar Pago"
+                                title="Pagar"
                                 data-testid={`pagar-factura-${factura.id}`}
                               >
-                                <DollarSign size={14} />
-                                Pagar
+                                <DollarSign size={15} />
                               </button>
                             )}
                             
-                            {/* Botón Generar Letras - Solo si está pendiente */}
+                            {/* Generar Letras */}
                             {puedeGenerarLetras && (
                               <button 
-                                className="btn btn-info btn-sm"
+                                className="action-btn action-info"
                                 onClick={() => handleOpenLetras(factura)}
                                 title="Canjear por Letras"
                                 data-testid={`letras-factura-${factura.id}`}
                               >
-                                <FileSpreadsheet size={14} />
-                                Letras
+                                <FileSpreadsheet size={15} />
                               </button>
                             )}
                             
-                            {/* Botón Ver Letras - Si está canjeado */}
+                            {/* Ver Letras (canjeado) */}
                             {estaCanjeado && (
                               <button 
-                                className="btn btn-outline btn-sm"
+                                className="action-btn"
                                 onClick={() => handleVerLetras(factura)}
-                                title="Ver letras vinculadas"
+                                title="Ver letras"
                                 data-testid={`ver-letras-${factura.id}`}
                               >
-                                <FileSpreadsheet size={14} />
-                                Ver Letras
+                                <FileSpreadsheet size={15} />
                               </button>
                             )}
                             
-                            {/* Botón Ver Pagos - Si tiene pagos */}
+                            {/* Ver Pagos */}
                             {tienePagos && !estaCanjeado && (
                               <button 
-                                className="btn btn-outline btn-sm"
+                                className="action-btn"
                                 onClick={() => handleVerPagos(factura)}
-                                title="Ver historial de pagos"
+                                title="Ver pagos"
                                 data-testid={`ver-pagos-${factura.id}`}
                               >
-                                <History size={14} />
-                                Pagos
+                                <History size={15} />
                               </button>
                             )}
                             
-                            {/* Botón Ver */}
+                            {/* Ver */}
                             <button 
-                              className="btn btn-outline btn-sm btn-icon"
+                              className="action-btn"
                               onClick={() => handleView(factura)}
-                              title="Ver detalles"
+                              title="Ver"
                               data-testid={`ver-factura-${factura.id}`}
                             >
-                              <Eye size={14} />
+                              <Eye size={15} />
                             </button>
                             
-                            {/* Botón Editar - Solo si no está pagado o canjeado */}
+                            {/* Editar */}
                             {factura.estado !== 'pagado' && factura.estado !== 'canjeado' && (
                               <button 
-                                className="btn btn-outline btn-sm btn-icon"
+                                className="action-btn"
                                 onClick={() => handleEdit(factura)}
                                 title="Editar"
                                 data-testid={`editar-factura-${factura.id}`}
                               >
-                                <Edit2 size={14} />
+                                <Edit2 size={15} />
                               </button>
                             )}
                             
-                            {/* Botón Eliminar - Solo si está pendiente */}
+                            {/* Eliminar */}
                             {factura.estado === 'pendiente' && (
                               <button 
-                                className="btn btn-outline btn-sm btn-icon btn-danger"
+                                className="action-btn action-danger"
                                 onClick={() => handleDelete(factura.id)}
                                 title="Eliminar"
                                 data-testid={`delete-factura-${factura.id}`}
                               >
-                                <Trash2 size={14} />
+                                <Trash2 size={15} />
                               </button>
                             )}
                           </div>
