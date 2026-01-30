@@ -206,12 +206,82 @@ h1, h2, h3, h4, h5, h6 {
   font-size: 0.813rem;
 }
 
-/* Main Content */
+/* Top Bar */
+.top-bar {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 260px;
+  height: 50px;
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 1.5rem;
+  z-index: 90;
+  transition: left 0.3s ease;
+}
+
+.sidebar-collapsed .top-bar {
+  left: 72px;
+}
+
+.empresa-selector {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border: 1px solid #7dd3fc;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.empresa-selector:hover {
+  background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+  border-color: #38bdf8;
+}
+
+.empresa-icon {
+  color: #0284c7;
+}
+
+.empresa-select {
+  border: none;
+  background: transparent;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #0369a1;
+  cursor: pointer;
+  padding-right: 0.5rem;
+  min-width: 150px;
+}
+
+.empresa-select:focus {
+  outline: none;
+}
+
+.empresa-chevron {
+  color: #0284c7;
+}
+
+@media (max-width: 768px) {
+  .top-bar {
+    left: 0;
+    padding: 0 1rem;
+    padding-left: 4rem;
+  }
+}
+
+/* Main Content with TopBar */
 .main-content {
   flex: 1;
   margin-left: 260px;
   background: var(--content-bg);
   min-height: 100vh;
+  padding-top: 50px;
   transition: margin-left 0.2s ease;
 }
 
