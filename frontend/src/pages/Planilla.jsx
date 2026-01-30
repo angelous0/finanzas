@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { 
   getPlanillas, createPlanilla, pagarPlanilla, deletePlanilla,
-  getEmpleados, getAdelantos, getCuentasFinancieras
+  getEmpleados, getAdelantos, getCuentasFinancieras, getPago
 } from '../services/api';
-import { Plus, FileText, Trash2, Eye, X, DollarSign, Download, Check, Calendar, Users, Edit2 } from 'lucide-react';
+import { Plus, FileText, Trash2, Eye, X, DollarSign, Download, Check, Calendar, Users, Edit2, CreditCard } from 'lucide-react';
 import { toast } from 'sonner';
 
 const formatCurrency = (value, symbol = 'S/') => {
