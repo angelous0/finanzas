@@ -43,6 +43,33 @@ export const FacturasProveedor = () => {
   const [modelosCortes, setModelosCortes] = useState([]);
   const [showProveedorModal, setShowProveedorModal] = useState(false);
   const [nuevoProveedorNombre, setNuevoProveedorNombre] = useState('');
+  const [cuentasFinancieras, setCuentasFinancieras] = useState([]);
+  
+  // Modal de Pago
+  const [showPagoModal, setShowPagoModal] = useState(false);
+  const [facturaParaPago, setFacturaParaPago] = useState(null);
+  const [pagoData, setPagoData] = useState({
+    cuenta_id: '',
+    medio_pago: 'transferencia',
+    monto: 0,
+    referencia: ''
+  });
+  
+  // Modal de Letras
+  const [showLetrasModal, setShowLetrasModal] = useState(false);
+  const [facturaParaLetras, setFacturaParaLetras] = useState(null);
+  const [letrasConfig, setLetrasConfig] = useState({
+    prefijo: 'LT',
+    cantidad: 3,
+    intervalo_dias: 30,
+    fecha_giro: new Date().toISOString().split('T')[0],
+    banco_id: ''
+  });
+  const [letrasPreview, setLetrasPreview] = useState([]);
+  
+  // Modal de Edición/Ver
+  const [editingFactura, setEditingFactura] = useState(null);
+  const [viewMode, setViewMode] = useState(false);
   
   // Filtros
   const [filtroEstado, setFiltroEstado] = useState('');
