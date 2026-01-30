@@ -2399,6 +2399,32 @@ async def pagar_planilla(id: int, cuenta_financiera_id: int = Query(...)):
             
             return await get_planilla(id)
 
+@api_router.delete("/planillas/{id}")
+async def delete_planilla(id: int):
+    """Delete a planilla (only if in draft status)"""
+    pool = await get_pool()
+    async with pool.acquire() as conn:
+        await conn.execute("SET search_path TO finanzas2, public")
+        
+        # Check if planilla exists and can be deleted
+        existing = await conn.fetchrow(
+            "SELECT * FROM finanzas2.cont_planilla WHERE id = $1", id
+        )
+        if not existing:
+            raise HTTPException(404, "Planilla no encontrada")
+        if existing['estado'] == 'pagada':
+            raise HTTPException(400, "No se puede eliminar una planilla pagada")
+        
+        # Delete detalles first (due to foreign key)
+        await conn.execute(
+            "DELETE FROM finanzas2.cont_planilla_detalle WHERE planilla_id = $1", id
+        )
+        # Delete planilla
+        await conn.execute(
+            "DELETE FROM finanzas2.cont_planilla WHERE id = $1", id
+        )
+        return {"message": "Planilla eliminada"}
+
 # =====================
 # VENTAS POS (Odoo)
 # =====================
