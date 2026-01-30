@@ -666,57 +666,53 @@ export const FacturasProveedor = () => {
       <div className="page-content">
         {/* Filtros */}
         <div className="filters-bar">
-          <div className="form-group" style={{ marginBottom: 0, flex: '0 0 150px' }}>
+          <div className="filter-group">
+            <label className="filter-label">Nº Doc</label>
             <input
               type="text"
-              className="form-input filter-input"
-              placeholder="Nº Documento..."
+              className="form-input"
+              placeholder="Buscar..."
               value={filtroNumero}
               onChange={(e) => setFiltroNumero(e.target.value)}
               data-testid="filtro-numero"
+              style={{ width: '140px' }}
             />
           </div>
-          <div className="form-group" style={{ marginBottom: 0, flex: '0 0 180px' }}>
-            <select 
-              className="form-input form-select filter-input"
+          <div className="filter-group">
+            <label className="filter-label">Proveedor</label>
+            <SearchableSelect
+              options={[{ id: '', nombre: 'Todos' }, ...proveedores]}
               value={filtroProveedorId}
-              onChange={(e) => setFiltroProveedorId(e.target.value)}
+              onChange={(value) => setFiltroProveedorId(value || '')}
+              placeholder="Todos"
+              searchPlaceholder="Buscar proveedor..."
+              displayKey="nombre"
+              valueKey="id"
               data-testid="filtro-proveedor"
-            >
-              <option value="">Todos los proveedores</option>
-              {proveedores.map(p => (
-                <option key={p.id} value={p.id}>{p.nombre}</option>
-              ))}
-            </select>
-          </div>
-          <div className="form-group" style={{ marginBottom: 0, flex: '0 0 140px' }}>
-            <input
-              type="date"
-              className="form-input filter-input"
-              value={filtroFechaDesde}
-              onChange={(e) => setFiltroFechaDesde(e.target.value)}
-              title="Fecha desde"
-              data-testid="filtro-fecha-desde"
+              style={{ width: '200px' }}
             />
           </div>
-          <div className="form-group" style={{ marginBottom: 0, flex: '0 0 140px' }}>
+          <div className="filter-group">
+            <label className="filter-label">Fecha emisión</label>
             <input
               type="date"
-              className="form-input filter-input"
-              value={filtroFechaHasta}
-              onChange={(e) => setFiltroFechaHasta(e.target.value)}
-              title="Fecha hasta"
-              data-testid="filtro-fecha-hasta"
+              className="form-input"
+              value={filtroFecha}
+              onChange={(e) => setFiltroFecha(e.target.value)}
+              data-testid="filtro-fecha"
+              style={{ width: '150px' }}
             />
           </div>
-          <div className="form-group" style={{ marginBottom: 0, flex: '0 0 150px' }}>
+          <div className="filter-group">
+            <label className="filter-label">Estado</label>
             <select 
-              className="form-input form-select filter-input"
+              className="form-input form-select"
               value={filtroEstado}
               onChange={(e) => setFiltroEstado(e.target.value)}
               data-testid="filtro-estado"
+              style={{ width: '140px' }}
             >
-              <option value="">Todos los estados</option>
+              <option value="">Todos</option>
               <option value="pendiente">Pendiente</option>
               <option value="parcial">Parcial</option>
               <option value="pagado">Pagado</option>
@@ -724,20 +720,18 @@ export const FacturasProveedor = () => {
               <option value="anulada">Anulada</option>
             </select>
           </div>
-          {(filtroNumero || filtroProveedorId || filtroFechaDesde || filtroFechaHasta || filtroEstado) && (
+          {(filtroNumero || filtroProveedorId || filtroFecha || filtroEstado) && (
             <button 
-              className="btn btn-outline btn-sm"
+              className="btn btn-ghost btn-sm"
               onClick={() => {
                 setFiltroNumero('');
                 setFiltroProveedorId('');
-                setFiltroFechaDesde('');
-                setFiltroFechaHasta('');
+                setFiltroFecha('');
                 setFiltroEstado('');
               }}
               title="Limpiar filtros"
             >
               <X size={16} />
-              Limpiar
             </button>
           )}
         </div>
