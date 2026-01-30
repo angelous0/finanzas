@@ -2118,6 +2118,76 @@ async def create_adelanto(data: AdelantoCreate):
             
             return result
 
+@api_router.post("/adelantos/{id}/pagar", response_model=Adelanto)
+async def pagar_adelanto(
+    id: int, 
+    cuenta_financiera_id: int = Query(...),
+    medio_pago: str = Query(default="efectivo")
+):
+    """Register payment for an existing unpaid advance"""
+    pool = await get_pool()
+    async with pool.acquire() as conn:
+        await conn.execute("SET search_path TO finanzas2, public")
+        
+        async with conn.transaction():
+            # Get the adelanto
+            adelanto = await conn.fetchrow(
+                "SELECT * FROM finanzas2.cont_adelanto_empleado WHERE id = $1", id
+            )
+            if not adelanto:
+                raise HTTPException(404, "Adelanto no encontrado")
+            if adelanto['pagado']:
+                raise HTTPException(400, "Este adelanto ya fue pagado")
+            
+            # Create pago
+            pago_numero = await generate_pago_number(conn, 'egreso')
+            pago = await conn.fetchrow("""
+                INSERT INTO finanzas2.cont_pago 
+                (numero, tipo, fecha, cuenta_financiera_id, monto_total, notas)
+                VALUES ($1, 'egreso', CURRENT_DATE, $2, $3, $4)
+                RETURNING id
+            """, pago_numero, cuenta_financiera_id, adelanto['monto'], 
+                "Pago de adelanto a empleado")
+            pago_id = pago['id']
+            
+            # Create pago detalle
+            await conn.execute("""
+                INSERT INTO finanzas2.cont_pago_detalle 
+                (pago_id, cuenta_financiera_id, medio_pago, monto)
+                VALUES ($1, $2, $3, $4)
+            """, pago_id, cuenta_financiera_id, medio_pago, adelanto['monto'])
+            
+            # Update cuenta saldo
+            await conn.execute("""
+                UPDATE finanzas2.cont_cuenta_financiera 
+                SET saldo_actual = saldo_actual - $1 WHERE id = $2
+            """, adelanto['monto'], cuenta_financiera_id)
+            
+            # Update adelanto
+            row = await conn.fetchrow("""
+                UPDATE finanzas2.cont_adelanto_empleado 
+                SET pagado = TRUE, pago_id = $1
+                WHERE id = $2
+                RETURNING *
+            """, pago_id, id)
+            
+            # Create pago aplicacion
+            await conn.execute("""
+                INSERT INTO finanzas2.cont_pago_aplicacion 
+                (pago_id, tipo_documento, documento_id, monto_aplicado)
+                VALUES ($1, 'adelanto', $2, $3)
+            """, pago_id, id, adelanto['monto'])
+            
+            # Get empleado nombre
+            emp = await conn.fetchrow(
+                "SELECT nombre FROM finanzas2.cont_tercero WHERE id = $1", 
+                row['empleado_id']
+            )
+            result = dict(row)
+            result['empleado_nombre'] = emp['nombre'] if emp else None
+            
+            return result
+
 # =====================
 # PLANILLA
 # =====================
