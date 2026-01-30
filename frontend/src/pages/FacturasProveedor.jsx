@@ -410,7 +410,7 @@ export const FacturasProveedor = () => {
     // Calculate payment number based on existing payments
     let referencia = factura.numero || '';
     try {
-      const pagosRes = await getPagosFactura(factura.id);
+      const pagosRes = await getPagosDeFactura(factura.id);
       const numPagos = pagosRes.data?.length || 0;
       if (numPagos > 0) {
         referencia = `${factura.numero} - PAGO ${numPagos + 1}`;
