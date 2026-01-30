@@ -48,7 +48,9 @@ export const Adelantos = () => {
     monto: '',
     fecha: new Date().toISOString().split('T')[0],
     motivo: '',
-    cuenta_financiera_id: ''
+    pagar: true,
+    cuenta_financiera_id: '',
+    medio_pago: 'efectivo'
   });
 
   useEffect(() => {
