@@ -4,8 +4,12 @@ import { Toaster } from 'sonner';
 import { Menu } from 'lucide-react';
 import './App.css';
 
+// Context
+import { EmpresaProvider } from './context/EmpresaContext';
+
 // Components
 import Sidebar from './components/Sidebar';
+import TopBar from './components/TopBar';
 
 // Pages
 import Dashboard from './pages/Dashboard';
