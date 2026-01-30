@@ -473,6 +473,48 @@ export const ConciliacionBancaria = () => {
         >
           <CheckCircle size={16} /> Historial
         </button>
+        </div>
+
+        {/* Filter for Movimientos del Banco - Only show in Pendientes tab */}
+        {activeTab === 'pendientes' && (
+          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+            <span style={{ fontSize: '0.875rem', color: '#64748b', marginRight: '0.5rem', fontWeight: 500 }}>
+              Movimientos Banco:
+            </span>
+            <button
+              onClick={() => setFiltroBanco('pendientes')}
+              style={{
+                padding: '0.5rem 1rem',
+                borderRadius: '6px',
+                border: '1px solid #e2e8f0',
+                background: filtroBanco === 'pendientes' ? '#2563eb' : 'white',
+                color: filtroBanco === 'pendientes' ? 'white' : '#64748b',
+                fontWeight: 500,
+                fontSize: '0.875rem',
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+            >
+              Pendientes ({movimientosBanco.filter(m => !m.procesado).length})
+            </button>
+            <button
+              onClick={() => setFiltroBanco('conciliados')}
+              style={{
+                padding: '0.5rem 1rem',
+                borderRadius: '6px',
+                border: '1px solid #e2e8f0',
+                background: filtroBanco === 'conciliados' ? '#2563eb' : 'white',
+                color: filtroBanco === 'conciliados' ? 'white' : '#64748b',
+                fontWeight: 500,
+                fontSize: '0.875rem',
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+            >
+              Conciliados ({movimientosBanco.filter(m => m.procesado).length})
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Content */}
