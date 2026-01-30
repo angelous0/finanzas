@@ -624,9 +624,8 @@ export default function OrdenesCompra() {
                           searchPlaceholder="Buscar proveedor..."
                           displayKey="nombre"
                           valueKey="id"
-                          allowCreate={true}
                           onCreateNew={handleCreateProveedor}
-                          createLabel="+ Crear nuevo proveedor"
+                          createNewLabel="+ Crear nuevo proveedor"
                         />
                       </div>
                       <div className="form-group">
