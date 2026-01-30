@@ -588,49 +588,115 @@ export const FacturasProveedor = () => {
               <table className="data-table" data-testid="facturas-table">
                 <thead>
                   <tr>
-                    <th>Número</th>
-                    <th>Proveedor</th>
                     <th>Fecha</th>
-                    <th>Vencimiento</th>
+                    <th>Nro. Doc</th>
+                    <th>Proveedor / Beneficiario</th>
                     <th className="text-right">Total</th>
-                    <th className="text-right">Saldo</th>
+                    <th className="text-right">Pagado</th>
                     <th>Estado</th>
-                    <th className="text-center">Acciones</th>
+                    <th className="text-right">Saldo CxP</th>
+                    <th className="text-center" style={{ minWidth: '200px' }}>Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {facturas.map((factura) => (
-                    <tr key={factura.id} data-testid={`factura-row-${factura.id}`}>
-                      <td style={{ fontWeight: 500 }}>{factura.numero}</td>
-                      <td>{factura.proveedor_nombre || factura.beneficiario_nombre || '-'}</td>
-                      <td>{formatDate(factura.fecha_factura)}</td>
-                      <td>{formatDate(factura.fecha_vencimiento)}</td>
-                      <td className="text-right">
-                        {formatCurrency(factura.total, factura.moneda_simbolo)}
-                      </td>
-                      <td className="text-right" style={{ 
-                        color: factura.saldo_pendiente > 0 ? '#EF4444' : '#22C55E',
-                        fontWeight: 500
-                      }}>
-                        {formatCurrency(factura.saldo_pendiente, factura.moneda_simbolo)}
-                      </td>
-                      <td>
-                        <span className={estadoBadge(factura.estado)}>
-                          {factura.estado}
-                        </span>
-                      </td>
-                      <td className="text-center">
-                        <button 
-                          className="btn btn-outline btn-sm btn-icon"
-                          onClick={() => handleDelete(factura.id)}
-                          title="Eliminar"
-                          data-testid={`delete-factura-${factura.id}`}
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
+                  {facturas.map((factura) => {
+                    const saldo = parseFloat(factura.saldo_pendiente) || 0;
+                    const total = parseFloat(factura.total) || 0;
+                    const pagado = total - saldo;
+                    const puedeGenerarLetras = factura.estado === 'pendiente' && saldo > 0;
+                    const puedePagar = (factura.estado === 'pendiente' || factura.estado === 'parcial') && saldo > 0;
+                    
+                    return (
+                      <tr key={factura.id} data-testid={`factura-row-${factura.id}`}>
+                        <td>{formatDate(factura.fecha_factura)}</td>
+                        <td style={{ fontWeight: 500, fontFamily: "'JetBrains Mono', monospace" }}>
+                          {factura.numero}
+                        </td>
+                        <td>{factura.proveedor_nombre || factura.beneficiario_nombre || '-'}</td>
+                        <td className="text-right" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                          {formatCurrency(total, factura.moneda_simbolo)}
+                        </td>
+                        <td className="text-right" style={{ fontFamily: "'JetBrains Mono', monospace", color: '#22C55E' }}>
+                          {formatCurrency(pagado, factura.moneda_simbolo)}
+                        </td>
+                        <td>
+                          <span className={estadoBadge(factura.estado)}>
+                            {factura.estado}
+                          </span>
+                        </td>
+                        <td className="text-right" style={{ 
+                          fontFamily: "'JetBrains Mono', monospace",
+                          color: saldo > 0 ? '#EF4444' : '#22C55E',
+                          fontWeight: 500
+                        }}>
+                          {formatCurrency(saldo, factura.moneda_simbolo)}
+                        </td>
+                        <td>
+                          <div style={{ display: 'flex', gap: '0.25rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+                            {/* Botón Pagar - Solo si puede pagar y NO está canjeado */}
+                            {puedePagar && factura.estado !== 'canjeado' && (
+                              <button 
+                                className="btn btn-success btn-sm"
+                                onClick={() => handleOpenPago(factura)}
+                                title="Registrar Pago"
+                                data-testid={`pagar-factura-${factura.id}`}
+                              >
+                                <DollarSign size={14} />
+                                Pagar
+                              </button>
+                            )}
+                            
+                            {/* Botón Generar Letras - Solo si está pendiente */}
+                            {puedeGenerarLetras && (
+                              <button 
+                                className="btn btn-info btn-sm"
+                                onClick={() => handleOpenLetras(factura)}
+                                title="Canjear por Letras"
+                                data-testid={`letras-factura-${factura.id}`}
+                              >
+                                <FileSpreadsheet size={14} />
+                                Letras
+                              </button>
+                            )}
+                            
+                            {/* Botón Ver */}
+                            <button 
+                              className="btn btn-outline btn-sm btn-icon"
+                              onClick={() => handleView(factura)}
+                              title="Ver detalles"
+                              data-testid={`ver-factura-${factura.id}`}
+                            >
+                              <Eye size={14} />
+                            </button>
+                            
+                            {/* Botón Editar - Solo si no está pagado o canjeado */}
+                            {factura.estado !== 'pagado' && factura.estado !== 'canjeado' && (
+                              <button 
+                                className="btn btn-outline btn-sm btn-icon"
+                                onClick={() => handleEdit(factura)}
+                                title="Editar"
+                                data-testid={`editar-factura-${factura.id}`}
+                              >
+                                <Edit2 size={14} />
+                              </button>
+                            )}
+                            
+                            {/* Botón Eliminar - Solo si está pendiente */}
+                            {factura.estado === 'pendiente' && (
+                              <button 
+                                className="btn btn-outline btn-sm btn-icon btn-danger"
+                                onClick={() => handleDelete(factura.id)}
+                                title="Eliminar"
+                                data-testid={`delete-factura-${factura.id}`}
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             )}
