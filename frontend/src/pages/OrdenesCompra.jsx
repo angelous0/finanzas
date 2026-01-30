@@ -882,7 +882,7 @@ export default function OrdenesCompra() {
                         const subtotal = (parseFloat(linea.cantidad) || 0) * (parseFloat(linea.precio_unitario) || 0);
                         const articuloSeleccionado = articulos.find(a => String(a.id) === String(linea.articulo_id));
                         const filteredArts = getFilteredArticulos(index);
-                        const isDropdownOpen = articuloSearchTerm[index] !== undefined && articuloSearchTerm[index] !== '';
+                        const isDropdownOpen = articuloDropdownOpen[index] === true;
                         
                         return (
                           <tr key={index}>
@@ -895,16 +895,28 @@ export default function OrdenesCompra() {
                                   <input
                                     type="text"
                                     className="combo-input"
-                                    placeholder={articuloSeleccionado ? '' : 'Buscar artículo...'}
-                                    value={articuloSearchTerm[index] || (articuloSeleccionado ? articuloSeleccionado.nombre : '')}
-                                    onChange={(e) => setArticuloSearchTerm(prev => ({ ...prev, [index]: e.target.value }))}
-                                    onFocus={() => setArticuloSearchTerm(prev => ({ ...prev, [index]: '' }))}
+                                    placeholder={articuloSeleccionado ? articuloSeleccionado.nombre : 'Buscar artículo...'}
+                                    value={articuloSearchTerm[index] || ''}
+                                    onChange={(e) => {
+                                      setArticuloSearchTerm(prev => ({ ...prev, [index]: e.target.value }));
+                                      setArticuloDropdownOpen(prev => ({ ...prev, [index]: true }));
+                                    }}
+                                    onFocus={() => {
+                                      setArticuloSearchTerm(prev => ({ ...prev, [index]: '' }));
+                                      setArticuloDropdownOpen(prev => ({ ...prev, [index]: true }));
+                                    }}
+                                    onBlur={() => {
+                                      // Delay to allow click on dropdown item
+                                      setTimeout(() => {
+                                        setArticuloDropdownOpen(prev => ({ ...prev, [index]: false }));
+                                      }, 200);
+                                    }}
                                   />
-                                  <ChevronDown size={14} className="combo-chevron" />
+                                  <ChevronDown size={14} className="combo-chevron" style={{ transform: isDropdownOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
                                 </div>
                                 
                                 {/* Dropdown */}
-                                {(articuloSearchTerm[index] !== undefined) && (
+                                {isDropdownOpen && (
                                   <div className="articulo-combo-dropdown">
                                     {filteredArts.length === 0 ? (
                                       <div className="combo-empty">No se encontraron artículos</div>
@@ -913,13 +925,11 @@ export default function OrdenesCompra() {
                                         <div
                                           key={a.id}
                                           className={`combo-option ${String(a.id) === String(linea.articulo_id) ? 'selected' : ''}`}
+                                          onMouseDown={(e) => e.preventDefault()}
                                           onClick={() => {
                                             handleSelectArticulo(index, a.id);
-                                            setArticuloSearchTerm(prev => {
-                                              const newState = { ...prev };
-                                              delete newState[index];
-                                              return newState;
-                                            });
+                                            setArticuloSearchTerm(prev => ({ ...prev, [index]: '' }));
+                                            setArticuloDropdownOpen(prev => ({ ...prev, [index]: false }));
                                           }}
                                         >
                                           {a.codigo && <span className="combo-code">[{a.codigo}]</span>}
