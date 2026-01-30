@@ -122,7 +122,9 @@ export const Adelantos = () => {
       monto: '',
       fecha: new Date().toISOString().split('T')[0],
       motivo: '',
-      cuenta_financiera_id: ''
+      pagar: true,
+      cuenta_financiera_id: cuentas.length > 0 ? cuentas[0].id : '',
+      medio_pago: 'efectivo'
     });
   };
 
