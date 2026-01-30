@@ -2287,76 +2287,90 @@ input[type="number"] {
 
 /* Summary Cards - Used in Planilla and Adelantos */
 .summary-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 1rem;
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 1rem !important;
+  width: 100%;
 }
 
-.summary-card {
-  background: #fff;
-  border-radius: 12px;
-  padding: 1.25rem;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  border: 1px solid var(--border);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+.summary-cards > .summary-card {
+  background: #fff !important;
+  border-radius: 12px !important;
+  padding: 1.25rem !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 1rem !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+  min-height: auto !important;
 }
 
-.summary-card-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+.summary-cards > .summary-card > .summary-card-icon {
+  width: 48px !important;
+  height: 48px !important;
+  min-width: 48px !important;
+  max-width: 48px !important;
+  border-radius: 12px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
 }
 
-.summary-card-content {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  min-width: 0;
+.summary-cards > .summary-card > .summary-card-content {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.25rem !important;
+  min-width: 0 !important;
+  flex: 1 !important;
 }
 
 .summary-card-label {
-  font-size: 0.8125rem;
-  color: var(--muted);
-  font-weight: 500;
+  font-size: 0.8125rem !important;
+  color: var(--muted) !important;
+  font-weight: 500 !important;
 }
 
 .summary-card-value {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #1e293b;
-  line-height: 1.2;
+  font-size: 1.5rem !important;
+  font-weight: 700 !important;
+  color: #1e293b !important;
+  line-height: 1.2 !important;
 }
 
 .summary-card-value.currency-display {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 1.25rem;
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 1.25rem !important;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .summary-cards {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .summary-cards {
+    grid-template-columns: 1fr !important;
   }
   
-  .summary-card {
-    padding: 1rem;
+  .summary-cards > .summary-card {
+    padding: 1rem !important;
   }
   
-  .summary-card-icon {
-    width: 40px;
-    height: 40px;
+  .summary-cards > .summary-card > .summary-card-icon {
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+    max-width: 40px !important;
   }
   
   .summary-card-value {
-    font-size: 1.25rem;
+    font-size: 1.25rem !important;
   }
   
   .summary-card-value.currency-display {
-    font-size: 1.125rem;
+    font-size: 1.125rem !important;
   }
 }
