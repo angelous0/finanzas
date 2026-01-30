@@ -643,12 +643,14 @@ class BancoMovRaw(BaseModel):
     id: int
     cuenta_financiera_id: Optional[int] = None
     banco: Optional[str] = None
+    banco_excel: Optional[str] = None
     fecha: Optional[date] = None
     descripcion: Optional[str] = None
     referencia: Optional[str] = None
-    cargo: Optional[float] = None
-    abono: Optional[float] = None
-    saldo: Optional[float] = None
+    monto: Optional[float] = None
+    cargo: Optional[float] = None  # Keep for backward compatibility
+    abono: Optional[float] = None  # Keep for backward compatibility
+    saldo: Optional[float] = None  # Keep for backward compatibility
     procesado: bool = False
     created_at: Optional[datetime] = None
 
