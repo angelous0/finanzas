@@ -2161,11 +2161,11 @@ async def create_planilla(data: PlanillaCreate):
             row = await conn.fetchrow("""
                 INSERT INTO finanzas2.cont_planilla 
                 (periodo, fecha_inicio, fecha_fin, total_bruto, total_adelantos, 
-                 total_descuentos, total_neto, estado, notas)
-                VALUES ($1, $2, $3, $4, $5, $6, $7, 'borrador', $8)
+                 total_descuentos, total_neto, estado)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, 'borrador')
                 RETURNING *
             """, data.periodo, data.fecha_inicio, data.fecha_fin, total_bruto,
-                total_adelantos, total_descuentos, total_neto, data.notas)
+                total_adelantos, total_descuentos, total_neto)
             
             planilla_id = row['id']
             
