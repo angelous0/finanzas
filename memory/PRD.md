@@ -67,10 +67,13 @@ Create a QuickBooks-like system for treasury, control, and minimal accounting ca
 - Print functionality pending
 - Conversion to invoice pending
 
-### 6. Bills of Exchange (Letras) 🔴 NOT IMPLEMENTED
+### 6. Bills of Exchange (Letras) ✅ COMPLETE
 - `cont_letra` table exists
-- Generate from invoices pending
-- Change invoice status to "CANJEADO" pending
+- Generate from invoices ✅
+- Custom amounts/dates before creation ✅
+- Change invoice status to "CANJEADO" ✅
+- Undo canje (reverse) ✅
+- View letras linked to invoice ✅
 
 ### 7. Expenses (Gastos) 🔴 NOT IMPLEMENTED
 - `cont_gasto` table exists
