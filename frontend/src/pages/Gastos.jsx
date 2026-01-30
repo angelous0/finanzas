@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, FileText, Trash2, Eye, X, DollarSign } from 'lucide-react';
+import { Plus, FileText, Trash2, Eye, X, DollarSign, Download, Printer } from 'lucide-react';
 import { toast } from 'sonner';
 import { 
   getGastos, 
-  createGasto, 
+  createGasto,
+  deleteGasto,
   getProveedores, 
   getMonedas, 
   getCategorias,
