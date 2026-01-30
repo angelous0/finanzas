@@ -2168,18 +2168,28 @@ async def create_planilla(data: PlanillaCreate):
                 total_adelantos, total_descuentos, total_neto)
             
             planilla_id = row['id']
+            planilla_dict = dict(row)
+            detalles_list = []
             
             for detalle in data.detalles:
                 neto_pagar = detalle.salario_base + detalle.bonificaciones - detalle.adelantos - detalle.otros_descuentos
-                await conn.execute("""
+                detalle_row = await conn.fetchrow("""
                     INSERT INTO finanzas2.cont_planilla_detalle 
                     (planilla_id, empleado_id, salario_base, bonificaciones, adelantos, 
                      otros_descuentos, neto_pagar)
                     VALUES ($1, $2, $3, $4, $5, $6, $7)
+                    RETURNING *
                 """, planilla_id, detalle.empleado_id, detalle.salario_base, detalle.bonificaciones,
                     detalle.adelantos, detalle.otros_descuentos, neto_pagar)
+                
+                # Get employee name
+                emp = await conn.fetchrow("SELECT nombre FROM finanzas2.cont_tercero WHERE id = $1", detalle.empleado_id)
+                detalle_dict = dict(detalle_row)
+                detalle_dict['empleado_nombre'] = emp['nombre'] if emp else None
+                detalles_list.append(detalle_dict)
             
-            return await get_planilla(planilla_id)
+            planilla_dict['detalles'] = detalles_list
+            return planilla_dict
 
 async def get_planilla(id: int) -> dict:
     pool = await get_pool()
