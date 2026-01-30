@@ -40,6 +40,8 @@ export const FacturasProveedor = () => {
   const [showDetallesArticulo, setShowDetallesArticulo] = useState(true);
   const [inventario, setInventario] = useState([]);
   const [modelosCortes, setModelosCortes] = useState([]);
+  const [showProveedorModal, setShowProveedorModal] = useState(false);
+  const [nuevoProveedorNombre, setNuevoProveedorNombre] = useState('');
   
   // Filtros
   const [filtroEstado, setFiltroEstado] = useState('');
