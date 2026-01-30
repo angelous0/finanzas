@@ -2585,7 +2585,11 @@ async def sync_ventas_pos(company: str = "ambission", days_back: int = 30):
                     company_id = order['company_id'][0] if isinstance(order.get('company_id'), list) else order.get('company_id')
                     company_name = order['company_id'][1] if isinstance(order.get('company_id'), list) else None
                     
+                    # x_pagos: convert False to None or empty string
                     x_pagos = order.get('x_pagos')
+                    if x_pagos == False or x_pagos == 'False':
+                        x_pagos = None
+                    
                     quantity_total = order.get('quantity_pos_order')
                     amount_total = order.get('amount_total')
                     state = order.get('state')
@@ -2594,14 +2598,26 @@ async def sync_ventas_pos(company: str = "ambission", days_back: int = 30):
                     reserva_facturada = order.get('x_reserva_facturada', 0)
                     is_cancel = order.get('is_cancel', False)
                     
-                    # order_cancel is VARCHAR, convert False to None
-                    order_cancel = order.get('order_cancel')
-                    if order_cancel == False or order_cancel == 'False':
+                    # order_cancel: can be False, string, or [id, name] list
+                    order_cancel_raw = order.get('order_cancel')
+                    if order_cancel_raw == False or order_cancel_raw == 'False':
                         order_cancel = None
+                    elif isinstance(order_cancel_raw, list) and len(order_cancel_raw) > 1:
+                        order_cancel = order_cancel_raw[1]  # Use the name part
+                    else:
+                        order_cancel = order_cancel_raw
                     
                     reserva = order.get('reserva', False)
                     is_credit = order.get('is_credit', False)
-                    reserva_use_id = order.get('reserva_use_id')
+                    
+                    # reserva_use_id: can be False, int, or [id, name] list
+                    reserva_use_id_raw = order.get('reserva_use_id')
+                    if reserva_use_id_raw == False or reserva_use_id_raw == 'False':
+                        reserva_use_id = None
+                    elif isinstance(reserva_use_id_raw, list) and len(reserva_use_id_raw) > 0:
+                        reserva_use_id = reserva_use_id_raw[0]  # Use the ID part
+                    else:
+                        reserva_use_id = reserva_use_id_raw
                     
                     # Check if already exists
                     existing = await conn.fetchval("""
