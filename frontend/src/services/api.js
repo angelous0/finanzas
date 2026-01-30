@@ -1,0 +1,146 @@
+import axios from 'axios';
+
+const API_URL = process.env.REACT_APP_BACKEND_URL || '';
+const API = `${API_URL}/api`;
+
+const api = axios.create({
+  baseURL: API,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+// Dashboard
+export const getDashboardKPIs = () => api.get('/dashboard/kpis');
+
+// Empresas
+export const getEmpresas = () => api.get('/empresas');
+export const createEmpresa = (data) => api.post('/empresas', data);
+export const updateEmpresa = (id, data) => api.put(`/empresas/${id}`, data);
+export const deleteEmpresa = (id) => api.delete(`/empresas/${id}`);
+
+// Monedas
+export const getMonedas = () => api.get('/monedas');
+export const createMoneda = (data) => api.post('/monedas', data);
+export const deleteMoneda = (id) => api.delete(`/monedas/${id}`);
+
+// Categorias
+export const getCategorias = (tipo) => api.get('/categorias', { params: { tipo } });
+export const createCategoria = (data) => api.post('/categorias', data);
+export const updateCategoria = (id, data) => api.put(`/categorias/${id}`, data);
+export const deleteCategoria = (id) => api.delete(`/categorias/${id}`);
+
+// Centros de Costo
+export const getCentrosCosto = () => api.get('/centros-costo');
+export const createCentroCosto = (data) => api.post('/centros-costo', data);
+export const deleteCentroCosto = (id) => api.delete(`/centros-costo/${id}`);
+
+// Lineas de Negocio
+export const getLineasNegocio = () => api.get('/lineas-negocio');
+export const createLineaNegocio = (data) => api.post('/lineas-negocio', data);
+export const deleteLineaNegocio = (id) => api.delete(`/lineas-negocio/${id}`);
+
+// Cuentas Financieras
+export const getCuentasFinancieras = (tipo) => api.get('/cuentas-financieras', { params: { tipo } });
+export const createCuentaFinanciera = (data) => api.post('/cuentas-financieras', data);
+export const updateCuentaFinanciera = (id, data) => api.put(`/cuentas-financieras/${id}`, data);
+export const deleteCuentaFinanciera = (id) => api.delete(`/cuentas-financieras/${id}`);
+
+// Terceros (Proveedores, Clientes, Empleados)
+export const getTerceros = (params) => api.get('/terceros', { params });
+export const getTercero = (id) => api.get(`/terceros/${id}`);
+export const createTercero = (data) => api.post('/terceros', data);
+export const updateTercero = (id, data) => api.put(`/terceros/${id}`, data);
+export const deleteTercero = (id) => api.delete(`/terceros/${id}`);
+
+export const getProveedores = (search) => api.get('/proveedores', { params: { search } });
+export const getClientes = (search) => api.get('/clientes', { params: { search } });
+export const getEmpleados = (search) => api.get('/empleados', { params: { search } });
+
+// Articulos
+export const getArticulos = (search) => api.get('/articulos', { params: { search } });
+export const createArticulo = (data) => api.post('/articulos', data);
+
+// Ordenes de Compra
+export const getOrdenesCompra = (params) => api.get('/ordenes-compra', { params });
+export const getOrdenCompra = (id) => api.get(`/ordenes-compra/${id}`);
+export const createOrdenCompra = (data) => api.post('/ordenes-compra', data);
+export const updateOrdenCompra = (id, data) => api.put(`/ordenes-compra/${id}`, data);
+export const deleteOrdenCompra = (id) => api.delete(`/ordenes-compra/${id}`);
+export const generarFacturaDesdeOC = (id) => api.post(`/ordenes-compra/${id}/generar-factura`);
+
+// Facturas Proveedor
+export const getFacturasProveedor = (params) => api.get('/facturas-proveedor', { params });
+export const getFacturaProveedor = (id) => api.get(`/facturas-proveedor/${id}`);
+export const createFacturaProveedor = (data) => api.post('/facturas-proveedor', data);
+export const updateFacturaProveedor = (id, data) => api.put(`/facturas-proveedor/${id}`, data);
+export const deleteFacturaProveedor = (id) => api.delete(`/facturas-proveedor/${id}`);
+
+// Pagos
+export const getPagos = (params) => api.get('/pagos', { params });
+export const getPago = (id) => api.get(`/pagos/${id}`);
+export const createPago = (data) => api.post('/pagos', data);
+export const deletePago = (id) => api.delete(`/pagos/${id}`);
+
+// Letras
+export const getLetras = (params) => api.get('/letras', { params });
+export const generarLetras = (data) => api.post('/letras/generar', data);
+export const deleteLetra = (id) => api.delete(`/letras/${id}`);
+
+// Gastos
+export const getGastos = (params) => api.get('/gastos', { params });
+export const getGasto = (id) => api.get(`/gastos/${id}`);
+export const createGasto = (data) => api.post('/gastos', data);
+
+// Adelantos
+export const getAdelantos = (params) => api.get('/adelantos', { params });
+export const createAdelanto = (data) => api.post('/adelantos', data);
+
+// Planillas
+export const getPlanillas = () => api.get('/planillas');
+export const getPlanilla = (id) => api.get(`/planillas/${id}`);
+export const createPlanilla = (data) => api.post('/planillas', data);
+export const pagarPlanilla = (id, cuentaFinancieraId) => 
+  api.post(`/planillas/${id}/pagar?cuenta_financiera_id=${cuentaFinancieraId}`);
+
+// Ventas POS
+export const getVentasPOS = (params) => api.get('/ventas-pos', { params });
+export const syncVentasPOS = (company, days) => 
+  api.post(`/ventas-pos/sync?company=${company}&days_back=${days}`);
+export const confirmarVentaPOS = (id) => api.post(`/ventas-pos/${id}/confirmar`);
+export const marcarCreditoVentaPOS = (id, fechaVencimiento) => 
+  api.post(`/ventas-pos/${id}/credito`, null, { params: { fecha_vencimiento: fechaVencimiento } });
+export const descartarVentaPOS = (id) => api.post(`/ventas-pos/${id}/descartar`);
+
+// CxC
+export const getCxC = (params) => api.get('/cxc', { params });
+
+// CxP
+export const getCxP = (params) => api.get('/cxp', { params });
+
+// Presupuestos
+export const getPresupuestos = (anio) => api.get('/presupuestos', { params: { anio } });
+export const getPresupuesto = (id) => api.get(`/presupuestos/${id}`);
+export const createPresupuesto = (data) => api.post('/presupuestos', data);
+
+// Conciliacion
+export const getConciliaciones = (cuentaFinancieraId) => 
+  api.get('/conciliaciones', { params: { cuenta_financiera_id: cuentaFinancieraId } });
+export const createConciliacion = (data) => api.post('/conciliaciones', data);
+export const getMovimientosBanco = (params) => api.get('/conciliacion/movimientos-banco', { params });
+export const importarExcelBanco = (file, cuentaFinancieraId, banco) => {
+  const formData = new FormData();
+  formData.append('file', file);
+  return api.post(`/conciliacion/importar-excel?cuenta_financiera_id=${cuentaFinancieraId}&banco=${banco}`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+};
+
+// Reportes
+export const getReporteFlujoCaja = (fechaDesde, fechaHasta) => 
+  api.get('/reportes/flujo-caja', { params: { fecha_desde: fechaDesde, fecha_hasta: fechaHasta } });
+export const getReporteEstadoResultados = (fechaDesde, fechaHasta) => 
+  api.get('/reportes/estado-resultados', { params: { fecha_desde: fechaDesde, fecha_hasta: fechaHasta } });
+export const getReporteBalanceGeneral = () => api.get('/reportes/balance-general');
+
+export default api;
