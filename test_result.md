@@ -111,11 +111,14 @@ backend:
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "true"
         agent: "main"
         comment: "Endpoint POST /api/conciliacion/conciliar already exists at line 2998. Takes banco_ids and pago_ids as query params. Updates procesado=TRUE for bank movements and conciliado=TRUE for system payments. Tested via curl successfully."
+      - working: "true"
+        agent: "testing"
+        comment: "COMPREHENSIVE TESTING COMPLETED: ✅ Backend API endpoint working correctly - accepts banco_ids and pago_ids as query params, returns success message with counts. ✅ Database updates verified - bank movements marked as procesado=TRUE, payments marked as conciliado=TRUE. ✅ Fixed Pago model to include conciliado field. ✅ All core functionality working as expected. Minor fix applied: Added conciliado field to Pago model in models.py to ensure API returns reconciliation status."
 
 frontend:
   - task: "Bank Reconciliation - Connect save button to backend"
