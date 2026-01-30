@@ -104,7 +104,7 @@ function App() {
             {/* Bancos y Pagos */}
             <Route path="/cuentas-bancarias" element={<CuentasBancarias />} />
             <Route path="/pagos" element={<Pagos />} />
-            <Route path="/conciliacion" element={<Conciliacion />} />
+            <Route path="/conciliacion" element={<ConciliacionBancaria />} />
             
             {/* Planilla */}
             <Route path="/empleados" element={<Empleados />} />
