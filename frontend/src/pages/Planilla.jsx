@@ -27,6 +27,7 @@ const getEstadoBadge = (estado) => {
 export const Planilla = () => {
   const [planillas, setPlanillas] = useState([]);
   const [empleados, setEmpleados] = useState([]);
+  const [adelantosPendientes, setAdelantosPendientes] = useState([]);
   const [cuentas, setCuentas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -52,20 +53,29 @@ export const Planilla = () => {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [planillasRes, empleadosRes, cuentasRes] = await Promise.all([
+      const [planillasRes, empleadosRes, cuentasRes, adelantosRes] = await Promise.all([
         getPlanillas(),
         getEmpleados(),
-        getCuentasFinancieras()
+        getCuentasFinancieras(),
+        getAdelantos({ descontado: false })
       ]);
       setPlanillas(planillasRes.data);
       setEmpleados(empleadosRes.data);
       setCuentas(cuentasRes.data);
+      setAdelantosPendientes(adelantosRes.data);
     } catch (error) {
       console.error('Error loading data:', error);
       toast.error('Error al cargar datos');
     } finally {
       setLoading(false);
     }
+  };
+
+  // Calculate total pending advances per employee
+  const getAdelantosPorEmpleado = (empleadoId) => {
+    return adelantosPendientes
+      .filter(a => a.empleado_id === empleadoId && !a.descontado)
+      .reduce((sum, a) => sum + (a.monto || 0), 0);
   };
 
   const handleNuevaPlanilla = () => {
