@@ -1,53 +1,85 @@
-import { useEffect } from "react";
-import "@/App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import axios from "axios";
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Toaster } from 'sonner';
+import './App.css';
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
+// Components
+import Sidebar from './components/Sidebar';
 
-const Home = () => {
-  const helloWorldApi = async () => {
-    try {
-      const response = await axios.get(`${API}/`);
-      console.log(response.data.message);
-    } catch (e) {
-      console.error(e, `errored out requesting / api`);
-    }
-  };
-
-  useEffect(() => {
-    helloWorldApi();
-  }, []);
-
-  return (
-    <div>
-      <header className="App-header">
-        <a
-          className="App-link"
-          href="https://emergent.sh"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img src="https://avatars.githubusercontent.com/in/1201222?s=120&u=2686cf91179bbafbc7a71bfbc43004cf9ae1acea&v=4" />
-        </a>
-        <p className="mt-5">Building something incredible ~!</p>
-      </header>
-    </div>
-  );
-};
+// Pages
+import Dashboard from './pages/Dashboard';
+import VentasPOS from './pages/VentasPOS';
+import FacturasProveedor from './pages/FacturasProveedor';
+import OrdenesCompra from './pages/OrdenesCompra';
+import Gastos from './pages/Gastos';
+import Letras from './pages/Letras';
+import PagarFacturas from './pages/PagarFacturas';
+import CxP from './pages/CxP';
+import CxC from './pages/CxC';
+import CuentasBancarias from './pages/CuentasBancarias';
+import Pagos from './pages/Pagos';
+import Proveedores from './pages/Proveedores';
+import Empleados from './pages/Empleados';
+import Categorias from './pages/Categorias';
+import BalanceGeneral from './pages/BalanceGeneral';
+import { 
+  Clientes, Articulos, LineasNegocio, CentrosCosto, Empresas,
+  Adelantos, Planillas, Presupuestos, Conciliacion, 
+  EstadoResultados, FlujoCaja 
+} from './pages/PlaceholderPages';
 
 function App() {
   return (
-    <div className="App">
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Home />}>
-            <Route index element={<Home />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
-    </div>
+    <Router>
+      <div className="app-layout">
+        <Sidebar />
+        <main className="main-content">
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            
+            {/* Ventas */}
+            <Route path="/ventas-pos" element={<VentasPOS />} />
+            <Route path="/cxc" element={<CxC />} />
+            
+            {/* Proveedores y Egresos */}
+            <Route path="/ordenes-compra" element={<OrdenesCompra />} />
+            <Route path="/facturas-proveedor" element={<FacturasProveedor />} />
+            <Route path="/gastos" element={<Gastos />} />
+            <Route path="/pagar-facturas" element={<PagarFacturas />} />
+            <Route path="/cxp" element={<CxP />} />
+            <Route path="/letras" element={<Letras />} />
+            
+            {/* Bancos y Pagos */}
+            <Route path="/cuentas-bancarias" element={<CuentasBancarias />} />
+            <Route path="/pagos" element={<Pagos />} />
+            <Route path="/conciliacion" element={<Conciliacion />} />
+            
+            {/* Planilla */}
+            <Route path="/empleados" element={<Empleados />} />
+            <Route path="/adelantos" element={<Adelantos />} />
+            <Route path="/planillas" element={<Planillas />} />
+            
+            {/* Presupuestos */}
+            <Route path="/presupuestos" element={<Presupuestos />} />
+            
+            {/* Catálogos */}
+            <Route path="/empresas" element={<Empresas />} />
+            <Route path="/proveedores" element={<Proveedores />} />
+            <Route path="/clientes" element={<Clientes />} />
+            <Route path="/articulos" element={<Articulos />} />
+            <Route path="/categorias" element={<Categorias />} />
+            <Route path="/lineas-negocio" element={<LineasNegocio />} />
+            <Route path="/centros-costo" element={<CentrosCosto />} />
+            
+            {/* Contabilidad */}
+            <Route path="/balance-general" element={<BalanceGeneral />} />
+            <Route path="/estado-resultados" element={<EstadoResultados />} />
+            <Route path="/flujo-caja" element={<FlujoCaja />} />
+          </Routes>
+        </main>
+      </div>
+      <Toaster position="top-right" richColors />
+    </Router>
   );
 }
 
