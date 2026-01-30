@@ -156,12 +156,10 @@ export const FacturasProveedor = () => {
   };
 
   const handleRemoveArticulo = (index) => {
-    if (formData.articulos.length > 1) {
-      setFormData(prev => ({
-        ...prev,
-        articulos: prev.articulos.filter((_, i) => i !== index)
-      }));
-    }
+    setFormData(prev => ({
+      ...prev,
+      articulos: prev.articulos.filter((_, i) => i !== index)
+    }));
   };
 
   const handleDuplicateArticulo = (index) => {
