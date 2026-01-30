@@ -154,8 +154,17 @@ export const ConciliacionBancaria = () => {
       return;
     }
     
-    toast.success('Movimientos conciliados exitosamente');
-    loadMovimientos();
+    try {
+      setLoading(true);
+      await conciliarMovimientos(selectedBanco, selectedSistema);
+      toast.success('Movimientos conciliados exitosamente');
+      await loadMovimientos();
+    } catch (error) {
+      console.error('Error al conciliar:', error);
+      toast.error('Error al guardar la conciliación');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleConciliarAuto = async () => {
