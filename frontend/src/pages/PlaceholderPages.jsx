@@ -33,51 +33,6 @@ export const Articulos = () => (
   </div>
 );
 
-export const LineasNegocio = () => (
-  <div data-testid="lineas-negocio-page">
-    <div className="page-header">
-      <h1 className="page-title">Líneas de Negocio</h1>
-    </div>
-    <div className="page-content">
-      <div className="card">
-        <div className="empty-state">
-          <div className="empty-state-title">Gestión de Líneas</div>
-        </div>
-      </div>
-    </div>
-  </div>
-);
-
-export const CentrosCosto = () => (
-  <div data-testid="centros-costo-page">
-    <div className="page-header">
-      <h1 className="page-title">Centros de Costo</h1>
-    </div>
-    <div className="page-content">
-      <div className="card">
-        <div className="empty-state">
-          <div className="empty-state-title">Gestión de Centros de Costo</div>
-        </div>
-      </div>
-    </div>
-  </div>
-);
-
-export const Empresas = () => (
-  <div data-testid="empresas-page">
-    <div className="page-header">
-      <h1 className="page-title">Empresas</h1>
-    </div>
-    <div className="page-content">
-      <div className="card">
-        <div className="empty-state">
-          <div className="empty-state-title">Gestión de Empresas</div>
-        </div>
-      </div>
-    </div>
-  </div>
-);
-
 export const Adelantos = () => (
   <div data-testid="adelantos-page">
     <div className="page-header">
