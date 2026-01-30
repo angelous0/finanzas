@@ -4,7 +4,7 @@ import {
   LayoutDashboard, ShoppingCart, FileText, Receipt, CreditCard, 
   Building2, Users, Wallet, BarChart3, FileSpreadsheet, Settings,
   ChevronDown, ChevronRight, DollarSign, Landmark, Clock, FolderOpen,
-  Package, Tags, GitBranch, Target
+  Package, Tags, GitBranch, Target, Menu, X, ChevronLeft
 } from 'lucide-react';
 
 const navSections = [
