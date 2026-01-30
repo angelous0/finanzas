@@ -11,7 +11,7 @@ from datetime import datetime, date, timedelta
 from typing import Dict, Any, Optional
 
 class FinanzasAPITester:
-    def __init__(self, base_url="https://treasury-control-1.preview.emergentagent.com/api"):
+    def __init__(self, base_url="https://finanzas-saas.preview.emergentagent.com/api"):
         self.base_url = base_url
         self.session = requests.Session()
         self.session.headers.update({'Content-Type': 'application/json'})
