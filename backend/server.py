@@ -2737,6 +2737,7 @@ async def importar_excel_banco(
 ):
     """Import bank movements from Excel"""
     import io
+    from datetime import datetime as dt
     
     pool = await get_pool()
     
@@ -2752,38 +2753,128 @@ async def importar_excel_banco(
             await conn.execute("SET search_path TO finanzas2, public")
             
             imported = 0
-            for row in ws.iter_rows(min_row=2, values_only=True):  # Skip header
+            
+            # Find header row and skip metadata rows
+            header_row = 1
+            for idx, row in enumerate(ws.iter_rows(min_row=1, max_row=10, values_only=True), 1):
+                if row and any(row):
+                    # Check if this looks like a header (contains date column name)
+                    row_str = ' '.join([str(c or '') for c in row]).lower()
+                    if 'fecha' in row_str or 'f. valor' in row_str:
+                        header_row = idx
+                        break
+            
+            for row in ws.iter_rows(min_row=header_row + 1, values_only=True):
                 if not row or not any(row):
                     continue
                 
-                # Adapt based on bank format
-                # Generic format: fecha, descripcion, referencia, cargo, abono, saldo
-                fecha = row[0] if len(row) > 0 else None
-                descripcion = row[1] if len(row) > 1 else None
-                referencia = row[2] if len(row) > 2 else None
-                cargo = row[3] if len(row) > 3 else None
-                abono = row[4] if len(row) > 4 else None
-                saldo = row[5] if len(row) > 5 else None
+                fecha = None
+                descripcion = None
+                referencia = None
+                cargo = None
+                abono = None
+                saldo = None
                 
-                if isinstance(fecha, datetime):
-                    fecha = fecha.date()
-                
-                await conn.execute("""
-                    INSERT INTO finanzas2.cont_banco_mov_raw 
-                    (cuenta_financiera_id, banco, fecha, descripcion, referencia, cargo, abono, saldo)
-                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-                """, cuenta_financiera_id, banco, fecha, str(descripcion) if descripcion else None,
-                    str(referencia) if referencia else None, 
-                    float(cargo) if cargo else None, 
-                    float(abono) if abono else None, 
-                    float(saldo) if saldo else None)
-                imported += 1
+                try:
+                    if banco == 'BCP':
+                        # BCP: Nº, Fecha, Fecha valuta, Descripción operación, Monto, Saldo
+                        fecha = row[1] if len(row) > 1 else None
+                        descripcion = row[3] if len(row) > 3 else None
+                        monto = row[4] if len(row) > 4 else None
+                        saldo = row[5] if len(row) > 5 else None
+                        referencia = row[7] if len(row) > 7 else None  # Operación - Número
+                        
+                        if monto:
+                            monto_float = float(monto) if not isinstance(monto, str) else float(monto.replace(',', ''))
+                            if monto_float < 0:
+                                cargo = abs(monto_float)
+                            else:
+                                abono = monto_float
+                                
+                    elif banco == 'BBVA':
+                        # BBVA: F. Operación, F. Valor, Código, Nº. Doc., Concepto, Importe, Oficina, Saldo Final
+                        fecha = row[1] if len(row) > 1 else None  # F. Valor
+                        descripcion = row[4] if len(row) > 4 else None  # Concepto
+                        referencia = row[3] if len(row) > 3 else None  # Nº. Doc.
+                        importe = row[5] if len(row) > 5 else None
+                        saldo = row[7] if len(row) > 7 else None
+                        
+                        if importe:
+                            importe_float = float(importe) if not isinstance(importe, str) else float(str(importe).replace(',', ''))
+                            if importe_float < 0:
+                                cargo = abs(importe_float)
+                            else:
+                                abono = importe_float
+                                
+                    elif banco == 'IBK':
+                        # IBK: Nº, Fecha operación, Fecha proceso, Nro operación, Descripción, Canal, Cargo, Abono, Saldo
+                        fecha = row[1] if len(row) > 1 else None  # Fecha de operación
+                        descripcion = row[4] if len(row) > 4 else None
+                        referencia = row[3] if len(row) > 3 else None  # Nro. de operación
+                        cargo = row[6] if len(row) > 6 else None
+                        abono = row[7] if len(row) > 7 else None
+                        saldo = row[8] if len(row) > 8 else None
+                        
+                    else:
+                        # PERSONALIZADO: fecha, descripcion, referencia, cargo, abono, saldo
+                        fecha = row[0] if len(row) > 0 else None
+                        descripcion = row[1] if len(row) > 1 else None
+                        referencia = row[2] if len(row) > 2 else None
+                        cargo = row[3] if len(row) > 3 else None
+                        abono = row[4] if len(row) > 4 else None
+                        saldo = row[5] if len(row) > 5 else None
+                    
+                    # Parse date
+                    if fecha:
+                        if isinstance(fecha, dt):
+                            fecha = fecha.date()
+                        elif isinstance(fecha, str):
+                            # Try different date formats
+                            for fmt in ['%d/%m/%Y', '%d-%m-%Y', '%Y-%m-%d', '%d.%m.%Y']:
+                                try:
+                                    fecha = dt.strptime(fecha.strip(), fmt).date()
+                                    break
+                                except:
+                                    continue
+                    
+                    # Skip rows without valid date
+                    if not fecha:
+                        continue
+                    
+                    # Convert values to float safely
+                    def to_float(val):
+                        if val is None or val == '' or val == '-':
+                            return None
+                        try:
+                            if isinstance(val, (int, float)):
+                                return float(val)
+                            return float(str(val).replace(',', '').replace(' ', ''))
+                        except:
+                            return None
+                    
+                    cargo = to_float(cargo)
+                    abono = to_float(abono)
+                    saldo = to_float(saldo)
+                    
+                    await conn.execute("""
+                        INSERT INTO finanzas2.cont_banco_mov_raw 
+                        (cuenta_financiera_id, banco, fecha, descripcion, referencia, cargo, abono, saldo, procesado)
+                        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, FALSE)
+                    """, cuenta_financiera_id, banco, fecha, 
+                        str(descripcion)[:500] if descripcion else None,
+                        str(referencia)[:100] if referencia else None, 
+                        cargo, abono, saldo)
+                    imported += 1
+                    
+                except Exception as row_error:
+                    logger.warning(f"Error parsing row: {row_error}")
+                    continue
         
-        return {"message": f"Imported {imported} movements", "imported": imported}
+        return {"message": f"Se importaron {imported} movimientos", "imported": imported}
         
     except Exception as e:
         logger.error(f"Error importing Excel: {e}")
-        raise HTTPException(500, f"Error importing: {str(e)}")
+        raise HTTPException(500, f"Error al importar: {str(e)}")
 
 @api_router.get("/conciliacion/movimientos-banco")
 async def list_movimientos_banco(
