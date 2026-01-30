@@ -24,7 +24,7 @@ const estadoBadge = (estado) => {
     pendiente: 'badge badge-warning',
     parcial: 'badge badge-info',
     pagado: 'badge badge-success',
-    canjeado: 'badge badge-neutral',
+    canjeado: 'badge badge-canjeado',
     anulada: 'badge badge-error'
   };
   return badges[estado] || 'badge badge-neutral';
