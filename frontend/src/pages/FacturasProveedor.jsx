@@ -495,10 +495,89 @@ export const FacturasProveedor = () => {
     toast.info('Función de edición en desarrollo');
   };
 
-  // Ver factura
+  // Ver factura - ahora abre el modal de pagos o letras según el estado
   const handleView = (factura) => {
-    // Por ahora solo mostramos info
-    toast.info(`Factura ${factura.numero} - Total: ${formatCurrency(factura.total)}`);
+    if (factura.estado === 'canjeado') {
+      handleVerLetras(factura);
+    } else if (factura.estado === 'pagado' || factura.estado === 'parcial') {
+      handleVerPagos(factura);
+    } else {
+      toast.info(`Factura ${factura.numero} - Total: ${formatCurrency(factura.total)}`);
+    }
+  };
+
+  // Ver pagos de una factura
+  const handleVerPagos = async (factura) => {
+    setFacturaParaVerPagos(factura);
+    setLoadingPagos(true);
+    setShowPagosModal(true);
+    
+    try {
+      const response = await getPagosDeFactura(factura.id);
+      setPagosDeFactura(response.data);
+    } catch (error) {
+      console.error('Error loading pagos:', error);
+      toast.error('Error al cargar pagos');
+    } finally {
+      setLoadingPagos(false);
+    }
+  };
+
+  // Ver letras de una factura canjeada
+  const handleVerLetras = async (factura) => {
+    setFacturaParaVerLetras(factura);
+    setLoadingLetras(true);
+    setShowVerLetrasModal(true);
+    
+    try {
+      const response = await getLetrasDeFactura(factura.id);
+      setLetrasDeFactura(response.data);
+    } catch (error) {
+      console.error('Error loading letras:', error);
+      toast.error('Error al cargar letras');
+    } finally {
+      setLoadingLetras(false);
+    }
+  };
+
+  // Anular un pago
+  const handleAnularPago = async (pagoId) => {
+    if (!window.confirm('¿Está seguro de anular este pago? Se revertirá el saldo de la factura.')) return;
+    
+    try {
+      await deletePago(pagoId);
+      toast.success('Pago anulado exitosamente');
+      
+      // Reload pagos
+      if (facturaParaVerPagos) {
+        const response = await getPagosDeFactura(facturaParaVerPagos.id);
+        setPagosDeFactura(response.data);
+        
+        // If no more pagos, close modal and reload
+        if (response.data.length === 0) {
+          setShowPagosModal(false);
+        }
+      }
+      loadData();
+    } catch (error) {
+      console.error('Error anulando pago:', error);
+      toast.error(error.response?.data?.detail || 'Error al anular pago');
+    }
+  };
+
+  // Deshacer canje de letras
+  const handleDeshacerCanje = async () => {
+    if (!window.confirm('¿Está seguro de deshacer el canje? Se eliminarán todas las letras y la factura volverá a estado pendiente.')) return;
+    
+    try {
+      await deshacerCanjeLetras(facturaParaVerLetras.id);
+      toast.success('Canje deshecho exitosamente');
+      setShowVerLetrasModal(false);
+      loadData();
+    } catch (error) {
+      console.error('Error deshaciendo canje:', error);
+      toast.error(error.response?.data?.detail || 'Error al deshacer canje');
+    }
   };
 
   const resetForm = () => {
