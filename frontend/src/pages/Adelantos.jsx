@@ -15,13 +15,18 @@ const formatDate = (dateStr) => {
   return new Date(dateStr).toLocaleDateString('es-PE');
 };
 
+const getEstadoAdelanto = (adelanto) => {
+  if (adelanto.descontado) return 'descontado';
+  return 'pendiente';
+};
+
 const getEstadoBadge = (estado) => {
   const badges = {
     pendiente: 'badge badge-warning',
     descontado: 'badge badge-success',
     anulado: 'badge badge-danger'
   };
-  return badges[estado] || 'badge';
+  return badges[estado] || 'badge badge-warning';
 };
 
 export const Adelantos = () => {
