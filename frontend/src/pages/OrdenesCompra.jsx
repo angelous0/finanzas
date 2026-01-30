@@ -461,22 +461,24 @@ export default function OrdenesCompra() {
         </div>
       </div>
 
-      {/* Modal Nueva OC */}
+      {/* Modal Nueva/Editar OC */}
       {showModal && (
-        <div className="modal-overlay" onClick={() => setShowModal(false)}>
+        <div className="modal-overlay" onClick={() => { setShowModal(false); setEditingOC(null); }}>
           <div className="modal modal-xl" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '1200px' }}>
             <div className="modal-header" style={{ borderBottom: '1px solid #e2e8f0' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                <button type="button" className="btn btn-ghost btn-sm" onClick={() => setShowModal(false)} style={{ padding: '0.25rem' }}>
+                <button type="button" className="btn btn-ghost btn-sm" onClick={() => { setShowModal(false); setEditingOC(null); }} style={{ padding: '0.25rem' }}>
                   <ArrowLeft size={20} />
                 </button>
                 <div>
-                  <h2 className="modal-title" style={{ margin: 0 }}>Nueva Orden de Compra</h2>
+                  <h2 className="modal-title" style={{ margin: 0 }}>
+                    {editingOC ? `Editar OC ${editingOC.numero}` : 'Nueva Orden de Compra'}
+                  </h2>
                 </div>
               </div>
               <button type="button" className="btn btn-primary" onClick={handleSubmit}>
                 <FileCheck size={16} />
-                Guardar
+                {editingOC ? 'Actualizar' : 'Guardar'}
               </button>
             </div>
             
