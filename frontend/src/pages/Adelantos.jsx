@@ -137,6 +137,36 @@ export const Adelantos = () => {
     setShowViewModal(true);
   };
 
+  const handleOpenPago = (adelanto) => {
+    setSelectedAdelanto(adelanto);
+    setPagoData({
+      cuenta_financiera_id: cuentas.length > 0 ? String(cuentas[0].id) : '',
+      medio_pago: 'efectivo'
+    });
+    setShowPagoModal(true);
+  };
+
+  const handlePagar = async () => {
+    if (!pagoData.cuenta_financiera_id) {
+      toast.error('Seleccione una cuenta financiera');
+      return;
+    }
+    
+    try {
+      await pagarAdelanto(
+        selectedAdelanto.id, 
+        parseInt(pagoData.cuenta_financiera_id),
+        pagoData.medio_pago
+      );
+      toast.success('Pago registrado exitosamente');
+      setShowPagoModal(false);
+      loadData();
+    } catch (error) {
+      console.error('Error paying adelanto:', error);
+      toast.error(error.response?.data?.detail || 'Error al registrar pago');
+    }
+  };
+
   const handleDownloadPDF = (adelanto) => {
     const empleado = empleados.find(e => e.id === adelanto.empleado_id);
     
