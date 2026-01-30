@@ -880,7 +880,22 @@ async def create_orden_compra(data: OCCreate):
                 """, oc_id, linea.articulo_id, linea.descripcion, linea.cantidad, 
                     linea.precio_unitario, linea.igv_aplica, linea_subtotal)
             
-            return await get_orden_compra(oc_id)
+            # Get full OC with joins within transaction
+            oc_row = await conn.fetchrow("""
+                SELECT oc.*, t.nombre as proveedor_nombre, m.codigo as moneda_codigo
+                FROM finanzas2.cont_oc oc
+                LEFT JOIN finanzas2.cont_tercero t ON oc.proveedor_id = t.id
+                LEFT JOIN finanzas2.cont_moneda m ON oc.moneda_id = m.id
+                WHERE oc.id = $1
+            """, oc_id)
+            
+            oc_dict = dict(oc_row)
+            lineas_rows = await conn.fetch("""
+                SELECT * FROM finanzas2.cont_oc_linea WHERE oc_id = $1 ORDER BY id
+            """, oc_id)
+            oc_dict['lineas'] = [dict(l) for l in lineas_rows]
+            
+            return oc_dict
 
 @api_router.put("/ordenes-compra/{id}", response_model=OC)
 async def update_orden_compra(id: int, data: OCUpdate):
