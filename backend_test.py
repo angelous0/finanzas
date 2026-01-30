@@ -254,6 +254,7 @@ class FinanzasAPITester:
         }
         
         success, data, status = self.make_request('POST', 'facturas-proveedor', factura_data)
+        print(f"DEBUG: Factura creation - Status: {status}, Success: {success}, Data: {data}")
         if success and isinstance(data, dict) and 'id' in data:
             factura_id = data['id']
             self.created_ids['facturas'].append(factura_id)
