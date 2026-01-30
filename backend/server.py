@@ -2872,20 +2872,11 @@ async def importar_excel_banco(
         async with pool.acquire() as conn:
             await conn.execute("SET search_path TO finanzas2, public")
             
-            # Ensure banco_excel column exists
-            try:
-                await conn.execute("""
-                    ALTER TABLE finanzas2.cont_banco_mov_raw 
-                    ADD COLUMN IF NOT EXISTS banco_excel VARCHAR(100)
-                """)
-            except:
-                pass
-            
             imported = 0
             updated = 0
             skipped = 0
             
-            # Find header row and skip metadata rows
+            # Find header row
             header_row = 1
             for idx, row in enumerate(ws.iter_rows(min_row=1, max_row=10, values_only=True), 1):
                 if row and any(row):
@@ -2901,63 +2892,52 @@ async def importar_excel_banco(
                 fecha = None
                 descripcion = None
                 referencia = None
-                cargo = None
-                abono = None
-                saldo = None
-                banco_excel = None  # Columna banco del Excel
+                banco_nombre = None
+                monto = None
                 
                 try:
                     if banco == 'BCP':
-                        # BCP: Nº, Fecha, Fecha valuta, Descripción operación, Monto, Saldo, Banco, Operación-Número
                         fecha = row[1] if len(row) > 1 else None
                         descripcion = row[3] if len(row) > 3 else None
-                        monto = row[4] if len(row) > 4 else None
-                        saldo = row[5] if len(row) > 5 else None
-                        banco_excel = row[6] if len(row) > 6 else None  # Columna Banco
-                        referencia = row[7] if len(row) > 7 else None  # Operación - Número
+                        monto_val = row[4] if len(row) > 4 else None
+                        banco_nombre = row[6] if len(row) > 6 else None
+                        referencia = row[7] if len(row) > 7 else None
                         
-                        if monto:
-                            monto_float = float(monto) if not isinstance(monto, str) else float(str(monto).replace(',', ''))
-                            if monto_float < 0:
-                                cargo = abs(monto_float)
-                            else:
-                                abono = monto_float
+                        if monto_val:
+                            monto = float(monto_val) if not isinstance(monto_val, str) else float(str(monto_val).replace(',', ''))
                                 
                     elif banco == 'BBVA':
-                        # BBVA: F. Operación, F. Valor, Código, Nº. Doc., Concepto, Importe, Oficina, Saldo Final
                         fecha = row[1] if len(row) > 1 else None
                         descripcion = row[4] if len(row) > 4 else None
-                        referencia = row[3] if len(row) > 3 else None  # Nº. Doc.
+                        referencia = row[3] if len(row) > 3 else None
                         importe = row[5] if len(row) > 5 else None
-                        banco_excel = row[6] if len(row) > 6 else None  # Oficina (o código banco)
-                        saldo = row[7] if len(row) > 7 else None
+                        banco_nombre = row[6] if len(row) > 6 else None
                         
                         if importe:
-                            importe_float = float(importe) if not isinstance(importe, str) else float(str(importe).replace(',', ''))
-                            if importe_float < 0:
-                                cargo = abs(importe_float)
-                            else:
-                                abono = importe_float
+                            monto = float(importe) if not isinstance(importe, str) else float(str(importe).replace(',', ''))
                                 
                     elif banco == 'IBK':
-                        # IBK: Nº, Fecha operación, Fecha proceso, Nro operación, Descripción, Canal, Cargo, Abono, Saldo
                         fecha = row[1] if len(row) > 1 else None
                         descripcion = row[4] if len(row) > 4 else None
-                        referencia = row[3] if len(row) > 3 else None  # Nro. de operación
-                        banco_excel = row[5] if len(row) > 5 else None  # Canal
+                        referencia = row[3] if len(row) > 3 else None
+                        banco_nombre = row[5] if len(row) > 5 else None
                         cargo = row[6] if len(row) > 6 else None
                         abono = row[7] if len(row) > 7 else None
-                        saldo = row[8] if len(row) > 8 else None
                         
+                        if cargo:
+                            cargo_val = float(cargo) if not isinstance(cargo, str) else float(str(cargo).replace(',', ''))
+                            monto = -cargo_val
+                        elif abono:
+                            abono_val = float(abono) if not isinstance(abono, str) else float(str(abono).replace(',', ''))
+                            monto = abono_val
+                            
                     else:
-                        # PERSONALIZADO: fecha, descripcion, referencia, banco_excel, cargo, abono, saldo
+                        # PERSONALIZADO
                         fecha = row[0] if len(row) > 0 else None
                         descripcion = row[1] if len(row) > 1 else None
                         referencia = row[2] if len(row) > 2 else None
-                        banco_excel = row[3] if len(row) > 3 else None
-                        cargo = row[4] if len(row) > 4 else None
-                        abono = row[5] if len(row) > 5 else None
-                        saldo = row[6] if len(row) > 6 else None
+                        banco_nombre = row[3] if len(row) > 3 else None
+                        monto = row[4] if len(row) > 4 else None
                     
                     # Parse date
                     if fecha:
@@ -2973,69 +2953,44 @@ async def importar_excel_banco(
                                 except:
                                     continue
                     
-                    # Skip rows without valid date
-                    if not fecha:
+                    # Skip rows without valid date or monto
+                    if not fecha or monto is None:
                         continue
                     
-                    # Convert values to float safely
-                    def to_float(val):
-                        if val is None or val == '' or val == '-':
-                            return None
-                        try:
-                            if isinstance(val, (int, float)):
-                                return float(val)
-                            return float(str(val).replace(',', '').replace(' ', ''))
-                        except:
-                            return None
+                    # Clean fields
+                    ref_clean = str(referencia).strip()[:200] if referencia else ''
+                    banco_clean = str(banco_nombre).strip()[:100] if banco_nombre else banco
+                    desc_clean = str(descripcion).strip()[:500] if descripcion else ''
                     
-                    cargo = to_float(cargo)
-                    abono = to_float(abono)
-                    saldo = to_float(saldo)
-                    
-                    # Clean referencia for unique key
-                    ref_clean = str(referencia).strip() if referencia else ''
-                    banco_excel_clean = str(banco_excel).strip()[:100] if banco_excel else ''
-                    
-                    # Generate unique key: banco + referencia
-                    unique_key = f"{banco}_{ref_clean}"
-                    
-                    if not ref_clean:
-                        # Si no hay referencia, generar una basada en fecha y monto
-                        unique_key = f"{banco}_{fecha}_{cargo or 0}_{abono or 0}"
-                    
-                    # Check if exists and if it's already conciliated
+                    # Check if exists and if it's already reconciled
                     existing = await conn.fetchrow("""
                         SELECT id, procesado FROM finanzas2.cont_banco_mov_raw 
                         WHERE cuenta_financiera_id = $1 
-                          AND banco = $2 
+                          AND banco_excel = $2
                           AND COALESCE(referencia, '') = $3
                           AND fecha = $4
-                    """, cuenta_financiera_id, banco, ref_clean, fecha)
+                    """, cuenta_financiera_id, banco_clean, ref_clean, fecha)
                     
                     if existing:
                         if existing['procesado']:
-                            # Already conciliated, skip
                             skipped += 1
                             continue
                         else:
                             # Update existing record
                             await conn.execute("""
                                 UPDATE finanzas2.cont_banco_mov_raw 
-                                SET descripcion = $1, cargo = $2, abono = $3, saldo = $4, banco_excel = $5
-                                WHERE id = $6
-                            """, str(descripcion)[:500] if descripcion else None,
-                                cargo, abono, saldo, banco_excel_clean, existing['id'])
+                                SET descripcion = $1, monto = $2
+                                WHERE id = $3
+                            """, desc_clean, monto, existing['id'])
                             updated += 1
                     else:
                         # Insert new record
                         await conn.execute("""
                             INSERT INTO finanzas2.cont_banco_mov_raw 
-                            (cuenta_financiera_id, banco, fecha, descripcion, referencia, cargo, abono, saldo, banco_excel, procesado)
-                            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, FALSE)
-                        """, cuenta_financiera_id, banco, fecha, 
-                            str(descripcion)[:500] if descripcion else None,
-                            ref_clean if ref_clean else None, 
-                            cargo, abono, saldo, banco_excel_clean)
+                            (cuenta_financiera_id, banco, fecha, descripcion, referencia, monto, banco_excel, procesado)
+                            VALUES ($1, $2, $3, $4, $5, $6, $7, FALSE)
+                        """, cuenta_financiera_id, banco, fecha, desc_clean, 
+                            ref_clean if ref_clean else None, monto, banco_clean)
                         imported += 1
                     
                 except Exception as row_error:
