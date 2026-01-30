@@ -385,6 +385,15 @@ export const Adelantos = () => {
                       </td>
                       <td>
                         <div className="actions-row">
+                          {!adelanto.pagado && !adelanto.descontado && (
+                            <button 
+                              className="action-btn action-success"
+                              onClick={() => handleOpenPago(adelanto)}
+                              title="Registrar Pago"
+                            >
+                              <DollarSign size={15} />
+                            </button>
+                          )}
                           <button 
                             className="action-btn"
                             onClick={() => handleView(adelanto)}
