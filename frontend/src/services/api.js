@@ -87,12 +87,17 @@ export const deleteFacturaProveedor = (id) => api.delete(`/facturas-proveedor/${
 export const getPagos = (params) => api.get('/pagos', { params });
 export const getPago = (id) => api.get(`/pagos/${id}`);
 export const createPago = (data) => api.post('/pagos', data);
+export const updatePago = (id, data) => api.put(`/pagos/${id}`, data);
 export const deletePago = (id) => api.delete(`/pagos/${id}`);
+export const getPagosDeFactura = (facturaId) => api.get(`/facturas-proveedor/${facturaId}/pagos`);
 
 // Letras
 export const getLetras = (params) => api.get('/letras', { params });
+export const getLetra = (id) => api.get(`/letras/${id}`);
 export const generarLetras = (data) => api.post('/letras/generar', data);
 export const deleteLetra = (id) => api.delete(`/letras/${id}`);
+export const getLetrasDeFactura = (facturaId) => api.get(`/facturas-proveedor/${facturaId}/letras`);
+export const deshacerCanjeLetras = (facturaId) => api.post(`/facturas-proveedor/${facturaId}/deshacer-canje`);
 
 // Gastos
 export const getGastos = (params) => api.get('/gastos', { params });
