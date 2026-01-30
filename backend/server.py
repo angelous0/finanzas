@@ -2995,6 +2995,48 @@ async def list_conciliaciones(cuenta_financiera_id: Optional[int] = None):
         
         return result
 
+@api_router.post("/conciliacion/conciliar")
+async def conciliar_movimientos(
+    banco_ids: List[int] = Query(...),
+    pago_ids: List[int] = Query(...)
+):
+    """Mark bank movements and system payments as reconciled"""
+    pool = await get_pool()
+    async with pool.acquire() as conn:
+        await conn.execute("SET search_path TO finanzas2, public")
+        
+        async with conn.transaction():
+            # Mark bank movements as processed
+            if banco_ids:
+                await conn.execute("""
+                    UPDATE finanzas2.cont_banco_mov_raw 
+                    SET procesado = TRUE 
+                    WHERE id = ANY($1::int[])
+                """, banco_ids)
+            
+            # Mark payments as reconciled (add conciliado field if needed)
+            if pago_ids:
+                # First ensure the column exists
+                try:
+                    await conn.execute("""
+                        ALTER TABLE finanzas2.cont_pago 
+                        ADD COLUMN IF NOT EXISTS conciliado BOOLEAN DEFAULT FALSE
+                    """)
+                except:
+                    pass
+                
+                await conn.execute("""
+                    UPDATE finanzas2.cont_pago 
+                    SET conciliado = TRUE 
+                    WHERE id = ANY($1::int[])
+                """, pago_ids)
+        
+        return {
+            "message": f"Conciliados {len(banco_ids)} movimientos del banco y {len(pago_ids)} del sistema",
+            "banco_conciliados": len(banco_ids),
+            "sistema_conciliados": len(pago_ids)
+        }
+
 @api_router.post("/conciliaciones", response_model=Conciliacion)
 async def create_conciliacion(data: ConciliacionCreate):
     pool = await get_pool()
