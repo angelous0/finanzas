@@ -1250,7 +1250,13 @@ input[type="number"] {
 /* Table scroll wrapper for horizontal scroll */
 .table-scroll-wrapper {
   overflow-x: auto;
+  overflow-y: visible;
   -webkit-overflow-scrolling: touch;
+}
+
+/* Override overflow when dropdown is open */
+.table-scroll-wrapper:has(.table-search-select.open) {
+  overflow: visible;
 }
 
 .factura-section-header {
