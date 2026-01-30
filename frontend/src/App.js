@@ -33,6 +33,7 @@ import Empresas from './pages/Empresas';
 import Planilla from './pages/Planilla';
 import Adelantos from './pages/Adelantos';
 import ConciliacionBancaria from './pages/ConciliacionBancaria';
+import { HistorialConciliaciones } from './pages/HistorialConciliaciones';
 import { 
   Clientes, Articulos,
   Presupuestos,
@@ -105,6 +106,7 @@ function App() {
             <Route path="/cuentas-bancarias" element={<CuentasBancarias />} />
             <Route path="/pagos" element={<Pagos />} />
             <Route path="/conciliacion" element={<ConciliacionBancaria />} />
+            <Route path="/historial-conciliaciones" element={<HistorialConciliaciones />} />
             
             {/* Planilla */}
             <Route path="/empleados" element={<Empleados />} />
