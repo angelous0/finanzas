@@ -643,7 +643,50 @@ export const FacturasProveedor = () => {
       <div className="page-content">
         {/* Filtros */}
         <div className="filters-bar">
-          <div className="form-group" style={{ marginBottom: 0 }}>
+          <div className="form-group" style={{ marginBottom: 0, flex: '0 0 150px' }}>
+            <input
+              type="text"
+              className="form-input filter-input"
+              placeholder="Nº Documento..."
+              value={filtroNumero}
+              onChange={(e) => setFiltroNumero(e.target.value)}
+              data-testid="filtro-numero"
+            />
+          </div>
+          <div className="form-group" style={{ marginBottom: 0, flex: '0 0 180px' }}>
+            <select 
+              className="form-input form-select filter-input"
+              value={filtroProveedorId}
+              onChange={(e) => setFiltroProveedorId(e.target.value)}
+              data-testid="filtro-proveedor"
+            >
+              <option value="">Todos los proveedores</option>
+              {proveedores.map(p => (
+                <option key={p.id} value={p.id}>{p.nombre}</option>
+              ))}
+            </select>
+          </div>
+          <div className="form-group" style={{ marginBottom: 0, flex: '0 0 140px' }}>
+            <input
+              type="date"
+              className="form-input filter-input"
+              value={filtroFechaDesde}
+              onChange={(e) => setFiltroFechaDesde(e.target.value)}
+              title="Fecha desde"
+              data-testid="filtro-fecha-desde"
+            />
+          </div>
+          <div className="form-group" style={{ marginBottom: 0, flex: '0 0 140px' }}>
+            <input
+              type="date"
+              className="form-input filter-input"
+              value={filtroFechaHasta}
+              onChange={(e) => setFiltroFechaHasta(e.target.value)}
+              title="Fecha hasta"
+              data-testid="filtro-fecha-hasta"
+            />
+          </div>
+          <div className="form-group" style={{ marginBottom: 0, flex: '0 0 150px' }}>
             <select 
               className="form-input form-select filter-input"
               value={filtroEstado}
@@ -658,6 +701,22 @@ export const FacturasProveedor = () => {
               <option value="anulada">Anulada</option>
             </select>
           </div>
+          {(filtroNumero || filtroProveedorId || filtroFechaDesde || filtroFechaHasta || filtroEstado) && (
+            <button 
+              className="btn btn-outline btn-sm"
+              onClick={() => {
+                setFiltroNumero('');
+                setFiltroProveedorId('');
+                setFiltroFechaDesde('');
+                setFiltroFechaHasta('');
+                setFiltroEstado('');
+              }}
+              title="Limpiar filtros"
+            >
+              <X size={16} />
+              Limpiar
+            </button>
+          )}
         </div>
 
         {/* Tabla */}
