@@ -79,9 +79,8 @@ export const Empresas = () => {
 
   const resetForm = () => {
     setFormData({
+      nombre: '',
       ruc: '',
-      razon_social: '',
-      nombre_comercial: '',
       direccion: '',
       telefono: '',
       email: ''
