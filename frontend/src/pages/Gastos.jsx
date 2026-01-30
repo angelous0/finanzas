@@ -265,6 +265,139 @@ export default function Gastos() {
     setShowViewModal(true);
   };
 
+  const handleDelete = async (gasto) => {
+    if (!window.confirm(`¿Está seguro de eliminar el gasto ${gasto.numero}?`)) return;
+    
+    try {
+      await deleteGasto(gasto.id);
+      toast.success('Gasto eliminado exitosamente');
+      loadData();
+    } catch (error) {
+      console.error('Error deleting gasto:', error);
+      toast.error(error.response?.data?.detail || 'Error al eliminar gasto');
+    }
+  };
+
+  const handleDownloadPDF = (gasto) => {
+    const proveedor = proveedores.find(p => p.id === gasto.proveedor_id);
+    const moneda = monedas.find(m => m.id === gasto.moneda_id);
+    
+    const pdfContent = `
+      <html>
+      <head>
+        <title>Gasto-${gasto.numero}</title>
+        <style>
+          @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+          * { box-sizing: border-box; margin: 0; padding: 0; }
+          body { font-family: 'Inter', sans-serif; padding: 40px; color: #1e293b; }
+          .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 2px solid #1B4D3E; }
+          .doc-title { font-size: 1.5rem; font-weight: 700; color: #1B4D3E; }
+          .doc-number { font-family: 'JetBrains Mono', monospace; font-size: 1.125rem; font-weight: 600; margin-top: 4px; }
+          .doc-date { font-size: 0.875rem; color: #64748b; margin-top: 4px; }
+          .section { margin-bottom: 24px; }
+          .section-title { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; margin-bottom: 8px; }
+          .info-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+          .info-item label { font-size: 0.75rem; color: #64748b; display: block; }
+          .info-item p { font-size: 0.9375rem; font-weight: 500; }
+          table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+          th { background: #f1f5f9; padding: 10px 12px; text-align: left; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.03em; color: #64748b; border-bottom: 2px solid #e2e8f0; }
+          td { padding: 10px 12px; border-bottom: 1px solid #e2e8f0; font-size: 0.875rem; }
+          .text-right { text-align: right; }
+          .currency { font-family: 'JetBrains Mono', monospace; font-weight: 500; }
+          .totals { margin-top: 24px; display: flex; justify-content: flex-end; }
+          .totals-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px 24px; min-width: 280px; }
+          .totals-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 0.9375rem; }
+          .totals-row.total { border-top: 2px solid #1B4D3E; margin-top: 8px; padding-top: 12px; font-weight: 700; font-size: 1.125rem; }
+          .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #e2e8f0; text-align: center; color: #64748b; font-size: 0.75rem; }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <div>
+            <div class="doc-title">COMPROBANTE DE GASTO</div>
+            <div class="doc-number">${gasto.numero}</div>
+          </div>
+          <div style="text-align: right;">
+            <div class="doc-date">Fecha: ${formatDate(gasto.fecha)}</div>
+            ${gasto.tipo_documento && gasto.numero_documento ? `<div class="doc-date">Doc: ${gasto.tipo_documento.toUpperCase()} ${gasto.numero_documento}</div>` : ''}
+          </div>
+        </div>
+        
+        <div class="section">
+          <div class="section-title">Datos del Beneficiario</div>
+          <div class="info-grid">
+            <div class="info-item">
+              <label>Proveedor / Beneficiario</label>
+              <p>${gasto.proveedor_nombre || gasto.beneficiario_nombre || '-'}</p>
+            </div>
+            <div class="info-item">
+              <label>Moneda</label>
+              <p>${gasto.moneda_codigo || 'PEN'}</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="section">
+          <div class="section-title">Detalle del Gasto</div>
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Categoría</th>
+                <th>Descripción</th>
+                <th class="text-right">Importe</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${(gasto.lineas || []).map((linea, i) => `
+              <tr>
+                <td>${i + 1}</td>
+                <td>${linea.categoria_nombre || '-'}</td>
+                <td>${linea.descripcion || '-'}</td>
+                <td class="text-right currency">${formatCurrency(linea.importe, moneda?.simbolo || 'S/')}</td>
+              </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+        
+        <div class="totals">
+          <div class="totals-box">
+            <div class="totals-row">
+              <span>Subtotal:</span>
+              <span class="currency">${formatCurrency(gasto.subtotal, moneda?.simbolo || 'S/')}</span>
+            </div>
+            <div class="totals-row">
+              <span>IGV (18%):</span>
+              <span class="currency">${formatCurrency(gasto.igv, moneda?.simbolo || 'S/')}</span>
+            </div>
+            <div class="totals-row total">
+              <span>TOTAL:</span>
+              <span class="currency">${formatCurrency(gasto.total, moneda?.simbolo || 'S/')}</span>
+            </div>
+          </div>
+        </div>
+        
+        ${gasto.notas ? `
+        <div class="section" style="margin-top: 24px;">
+          <div class="section-title">Observaciones</div>
+          <p style="font-size: 0.875rem; color: #64748b;">${gasto.notas}</p>
+        </div>` : ''}
+        
+        <div class="footer">
+          <p>Documento generado el ${new Date().toLocaleDateString('es-PE')} | Finanzas 4.0</p>
+        </div>
+      </body>
+      </html>
+    `;
+    
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(pdfContent);
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.onload = () => printWindow.print();
+  };
+
   const totales = calcularTotales();
   const totalPagos = calcularTotalPagos();
   const monedaActual = monedas.find(m => m.id === parseInt(formData.moneda_id));
