@@ -1651,6 +1651,7 @@ input[type="number"] {
   
   .main-content {
     margin-left: 0 !important;
+    padding: 2rem 1.5rem;
   }
 }
 
