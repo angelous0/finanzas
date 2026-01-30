@@ -354,6 +354,155 @@ export const FacturasProveedor = () => {
     }
   };
 
+  // Abrir modal de pago
+  const handleOpenPago = (factura) => {
+    setFacturaParaPago(factura);
+    setPagoData({
+      cuenta_id: cuentasFinancieras[0]?.id || '',
+      medio_pago: 'transferencia',
+      monto: parseFloat(factura.saldo_pendiente) || 0,
+      referencia: ''
+    });
+    setShowPagoModal(true);
+  };
+
+  // Registrar pago
+  const handleRegistrarPago = async () => {
+    if (!pagoData.cuenta_id) {
+      toast.error('Seleccione una cuenta');
+      return;
+    }
+    if (pagoData.monto <= 0) {
+      toast.error('El monto debe ser mayor a 0');
+      return;
+    }
+    
+    try {
+      await createPago({
+        tipo: 'egreso',
+        fecha: new Date().toISOString().split('T')[0],
+        cuenta_financiera_id: parseInt(pagoData.cuenta_id),
+        moneda_id: facturaParaPago.moneda_id || 1,
+        monto_total: parseFloat(pagoData.monto),
+        referencia: pagoData.referencia,
+        detalles: [{
+          cuenta_financiera_id: parseInt(pagoData.cuenta_id),
+          medio_pago: pagoData.medio_pago,
+          monto: parseFloat(pagoData.monto),
+          referencia: pagoData.referencia
+        }],
+        aplicaciones: [{
+          tipo_documento: 'factura',
+          documento_id: facturaParaPago.id,
+          monto_aplicado: parseFloat(pagoData.monto)
+        }]
+      });
+      
+      toast.success('Pago registrado exitosamente');
+      setShowPagoModal(false);
+      loadData();
+    } catch (error) {
+      console.error('Error registrando pago:', error);
+      toast.error(error.response?.data?.detail || 'Error al registrar pago');
+    }
+  };
+
+  // Abrir modal de letras
+  const handleOpenLetras = (factura) => {
+    setFacturaParaLetras(factura);
+    setLetrasConfig({
+      prefijo: 'LT',
+      cantidad: 3,
+      intervalo_dias: 30,
+      fecha_giro: new Date().toISOString().split('T')[0],
+      banco_id: cuentasFinancieras.find(c => c.tipo === 'banco')?.id || cuentasFinancieras[0]?.id || ''
+    });
+    // Generar preview inicial
+    generateLetrasPreview(factura, 3, 30, new Date().toISOString().split('T')[0]);
+    setShowLetrasModal(true);
+  };
+
+  // Generar preview de letras
+  const generateLetrasPreview = (factura, cantidad, intervalo, fechaGiro) => {
+    const saldo = parseFloat(factura?.saldo_pendiente || 0);
+    const montoLetra = saldo / cantidad;
+    const letras = [];
+    
+    for (let i = 0; i < cantidad; i++) {
+      const fechaVenc = new Date(fechaGiro);
+      fechaVenc.setDate(fechaVenc.getDate() + (intervalo * (i + 1)));
+      
+      letras.push({
+        numero: i + 1,
+        fecha_vencimiento: fechaVenc.toISOString().split('T')[0],
+        monto: montoLetra
+      });
+    }
+    
+    setLetrasPreview(letras);
+  };
+
+  // Actualizar preview cuando cambian los parámetros
+  const handleLetrasConfigChange = (field, value) => {
+    const newConfig = { ...letrasConfig, [field]: value };
+    setLetrasConfig(newConfig);
+    
+    if (facturaParaLetras) {
+      generateLetrasPreview(
+        facturaParaLetras,
+        field === 'cantidad' ? parseInt(value) : parseInt(newConfig.cantidad),
+        field === 'intervalo_dias' ? parseInt(value) : parseInt(newConfig.intervalo_dias),
+        field === 'fecha_giro' ? value : newConfig.fecha_giro
+      );
+    }
+  };
+
+  // Crear letras
+  const handleCrearLetras = async () => {
+    if (!letrasConfig.banco_id) {
+      toast.error('Seleccione un banco');
+      return;
+    }
+    
+    try {
+      // Crear cada letra
+      for (const letra of letrasPreview) {
+        await createLetra({
+          factura_proveedor_id: facturaParaLetras.id,
+          numero: `${letrasConfig.prefijo}-${facturaParaLetras.numero}-${String(letra.numero).padStart(2, '0')}`,
+          fecha_emision: letrasConfig.fecha_giro,
+          fecha_vencimiento: letra.fecha_vencimiento,
+          monto: letra.monto,
+          moneda_id: facturaParaLetras.moneda_id || 1,
+          banco_id: parseInt(letrasConfig.banco_id),
+          estado: 'pendiente'
+        });
+      }
+      
+      // Actualizar estado de la factura a CANJEADO
+      await updateFacturaProveedor(facturaParaLetras.id, { estado: 'canjeado' });
+      
+      toast.success(`${letrasPreview.length} letras creadas exitosamente`);
+      setShowLetrasModal(false);
+      loadData();
+    } catch (error) {
+      console.error('Error creando letras:', error);
+      toast.error(error.response?.data?.detail || 'Error al crear letras');
+    }
+  };
+
+  // Editar factura
+  const handleEdit = (factura) => {
+    // Por ahora solo abrimos el modal con los datos
+    toast.info('Función de edición en desarrollo');
+  };
+
+  // Ver factura
+  const handleView = (factura) => {
+    // Por ahora solo mostramos info
+    toast.info(`Factura ${factura.numero} - Total: ${formatCurrency(factura.total)}`);
+  };
+
   const resetForm = () => {
     const pen = monedas.find(m => m.codigo === 'PEN');
     setFormData({
