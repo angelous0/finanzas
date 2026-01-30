@@ -62,11 +62,12 @@ Create a QuickBooks-like system for treasury, control, and minimal accounting ca
 - **Validation: Cannot pay more than pending balance** ✅
 - Tested: 500 invoice → 300 partial → 200 final = pagado
 
-### 5. Purchase Orders (OC) ✅ SCAFFOLDED
-- `cont_oc`, `cont_oc_linea` tables created
-- Basic CRUD endpoints exist
-- Print functionality pending
-- Conversion to invoice pending
+### 5. Purchase Orders (OC) ✅ COMPLETE
+- Full CRUD for purchase orders
+- Convert OC to Factura Proveedor ✅
+- Auto-create CxP when generating factura ✅
+- Estado tracking: borrador → facturada ✅
+- UI: Modal with summary panel, article search ✅
 
 ### 6. Bills of Exchange (Letras) ✅ COMPLETE
 - `cont_letra` table exists
