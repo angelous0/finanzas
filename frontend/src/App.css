@@ -1264,9 +1264,9 @@ input[type="number"] {
 
 .factura-modal-body {
   padding: 1.5rem;
-  padding-bottom: 1.5rem;
   overflow-y: auto;
   flex: 1;
+  min-height: 0;
 }
 
 .factura-modal-footer {
