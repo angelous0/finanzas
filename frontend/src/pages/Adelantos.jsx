@@ -428,20 +428,61 @@ export const Adelantos = () => {
                   />
                 </div>
 
-                <div className="form-group">
-                  <label className="form-label">Cuenta de Salida</label>
-                  <select
-                    className="form-input form-select"
-                    value={formData.cuenta_financiera_id}
-                    onChange={(e) => setFormData(prev => ({ ...prev, cuenta_financiera_id: e.target.value }))}
-                  >
-                    <option value="">Sin especificar</option>
-                    {cuentas.map(cuenta => (
-                      <option key={cuenta.id} value={cuenta.id}>
-                        {cuenta.nombre} - {cuenta.banco || 'Caja'}
-                      </option>
-                    ))}
-                  </select>
+                {/* Payment Section */}
+                <div style={{ 
+                  background: '#f8fafc', 
+                  border: '1px solid #e2e8f0', 
+                  borderRadius: '8px', 
+                  padding: '1rem',
+                  marginTop: '0.5rem'
+                }}>
+                  <div className="form-group" style={{ marginBottom: formData.pagar ? '1rem' : 0 }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                      <input
+                        type="checkbox"
+                        checked={formData.pagar}
+                        onChange={(e) => setFormData(prev => ({ ...prev, pagar: e.target.checked }))}
+                        style={{ width: '18px', height: '18px', accentColor: '#1B4D3E' }}
+                      />
+                      <span style={{ fontWeight: 500 }}>Registrar salida de dinero</span>
+                    </label>
+                    <p style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '0.25rem', marginLeft: '1.625rem' }}>
+                      Descontar el monto de una cuenta financiera
+                    </p>
+                  </div>
+
+                  {formData.pagar && (
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label className="form-label required">Cuenta de Salida</label>
+                        <select
+                          className="form-input form-select"
+                          value={formData.cuenta_financiera_id}
+                          onChange={(e) => setFormData(prev => ({ ...prev, cuenta_financiera_id: e.target.value }))}
+                          required={formData.pagar}
+                        >
+                          <option value="">Seleccionar cuenta...</option>
+                          {cuentas.map(cuenta => (
+                            <option key={cuenta.id} value={cuenta.id}>
+                              {cuenta.nombre} - {cuenta.banco || 'Caja'}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label className="form-label">Medio de Pago</label>
+                        <select
+                          className="form-input form-select"
+                          value={formData.medio_pago}
+                          onChange={(e) => setFormData(prev => ({ ...prev, medio_pago: e.target.value }))}
+                        >
+                          <option value="efectivo">Efectivo</option>
+                          <option value="transferencia">Transferencia</option>
+                          <option value="cheque">Cheque</option>
+                        </select>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
