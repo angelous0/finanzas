@@ -443,9 +443,9 @@ export default function OrdenesCompra() {
               <div className="modal-body" style={{ display: 'flex', gap: '1.5rem', padding: '1.5rem' }}>
                 {/* Left Column - Form */}
                 <div style={{ flex: 1 }}>
-                  {/* Row 1: Empresa + Nº Orden */}
+                  {/* Row 1: Empresa + N° Orden | Fecha + Moneda */}
                   <div className="oc-section">
-                    <div className="form-grid form-grid-2">
+                    <div className="form-grid form-grid-4">
                       <div className="form-group">
                         <label className="form-label">Empresa *</label>
                         <select
@@ -454,7 +454,7 @@ export default function OrdenesCompra() {
                           onChange={(e) => setFormData({ ...formData, empresa_id: e.target.value })}
                           required
                         >
-                          <option value="">Seleccionar empresa...</option>
+                          <option value="">Seleccionar...</option>
                           {empresas.map(e => (
                             <option key={e.id} value={e.id}>{e.nombre}</option>
                           ))}
@@ -470,12 +470,6 @@ export default function OrdenesCompra() {
                           style={{ background: '#f8fafc', color: '#94a3b8' }}
                         />
                       </div>
-                    </div>
-                  </div>
-
-                  {/* Row 2: Fecha + Moneda */}
-                  <div className="oc-section">
-                    <div className="form-grid form-grid-2">
                       <div className="form-group">
                         <label className="form-label">Fecha *</label>
                         <input
@@ -502,25 +496,21 @@ export default function OrdenesCompra() {
                     </div>
                   </div>
 
-                  {/* Row 3: Proveedor */}
+                  {/* Row 2: Proveedor + Condición + Días */}
                   <div className="oc-section">
-                    <div className="form-group">
-                      <label className="form-label">Proveedor *</label>
-                      <SearchableSelect
-                        options={proveedores}
-                        value={formData.proveedor_id}
-                        onChange={(value) => setFormData({ ...formData, proveedor_id: value })}
-                        placeholder="Seleccionar proveedor..."
-                        searchPlaceholder="Buscar proveedor..."
-                        displayKey="nombre"
-                        valueKey="id"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Row 4: Condición Pago + Días Crédito */}
-                  <div className="oc-section">
-                    <div className="form-grid form-grid-2">
+                    <div className="form-grid form-grid-3">
+                      <div className="form-group">
+                        <label className="form-label">Proveedor *</label>
+                        <SearchableSelect
+                          options={proveedores}
+                          value={formData.proveedor_id}
+                          onChange={(value) => setFormData({ ...formData, proveedor_id: value })}
+                          placeholder="Seleccionar proveedor..."
+                          searchPlaceholder="Buscar proveedor..."
+                          displayKey="nombre"
+                          valueKey="id"
+                        />
+                      </div>
                       <div className="form-group">
                         <label className="form-label">Condición de Pago</label>
                         <select
@@ -556,31 +546,29 @@ export default function OrdenesCompra() {
                     </div>
                   </div>
 
-                  {/* Row 5: Dirección Entrega */}
+                  {/* Row 3: Dirección + Observaciones */}
                   <div className="oc-section">
-                    <div className="form-group">
-                      <label className="form-label">Dirección de Entrega</label>
-                      <input
-                        type="text"
-                        className="form-input"
-                        value={formData.direccion_entrega}
-                        onChange={(e) => setFormData({ ...formData, direccion_entrega: e.target.value })}
-                        placeholder="Dirección donde entregar la mercadería"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Row 6: Observaciones */}
-                  <div className="oc-section">
-                    <div className="form-group">
-                      <label className="form-label">Observaciones</label>
-                      <textarea
-                        className="form-input"
-                        rows={2}
-                        value={formData.notas}
-                        onChange={(e) => setFormData({ ...formData, notas: e.target.value })}
-                        placeholder="Notas adicionales para el proveedor..."
-                      />
+                    <div className="form-grid form-grid-2">
+                      <div className="form-group">
+                        <label className="form-label">Dirección de Entrega</label>
+                        <input
+                          type="text"
+                          className="form-input"
+                          value={formData.direccion_entrega}
+                          onChange={(e) => setFormData({ ...formData, direccion_entrega: e.target.value })}
+                          placeholder="Dirección de entrega"
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label className="form-label">Observaciones</label>
+                        <input
+                          type="text"
+                          className="form-input"
+                          value={formData.notas}
+                          onChange={(e) => setFormData({ ...formData, notas: e.target.value })}
+                          placeholder="Notas adicionales"
+                        />
+                      </div>
                     </div>
                   </div>
 
