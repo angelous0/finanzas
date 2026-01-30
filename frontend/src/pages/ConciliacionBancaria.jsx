@@ -39,6 +39,7 @@ export const ConciliacionBancaria = () => {
   const [fechaDesde, setFechaDesde] = useState('');
   const [fechaHasta, setFechaHasta] = useState('');
   const [bancoSeleccionado, setBancoSeleccionado] = useState('BCP');
+  const [filtroBanco, setFiltroBanco] = useState('pendientes'); // New filter state
   
   const [selectedBanco, setSelectedBanco] = useState([]);
   const [selectedSistema, setSelectedSistema] = useState([]);
@@ -554,21 +555,23 @@ export const ConciliacionBancaria = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {movimientosBanco.map(mov => (
+                      {movimientosBanco.filter(m => filtroBanco === 'pendientes' ? !m.procesado : m.procesado).map(mov => (
                         <tr 
                           key={mov.id}
                           className={selectedBanco.includes(mov.id) ? 'selected' : ''}
-                          onClick={() => handleSelectBanco(mov.id)}
-                          style={{ cursor: 'pointer' }}
+                          onClick={() => filtroBanco === 'pendientes' && handleSelectBanco(mov.id)}
+                          style={{ cursor: filtroBanco === 'pendientes' ? 'pointer' : 'default' }}
                         >
-                          <td onClick={(e) => e.stopPropagation()}>
-                            <input 
-                              type="checkbox" 
-                              checked={selectedBanco.includes(mov.id)}
-                              onChange={() => handleSelectBanco(mov.id)}
-                              style={{ width: '16px', height: '16px' }}
-                            />
-                          </td>
+                          {filtroBanco === 'pendientes' && (
+                            <td onClick={(e) => e.stopPropagation()}>
+                              <input 
+                                type="checkbox" 
+                                checked={selectedBanco.includes(mov.id)}
+                                onChange={() => handleSelectBanco(mov.id)}
+                                style={{ width: '16px', height: '16px' }}
+                              />
+                            </td>
+                          )}
                           <td>{formatDate(mov.fecha)}</td>
                           <td>{mov.banco_excel || mov.banco || '-'}</td>
                           <td style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.75rem' }}>
