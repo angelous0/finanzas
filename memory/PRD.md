@@ -124,6 +124,13 @@ Create a QuickBooks-like system for treasury, control, and minimal accounting ca
 - **Header Mejorado**: Botón "Guardar" posicionado a la derecha
 - **Resumen Visual**: Panel lateral con totales y contador de artículos
 
+## UI/UX Improvements - OC Module v2 (2026-01-30) ✅ COMPLETE
+- **Selector de Artículos con Búsqueda Integrada**: Input tipo combobox con ícono de búsqueda y dropdown integrado
+- **Detalle de Artículos Ancho Completo**: La tabla de artículos ahora ocupa todo el ancho de la página
+- **Resumen Compacto**: Panel de resumen ahora es horizontal y más compacto con fondo verde elegante
+- **Descargar PDF**: Nuevo botón "PDF" en el modal de vista para generar documento descargable
+- **Layout Mejorado**: Formulario más compacto con 4 columnas en la primera fila
+
 ## Key Files
 - `/app/backend/server.py` - All API endpoints (monolithic, needs refactoring)
 - `/app/backend/models.py` - SQLAlchemy models
