@@ -495,12 +495,25 @@ export const FacturasProveedor = () => {
 
   // Crear letras
   const handleCrearLetras = async () => {
+    // Validate total matches factura
+    const totalLetras = letrasPreview.reduce((sum, l) => sum + l.monto, 0);
+    const totalFactura = parseFloat(facturaParaLetras.total) || 0;
+    
+    if (Math.abs(totalLetras - totalFactura) > 0.01) {
+      toast.error(`El total de las letras (${formatCurrency(totalLetras)}) debe ser igual al total de la factura (${formatCurrency(totalFactura)})`);
+      return;
+    }
+    
     try {
-      // Usar la API de generar letras
+      // Send custom letras to API
       await generarLetras({
         factura_id: facturaParaLetras.id,
-        cantidad_letras: parseInt(letrasConfig.cantidad),
-        dias_entre_letras: parseInt(letrasConfig.intervalo_dias)
+        cantidad_letras: letrasPreview.length,
+        dias_entre_letras: parseInt(letrasConfig.intervalo_dias),
+        letras_personalizadas: letrasPreview.map(l => ({
+          fecha_vencimiento: l.fecha_vencimiento,
+          monto: l.monto
+        }))
       });
       
       toast.success(`${letrasPreview.length} letras creadas exitosamente`);
