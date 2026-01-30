@@ -32,9 +32,10 @@ import CentrosCosto from './pages/CentrosCosto';
 import Empresas from './pages/Empresas';
 import Planilla from './pages/Planilla';
 import Adelantos from './pages/Adelantos';
+import ConciliacionBancaria from './pages/ConciliacionBancaria';
 import { 
   Clientes, Articulos,
-  Presupuestos, Conciliacion, 
+  Presupuestos,
   EstadoResultados, FlujoCaja 
 } from './pages/PlaceholderPages';
 
