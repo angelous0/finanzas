@@ -337,6 +337,9 @@ export const FacturasProveedor = () => {
         proveedor_id: formData.proveedor_id ? parseInt(formData.proveedor_id) : null,
         moneda_id: formData.moneda_id ? parseInt(formData.moneda_id) : null,
         terminos_dias: parseInt(formData.terminos_dias) || 0,
+        // Ensure dates are valid or null
+        fecha_factura: formData.fecha_factura || null,
+        fecha_vencimiento: formData.fecha_vencimiento || null,
         lineas: formData.lineas.map(l => ({
           ...l,
           categoria_id: l.categoria_id ? parseInt(l.categoria_id) : null,
@@ -345,6 +348,12 @@ export const FacturasProveedor = () => {
           importe: parseFloat(l.importe) || 0
         }))
       };
+      
+      // Validate required fields
+      if (!dataToSend.fecha_factura) {
+        toast.error('La fecha de factura es requerida');
+        return;
+      }
       
       if (editingFactura) {
         // Update existing factura
