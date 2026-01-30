@@ -212,6 +212,15 @@ export const VentasPOS = () => {
         </div>
         <div style={{ display: 'flex', gap: '0.5rem' }}>
           <button 
+            className="btn btn-success"
+            onClick={handleExportExcel}
+            disabled={filteredVentas.length === 0}
+            data-testid="export-excel-btn"
+          >
+            <Download size={18} />
+            Exportar Excel
+          </button>
+          <button 
             className="btn btn-outline"
             onClick={() => handleSync('ambission')}
             disabled={syncing}
