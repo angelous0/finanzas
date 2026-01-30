@@ -239,6 +239,46 @@ export const FacturasProveedor = () => {
     return { subtotal, igv, total: subtotal + igv };
   };
 
+  // Crear nuevo proveedor
+  const handleCreateProveedor = async (nombre) => {
+    if (!nombre || nombre.trim() === '') {
+      setShowProveedorModal(true);
+      setNuevoProveedorNombre('');
+      return;
+    }
+    
+    try {
+      const response = await createTercero({
+        nombre: nombre.trim(),
+        es_proveedor: true,
+        tipo_documento: 'RUC',
+        numero_documento: '',
+        terminos_pago_dias: 30
+      });
+      
+      // Add new proveedor to list and select it
+      setProveedores(prev => [...prev, response.data]);
+      setFormData(prev => ({ 
+        ...prev, 
+        proveedor_id: response.data.id,
+        beneficiario_nombre: ''
+      }));
+      toast.success(`Proveedor "${nombre}" creado exitosamente`);
+    } catch (error) {
+      console.error('Error creating proveedor:', error);
+      toast.error('Error al crear proveedor');
+    }
+  };
+
+  const handleSaveNuevoProveedor = async () => {
+    if (!nuevoProveedorNombre.trim()) {
+      toast.error('Ingrese el nombre del proveedor');
+      return;
+    }
+    await handleCreateProveedor(nuevoProveedorNombre);
+    setShowProveedorModal(false);
+  };
+
   const handleSubmit = async (e, createNew = false) => {
     e.preventDefault();
     
