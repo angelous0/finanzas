@@ -958,6 +958,80 @@ export const ConciliacionBancaria = () => {
           </div>
         </div>
       )}
+
+      {/* Preview Modal */}
+      {showPreviewModal && previewData && (
+        <div className="modal-overlay" onClick={() => setShowPreviewModal(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '1000px', height: '80vh', display: 'flex', flexDirection: 'column' }}>
+            <div className="modal-header">
+              <div>
+                <h2 className="modal-title">Previsualización de Importación</h2>
+                <p style={{ fontSize: '0.875rem', color: '#64748b', marginTop: '0.25rem' }}>
+                  Revise los datos antes de importar ({previewData.length} registros)
+                </p>
+              </div>
+              <button className="modal-close" onClick={() => setShowPreviewModal(false)}>
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="modal-body" style={{ flex: 1, overflow: 'auto', padding: 0 }}>
+              <div className="data-table-wrapper" style={{ padding: 0 }}>
+                <table className="data-table" style={{ fontSize: '0.8125rem' }}>
+                  <thead style={{ position: 'sticky', top: 0, background: '#fff', zIndex: 10 }}>
+                    <tr>
+                      <th style={{ width: '100px' }}>Fecha</th>
+                      <th style={{ width: '120px' }}>Banco</th>
+                      <th style={{ width: '150px' }}>Nro Operación</th>
+                      <th>Descripción</th>
+                      <th className="text-right" style={{ width: '120px' }}>Monto</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {previewData.map((row, idx) => (
+                      <tr key={idx}>
+                        <td>{formatDate(row.fecha)}</td>
+                        <td>{row.banco}</td>
+                        <td style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '0.75rem' }}>
+                          {row.referencia || '-'}
+                        </td>
+                        <td style={{ maxWidth: '400px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {row.descripcion}
+                        </td>
+                        <td className="text-right currency-display" style={{ 
+                          color: row.monto < 0 ? '#dc2626' : '#16a34a',
+                          fontWeight: 500
+                        }}>
+                          {formatCurrency(row.monto, row.monto < 0 ? '-S/' : 'S/')}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div className="modal-footer">
+              <button 
+                className="btn btn-outline" 
+                onClick={() => {
+                  setShowPreviewModal(false);
+                  setShowImportModal(true);
+                }}
+              >
+                <X size={16} /> Cancelar
+              </button>
+              <button 
+                className="btn btn-primary" 
+                onClick={handleConfirmImport}
+                disabled={importing}
+              >
+                {importing ? <><RefreshCw size={16} className="spin" /> Importando...</> : <><Check size={16} /> Confirmar e Importar</>}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
