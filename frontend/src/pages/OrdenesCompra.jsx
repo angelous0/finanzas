@@ -537,8 +537,8 @@ export default function OrdenesCompra() {
 
       {/* Modal Nueva/Editar OC - FULLSCREEN */}
       {showModal && (
-        <div className="modal-fullscreen" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9999, background: '#fff' }}>
-          <div className="modal-fullscreen-header">
+        <div className="modal-fullscreen" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9999, background: '#fff', display: 'flex', flexDirection: 'column' }}>
+          <div className="modal-fullscreen-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.875rem 1.5rem', background: '#fff', borderBottom: '1px solid #e2e8f0', flexShrink: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
               <button type="button" className="btn btn-ghost" onClick={() => { setShowModal(false); setEditingOC(null); }}>
                 <ArrowLeft size={20} />
@@ -553,7 +553,7 @@ export default function OrdenesCompra() {
             </button>
           </div>
           
-          <div className="modal-fullscreen-body">
+          <div className="modal-fullscreen-body" style={{ flex: 1, overflowY: 'auto', padding: '1.5rem', background: '#f8fafc' }}>
             <form onSubmit={handleSubmit}>
               <div style={{ display: 'flex', gap: '2rem', height: '100%' }}>
                 {/* Left Column - Form */}
