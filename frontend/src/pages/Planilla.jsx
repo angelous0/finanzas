@@ -33,6 +33,7 @@ export const Planilla = () => {
   const [showModal, setShowModal] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
   const [showPagoModal, setShowPagoModal] = useState(false);
+  const [showPagosListModal, setShowPagosListModal] = useState(false);
   const [selectedPlanilla, setSelectedPlanilla] = useState(null);
   
   // Form state
