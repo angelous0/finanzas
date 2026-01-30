@@ -1642,6 +1642,236 @@ export const FacturasProveedor = () => {
           </div>
         </div>
       )}
+
+      {/* Modal Ver Pagos */}
+      {showPagosModal && facturaParaVerPagos && (
+        <div className="modal-overlay" onClick={() => setShowPagosModal(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '700px' }}>
+            <div className="modal-header">
+              <h2 className="modal-title">Historial de Pagos</h2>
+              <button className="modal-close" onClick={() => setShowPagosModal(false)}>
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="modal-body">
+              {/* Info del documento */}
+              <div style={{ 
+                background: '#f8fafc', 
+                padding: '1rem', 
+                borderRadius: '8px', 
+                marginBottom: '1.5rem',
+                border: '1px solid var(--border)'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                  <span style={{ color: '#64748b' }}>Documento:</span>
+                  <span style={{ fontWeight: 600, fontFamily: "'JetBrains Mono', monospace" }}>
+                    {facturaParaVerPagos.numero}
+                  </span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                  <span style={{ color: '#64748b' }}>Proveedor:</span>
+                  <span style={{ fontWeight: 500 }}>
+                    {facturaParaVerPagos.proveedor_nombre || facturaParaVerPagos.beneficiario_nombre}
+                  </span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: '#64748b' }}>Total Factura:</span>
+                  <span style={{ fontWeight: 600, fontFamily: "'JetBrains Mono', monospace" }}>
+                    {formatCurrency(facturaParaVerPagos.total)}
+                  </span>
+                </div>
+              </div>
+
+              {loadingPagos ? (
+                <div className="loading">
+                  <div className="loading-spinner"></div>
+                </div>
+              ) : pagosDeFactura.length === 0 ? (
+                <div className="empty-state" style={{ padding: '2rem' }}>
+                  <div className="empty-state-title">No hay pagos registrados</div>
+                </div>
+              ) : (
+                <table className="data-table" style={{ fontSize: '0.875rem' }}>
+                  <thead>
+                    <tr>
+                      <th>Fecha</th>
+                      <th>Nº Pago</th>
+                      <th>Cuenta</th>
+                      <th>Medio</th>
+                      <th className="text-right">Monto</th>
+                      <th>Referencia</th>
+                      <th className="text-center">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pagosDeFactura.map((pago) => (
+                      <tr key={pago.id}>
+                        <td>{formatDate(pago.fecha)}</td>
+                        <td style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 500 }}>
+                          {pago.numero}
+                        </td>
+                        <td>{pago.cuenta_nombre}</td>
+                        <td style={{ textTransform: 'capitalize' }}>{pago.medio_pago || '-'}</td>
+                        <td className="text-right" style={{ fontFamily: "'JetBrains Mono', monospace", color: '#22C55E', fontWeight: 500 }}>
+                          {formatCurrency(pago.monto_aplicado, pago.moneda_simbolo)}
+                        </td>
+                        <td>{pago.referencia || '-'}</td>
+                        <td className="text-center">
+                          <button 
+                            className="btn btn-outline btn-sm btn-icon btn-danger"
+                            onClick={() => handleAnularPago(pago.id)}
+                            title="Anular pago"
+                            data-testid={`anular-pago-${pago.id}`}
+                          >
+                            <Undo2 size={14} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot>
+                    <tr style={{ background: '#f8fafc', fontWeight: 600 }}>
+                      <td colSpan={4}>Total Pagado</td>
+                      <td className="text-right" style={{ fontFamily: "'JetBrains Mono', monospace", color: '#22C55E' }}>
+                        {formatCurrency(pagosDeFactura.reduce((sum, p) => sum + parseFloat(p.monto_aplicado || 0), 0))}
+                      </td>
+                      <td colSpan={2}></td>
+                    </tr>
+                  </tfoot>
+                </table>
+              )}
+            </div>
+
+            <div className="modal-footer">
+              <button type="button" className="btn btn-outline" onClick={() => setShowPagosModal(false)}>
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Ver Letras Vinculadas */}
+      {showVerLetrasModal && facturaParaVerLetras && (
+        <div className="modal-overlay" onClick={() => setShowVerLetrasModal(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '700px' }}>
+            <div className="modal-header">
+              <h2 className="modal-title">Letras Vinculadas</h2>
+              <button className="modal-close" onClick={() => setShowVerLetrasModal(false)}>
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="modal-body">
+              {/* Info del documento */}
+              <div style={{ 
+                background: '#fef3c7', 
+                padding: '1rem', 
+                borderRadius: '8px', 
+                marginBottom: '1.5rem',
+                border: '1px solid #fcd34d'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                  <span style={{ color: '#92400e' }}>Documento Canjeado:</span>
+                  <span style={{ fontWeight: 600, fontFamily: "'JetBrains Mono', monospace", color: '#92400e' }}>
+                    {facturaParaVerLetras.numero}
+                  </span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                  <span style={{ color: '#92400e' }}>Proveedor:</span>
+                  <span style={{ fontWeight: 500 }}>
+                    {facturaParaVerLetras.proveedor_nombre || facturaParaVerLetras.beneficiario_nombre}
+                  </span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: '#92400e' }}>Monto Canjeado:</span>
+                  <span style={{ fontWeight: 600, fontFamily: "'JetBrains Mono', monospace", color: '#92400e' }}>
+                    {formatCurrency(facturaParaVerLetras.saldo_pendiente)}
+                  </span>
+                </div>
+              </div>
+
+              {loadingLetras ? (
+                <div className="loading">
+                  <div className="loading-spinner"></div>
+                </div>
+              ) : letrasDeFactura.length === 0 ? (
+                <div className="empty-state" style={{ padding: '2rem' }}>
+                  <div className="empty-state-title">No hay letras vinculadas</div>
+                </div>
+              ) : (
+                <table className="data-table" style={{ fontSize: '0.875rem' }}>
+                  <thead>
+                    <tr>
+                      <th>Nº Letra</th>
+                      <th>Fecha Emisión</th>
+                      <th>Fecha Venc.</th>
+                      <th className="text-right">Monto</th>
+                      <th className="text-right">Saldo</th>
+                      <th>Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {letrasDeFactura.map((letra) => (
+                      <tr key={letra.id}>
+                        <td style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 500 }}>
+                          {letra.numero}
+                        </td>
+                        <td>{formatDate(letra.fecha_emision)}</td>
+                        <td>{formatDate(letra.fecha_vencimiento)}</td>
+                        <td className="text-right" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                          {formatCurrency(letra.monto, letra.moneda_simbolo)}
+                        </td>
+                        <td className="text-right" style={{ 
+                          fontFamily: "'JetBrains Mono', monospace",
+                          color: parseFloat(letra.saldo_pendiente) > 0 ? '#EF4444' : '#22C55E',
+                          fontWeight: 500
+                        }}>
+                          {formatCurrency(letra.saldo_pendiente || letra.monto, letra.moneda_simbolo)}
+                        </td>
+                        <td>
+                          <span className={estadoBadge(letra.estado)}>
+                            {letra.estado}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot>
+                    <tr style={{ background: '#f8fafc', fontWeight: 600 }}>
+                      <td colSpan={3}>Total Letras</td>
+                      <td className="text-right" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                        {formatCurrency(letrasDeFactura.reduce((sum, l) => sum + parseFloat(l.monto || 0), 0))}
+                      </td>
+                      <td className="text-right" style={{ fontFamily: "'JetBrains Mono', monospace", color: '#EF4444' }}>
+                        {formatCurrency(letrasDeFactura.reduce((sum, l) => sum + parseFloat(l.saldo_pendiente || l.monto || 0), 0))}
+                      </td>
+                      <td></td>
+                    </tr>
+                  </tfoot>
+                </table>
+              )}
+            </div>
+
+            <div className="modal-footer">
+              <button 
+                type="button" 
+                className="btn btn-outline btn-danger"
+                onClick={handleDeshacerCanje}
+                disabled={letrasDeFactura.some(l => parseFloat(l.saldo_pendiente) < parseFloat(l.monto))}
+                title={letrasDeFactura.some(l => parseFloat(l.saldo_pendiente) < parseFloat(l.monto)) ? 'No se puede deshacer - hay letras con pagos' : 'Deshacer canje'}
+              >
+                <Undo2 size={16} />
+                Deshacer Canje
+              </button>
+              <button type="button" className="btn btn-outline" onClick={() => setShowVerLetrasModal(false)}>
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
