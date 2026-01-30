@@ -420,24 +420,58 @@ export const Adelantos = () => {
                       <td className="text-right currency-display" style={{ fontWeight: 600 }}>
                         {formatCurrency(adelanto.monto)}
                       </td>
-                      <td style={{ maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      <td style={{ maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {adelanto.motivo || '-'}
                       </td>
                       <td className="text-center">
+                        {adelanto.pago_id ? (
+                          <span className="badge badge-info" title={`Pago ID: ${adelanto.pago_id}`}>
+                            #{adelanto.pago_id}
+                          </span>
+                        ) : (
+                          <span style={{ color: '#94a3b8' }}>-</span>
+                        )}
+                      </td>
+                      <td className="text-center">
+                        {adelanto.planilla_id ? (
+                          <span className="badge badge-success" title={`Planilla ID: ${adelanto.planilla_id}`}>
+                            #{adelanto.planilla_id}
+                          </span>
+                        ) : (
+                          <span style={{ color: '#94a3b8' }}>-</span>
+                        )}
+                      </td>
+                      <td className="text-center">
                         <span className={getEstadoBadge(getEstadoAdelanto(adelanto))}>
-                          {getEstadoAdelanto(adelanto)}
+                          {getEstadoAdelanto(adelanto).toUpperCase()}
                         </span>
                       </td>
                       <td>
                         <div className="actions-row">
                           {!adelanto.pagado && !adelanto.descontado && (
-                            <button 
-                              className="action-btn action-success"
-                              onClick={() => handleOpenPago(adelanto)}
-                              title="Registrar Pago"
-                            >
-                              <DollarSign size={15} />
-                            </button>
+                            <>
+                              <button 
+                                className="action-btn action-success"
+                                onClick={() => handleOpenPago(adelanto)}
+                                title="Registrar Pago"
+                              >
+                                <DollarSign size={15} />
+                              </button>
+                              <button 
+                                className="action-btn action-edit"
+                                onClick={() => handleEdit(adelanto)}
+                                title="Editar"
+                              >
+                                <Edit2 size={15} />
+                              </button>
+                              <button 
+                                className="action-btn action-danger"
+                                onClick={() => handleDelete(adelanto)}
+                                title="Eliminar"
+                              >
+                                <Trash2 size={15} />
+                              </button>
+                            </>
                           )}
                           <button 
                             className="action-btn"
@@ -464,13 +498,13 @@ export const Adelantos = () => {
         </div>
       </div>
 
-      {/* Modal Nuevo Adelanto */}
+      {/* Modal Nuevo/Editar Adelanto */}
       {showModal && (
-        <div className="modal-overlay" onClick={() => setShowModal(false)}>
+        <div className="modal-overlay" onClick={() => { setShowModal(false); setEditingId(null); }}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h2 className="modal-title">Nuevo Adelanto</h2>
-              <button className="modal-close" onClick={() => setShowModal(false)}>
+              <h2 className="modal-title">{editingId ? 'Editar Adelanto' : 'Nuevo Adelanto'}</h2>
+              <button className="modal-close" onClick={() => { setShowModal(false); setEditingId(null); }}>
                 <X size={20} />
               </button>
             </div>
