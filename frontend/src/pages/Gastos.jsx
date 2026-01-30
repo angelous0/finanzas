@@ -891,9 +891,15 @@ export default function Gastos() {
           <div className="modal modal-lg" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2 className="modal-title">Gasto {selectedGasto.numero}</h2>
-              <button className="modal-close" onClick={() => setShowViewModal(false)}>
-                <X size={20} />
-              </button>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <button className="btn btn-outline btn-sm" onClick={() => handleDownloadPDF(selectedGasto)} title="Descargar PDF">
+                  <Download size={16} />
+                  PDF
+                </button>
+                <button className="modal-close" onClick={() => setShowViewModal(false)}>
+                  <X size={20} />
+                </button>
+              </div>
             </div>
             <div className="modal-body">
               <div className="form-grid form-grid-3" style={{ marginBottom: '1rem' }}>
