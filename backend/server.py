@@ -2764,6 +2764,86 @@ async def descartar_venta_pos(id: int):
         """, id)
         return {"message": "Venta descartada"}
 
+# Endpoints for payment management
+@api_router.get("/ventas-pos/{id}/pagos")
+async def get_pagos_venta_pos(id: int):
+    """Get all payments assigned to a POS sale"""
+    pool = await get_pool()
+    async with pool.acquire() as conn:
+        await conn.execute("SET search_path TO finanzas2, public")
+        
+        pagos = await conn.fetch("""
+            SELECT id, venta_pos_id, forma_pago, monto, referencia, 
+                   fecha_pago, observaciones, created_at
+            FROM finanzas2.cont_venta_pos_pago
+            WHERE venta_pos_id = $1
+            ORDER BY created_at DESC
+        """, id)
+        
+        return [dict(p) for p in pagos]
+
+@api_router.post("/ventas-pos/{id}/pagos")
+async def add_pago_venta_pos(id: int, pago: dict):
+    """Add a payment to a POS sale. Auto-confirms if total matches."""
+    pool = await get_pool()
+    async with pool.acquire() as conn:
+        await conn.execute("SET search_path TO finanzas2, public")
+        
+        async with conn.transaction():
+            # Get venta
+            venta = await conn.fetchrow("SELECT * FROM finanzas2.cont_venta_pos WHERE id = $1", id)
+            if not venta:
+                raise HTTPException(404, "Venta not found")
+            
+            if venta['estado_local'] != 'pendiente':
+                raise HTTPException(400, f"Venta already {venta['estado_local']}")
+            
+            # Insert payment
+            await conn.execute("""
+                INSERT INTO finanzas2.cont_venta_pos_pago 
+                (venta_pos_id, forma_pago, monto, referencia, fecha_pago, observaciones)
+                VALUES ($1, $2, $3, $4, $5, $6)
+            """, id, pago.get('forma_pago'), pago.get('monto'), 
+                pago.get('referencia'), pago.get('fecha_pago'), pago.get('observaciones'))
+            
+            # Calculate total payments
+            total_pagos = await conn.fetchval("""
+                SELECT COALESCE(SUM(monto), 0) FROM finanzas2.cont_venta_pos_pago
+                WHERE venta_pos_id = $1
+            """, id)
+            
+            # Auto-confirm if total matches
+            amount_total = float(venta['amount_total'])
+            if abs(float(total_pagos) - amount_total) < 0.01:  # Match with 0.01 tolerance
+                await conn.execute("""
+                    UPDATE finanzas2.cont_venta_pos SET estado_local = 'confirmada' WHERE id = $1
+                """, id)
+                return {
+                    "message": "Pago agregado y venta confirmada automáticamente", 
+                    "total_pagos": float(total_pagos),
+                    "auto_confirmed": True
+                }
+            
+            return {
+                "message": "Pago agregado", 
+                "total_pagos": float(total_pagos),
+                "faltante": amount_total - float(total_pagos),
+                "auto_confirmed": False
+            }
+
+@api_router.delete("/ventas-pos/{venta_id}/pagos/{pago_id}")
+async def delete_pago_venta_pos(venta_id: int, pago_id: int):
+    """Delete a payment from a POS sale"""
+    pool = await get_pool()
+    async with pool.acquire() as conn:
+        await conn.execute("SET search_path TO finanzas2, public")
+        await conn.execute("""
+            DELETE FROM finanzas2.cont_venta_pos_pago 
+            WHERE id = $1 AND venta_pos_id = $2
+        """, pago_id, venta_id)
+        return {"message": "Pago eliminado"}
+
+
 # =====================
 # CXC (Cuentas por Cobrar)
 # =====================
