@@ -283,18 +283,27 @@ export const VentasPOS = () => {
       if (response.data.auto_confirmed) {
         toast.success('✅ ' + response.data.message);
         closePagosModal();
-        loadVentas();
+        loadVentas(); // Reload main list
       } else {
         toast.success(response.data.message + ` (Falta: S/ ${response.data.faltante.toFixed(2)})`);
         
-        // Reload pagos
+        // Reload pagos in modal
         const pagosResp = await getPagosVentaPOS(ventaSeleccionada.id);
         setPagos(pagosResp.data);
+        
+        // ✅ IMPORTANTE: Reload main ventas list to update "Pagos Asignados" column
+        loadVentas();
         
         // Calculate new faltante and update form
         const totalPagos = pagosResp.data.reduce((sum, p) => sum + parseFloat(p.monto || 0), 0);
         const faltante = parseFloat(ventaSeleccionada.amount_total) - totalPagos;
         const numPagos = pagosResp.data.length;
+        
+        // Update ventaSeleccionada with new pagos_asignados for display
+        setVentaSeleccionada({
+          ...ventaSeleccionada,
+          pagos_asignados: totalPagos
+        });
         
         setNuevoPago({
           ...nuevoPago,
