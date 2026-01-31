@@ -238,6 +238,42 @@ export const VentasPOS = () => {
         referencia: referenciaAuto,
         fecha_pago: new Date().toISOString().split('T')[0],
         observaciones: ''
+
+
+  // Ver pagos de venta confirmada
+  const verPagosConfirmada = async (venta) => {
+    try {
+      const response = await getPagosVentaPOS(venta.id);
+      const pagosData = response.data;
+      
+      if (pagosData.length === 0) {
+        toast.info('Esta venta no tiene pagos registrados');
+        return;
+      }
+      
+      // Export to Excel
+      const excelData = pagosData.map(p => ({
+        'Forma de Pago': p.forma_pago,
+        'Monto': p.monto,
+        'Referencia': p.referencia || '-',
+        'Fecha': new Date(p.fecha_pago).toLocaleDateString('es-PE'),
+        'Observaciones': p.observaciones || '-'
+      }));
+      
+      const ws = XLSX.utils.json_to_sheet(excelData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Pagos');
+      
+      const filename = `pagos_${venta.name}_${new Date().toISOString().split('T')[0]}.xlsx`;
+      XLSX.writeFile(wb, filename);
+      
+      toast.success(`Exportados ${pagosData.length} pagos a Excel`);
+    } catch (error) {
+      console.error('Error loading pagos:', error);
+      toast.error('Error al cargar pagos');
+    }
+  };
+
       });
       
     } catch (error) {
