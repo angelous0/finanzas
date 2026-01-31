@@ -559,6 +559,8 @@ class VentaPOS(BaseModel):
     num_comp: Optional[str] = None
     partner_id: Optional[int] = None
     partner_name: Optional[str] = None
+    tienda_id: Optional[int] = None
+    tienda_name: Optional[str] = None
     x_tienda: Optional[str] = None
     vendedor_id: Optional[int] = None
     vendedor_name: Optional[str] = None
@@ -566,8 +568,11 @@ class VentaPOS(BaseModel):
     company_name: Optional[str] = None
     x_pagos: Optional[str] = None
     quantity_pos_order: Optional[float] = None
+    quantity_total: Optional[float] = None
     amount_total: Optional[float] = None
     state: Optional[str] = None
+    reserva_pendiente: Optional[float] = 0
+    reserva_facturada: Optional[float] = 0
     x_reserva_pendientes: bool = False
     x_reserva_facturada: bool = False
     is_cancel: bool = False
@@ -577,6 +582,8 @@ class VentaPOS(BaseModel):
     reserva_use_id: Optional[int] = None
     estado_local: str = "pendiente"
     cxc_id: Optional[int] = None
+    pagos_asignados: Optional[float] = 0
+    num_pagos: Optional[int] = 0
     synced_at: Optional[datetime] = None
 
 # =====================
