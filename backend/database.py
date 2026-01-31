@@ -525,6 +525,26 @@ async def create_schema():
                 created_at TIMESTAMP DEFAULT NOW()
             )
         """)
+        
+        # cont_venta_pos_pago (pagos asignados manualmente a ventas POS)
+        await conn.execute("""
+            CREATE TABLE IF NOT EXISTS finanzas2.cont_venta_pos_pago (
+                id SERIAL PRIMARY KEY,
+                venta_pos_id INTEGER REFERENCES finanzas2.cont_venta_pos(id) ON DELETE CASCADE,
+                forma_pago VARCHAR(50) NOT NULL,
+                monto DECIMAL(15, 2) NOT NULL,
+                referencia VARCHAR(100),
+                fecha_pago DATE DEFAULT CURRENT_DATE,
+                observaciones TEXT,
+                created_at TIMESTAMP DEFAULT NOW(),
+                created_by VARCHAR(100)
+            )
+        """)
+        
+        await conn.execute("""
+            CREATE INDEX IF NOT EXISTS idx_venta_pos_pago_venta 
+            ON finanzas2.cont_venta_pos_pago(venta_pos_id)
+        """)
 
         # cont_cxc (Cuentas por Cobrar)
         await conn.execute("""
