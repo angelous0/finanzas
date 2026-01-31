@@ -252,8 +252,10 @@ export const VentasPOS = () => {
     setShowPagosModal(false);
     setVentaSeleccionada(null);
     setPagos([]);
+    setCuentasFinancieras([]);
     setNuevoPago({
       forma_pago: 'Efectivo',
+      cuenta_financiera_id: '',
       monto: '',
       referencia: '',
       fecha_pago: new Date().toISOString().split('T')[0],
@@ -264,6 +266,11 @@ export const VentasPOS = () => {
   const handleAddPago = async () => {
     if (!nuevoPago.monto || parseFloat(nuevoPago.monto) <= 0) {
       toast.error('Ingrese un monto válido');
+      return;
+    }
+    
+    if (!nuevoPago.cuenta_financiera_id) {
+      toast.error('Seleccione una cuenta');
       return;
     }
 
@@ -279,15 +286,20 @@ export const VentasPOS = () => {
         loadVentas();
       } else {
         toast.success(response.data.message + ` (Falta: S/ ${response.data.faltante.toFixed(2)})`);
+        
         // Reload pagos
         const pagosResp = await getPagosVentaPOS(ventaSeleccionada.id);
         setPagos(pagosResp.data);
         
-        // Reset form
+        // Calculate new faltante and update form
+        const totalPagos = pagosResp.data.reduce((sum, p) => sum + parseFloat(p.monto || 0), 0);
+        const faltante = parseFloat(ventaSeleccionada.amount_total) - totalPagos;
+        const numPagos = pagosResp.data.length;
+        
         setNuevoPago({
           ...nuevoPago,
-          monto: '',
-          referencia: '',
+          monto: faltante > 0 ? faltante.toFixed(2) : '',
+          referencia: `${ventaSeleccionada.num_comp || ventaSeleccionada.name} - ${numPagos + 1}`,
           observaciones: ''
         });
       }
