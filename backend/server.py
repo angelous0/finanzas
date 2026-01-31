@@ -2804,9 +2804,9 @@ async def add_pago_venta_pos(id: int, pago: dict):
             # Insert payment
             await conn.execute("""
                 INSERT INTO finanzas2.cont_venta_pos_pago 
-                (venta_pos_id, forma_pago, monto, referencia, fecha_pago, observaciones)
-                VALUES ($1, $2, $3, $4, $5, $6)
-            """, id, pago.get('forma_pago'), pago.get('monto'), 
+                (venta_pos_id, forma_pago, cuenta_financiera_id, monto, referencia, fecha_pago, observaciones)
+                VALUES ($1, $2, $3, $4, $5, $6::date, $7)
+            """, id, pago.get('forma_pago'), pago.get('cuenta_financiera_id'), pago.get('monto'), 
                 pago.get('referencia'), pago.get('fecha_pago'), pago.get('observaciones'))
             
             # Calculate total payments
