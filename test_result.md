@@ -136,50 +136,77 @@ backend:
         comment: "✅ Backend API filtering VERIFIED: API correctly returns non-reconciled payments (PAG-E-2026-00006, PAG-E-2026-00005, PAG-E-2026-00004) when conciliado=false and reconciled payment (PAG-E-2026-00008) when conciliado=true. Bank movements API also working correctly with procesado filtering."
 
 frontend:
-  - task: "Bank Reconciliation - Connect save button to backend"
+  - task: "VentasPOS - Pendientes tab navigation"
     implemented: true
-    working: true
-    file: "/app/frontend/src/pages/ConciliacionBancaria.jsx"
+    working: "NA"
+    file: "/app/frontend/src/pages/VentasPOS.jsx"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
-      - working: "true"
-        agent: "main"
-        comment: "Added conciliarMovimientos function to api.js. Updated handleConciliarManual to call backend endpoint with selectedBanco and selectedSistema IDs. Added loading state and error handling. Function validates amounts match before calling backend."
-      - working: "true"
+      - working: "NA"
         agent: "testing"
-        comment: "Frontend implementation verified through backend API testing. The conciliarMovimientos function correctly formats banco_ids and pago_ids as query parameters and calls POST /api/conciliacion/conciliar endpoint. Integration working as expected."
+        comment: "Need to test navigation to Pendientes tab and verify pending sales are displayed correctly in the table."
 
-  - task: "Bank Reconciliation - Pendientes tab filtering"
+  - task: "VentasPOS - Payment assignment modal"
     implemented: true
     working: "NA"
-    file: "/app/frontend/src/pages/ConciliacionBancaria.jsx"
-    stuck_count: 1
+    file: "/app/frontend/src/pages/VentasPOS.jsx"
+    stuck_count: 0
     priority: "high"
     needs_retesting: true
     status_history:
       - working: "NA"
-        agent: "main"
-        comment: "Fixed loadMovimientos function (line 90) to filter sistema payments with conciliado: false parameter. This ensures only non-reconciled payments appear in Pendientes tab, fixing the bug where PAG-E-2026-00008 (reconciled payment) was still showing."
-      - working: "NA"
         agent: "testing"
-        comment: "⚠️ UNABLE TO FULLY TEST: Frontend account selection issue prevents complete UI testing. Backend API verified working correctly - PAG-E-2026-00008 (reconciled) properly filtered when conciliado=false parameter used. Frontend implementation appears correct but account dropdown not populating with bank accounts, preventing search functionality. Issue likely related to empresa context or account filtering logic."
+        comment: "Need to test opening payment assignment modal by clicking green '+ S/ 0.00' button, verify modal loads with correct form fields and account selection."
 
-  - task: "Bank Reconciliation - Movimientos Banco filter"
+  - task: "VentasPOS - Payment form completion"
     implemented: true
     working: "NA"
-    file: "/app/frontend/src/pages/ConciliacionBancaria.jsx"
-    stuck_count: 1
+    file: "/app/frontend/src/pages/VentasPOS.jsx"
+    stuck_count: 0
     priority: "high"
     needs_retesting: true
     status_history:
       - working: "NA"
-        agent: "main"
-        comment: "Added filtroBanco state (line 42) and filter buttons in Movimientos Banco tab (lines 481-519). Applied filter logic in table rendering (line 815) to show either pendientes (!m.procesado) or conciliados (m.procesado) bank movements. This fixes the Conciliados filter functionality."
+        agent: "testing"
+        comment: "Need to test filling payment form: account selection, payment method (default Efectivo), pre-filled amount and reference, and clicking 'Agregar Pago' button."
+
+  - task: "VentasPOS - Auto-confirmation functionality"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/VentasPOS.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
       - working: "NA"
         agent: "testing"
-        comment: "⚠️ UNABLE TO FULLY TEST: Same frontend account selection issue prevents testing of filter buttons. Code implementation looks correct - filter buttons present in UI (lines 481-519), proper state management with filtroBanco, and correct filtering logic in table rendering. Backend API supports procesado filtering correctly."
+        comment: "Need to verify auto-confirmation when payment amount equals total sale amount. Should show success toast 'Pago agregado y venta confirmada automáticamente' and close modal."
+
+  - task: "VentasPOS - Confirmadas tab verification"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/VentasPOS.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Need to verify sale appears in Confirmadas tab after auto-confirmation, with green amount in 'PAGOS ASIGNADOS' column and eye icon button."
+
+  - task: "VentasPOS - Excel export functionality"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/VentasPOS.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Need to test clicking eye icon button to export payments to Excel and verify success toast 'Exportados X pagos a Excel'."
 
 test_plan:
   current_focus:
