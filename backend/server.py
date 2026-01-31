@@ -2799,11 +2799,13 @@ async def get_pagos_oficiales_venta_pos(id: int):
         await conn.execute("SET search_path TO finanzas2, public")
         
         pagos = await conn.fetch("""
-            SELECT p.id, p.numero, p.fecha, p.forma_pago, p.monto_total as monto,
-                   p.referencia, p.observaciones, cf.nombre as cuenta_nombre
-            FROM finanzas2.cont_pago p
-            LEFT JOIN finanzas2.cont_cuenta_financiera cf ON cf.id = p.cuenta_financiera_id
-            WHERE p.venta_pos_id = $1
+            SELECT p.id, p.numero, p.fecha, pd.medio_pago as forma_pago, pd.monto,
+                   pd.referencia, p.notas as observaciones, cf.nombre as cuenta_nombre
+            FROM finanzas2.cont_pago_aplicacion pa
+            JOIN finanzas2.cont_pago p ON p.id = pa.pago_id
+            LEFT JOIN finanzas2.cont_pago_detalle pd ON pd.pago_id = p.id
+            LEFT JOIN finanzas2.cont_cuenta_financiera cf ON cf.id = pd.cuenta_financiera_id
+            WHERE pa.tipo_documento = 'venta_pos' AND pa.documento_id = $1
             ORDER BY p.fecha DESC, p.id DESC
         """, id)
         
