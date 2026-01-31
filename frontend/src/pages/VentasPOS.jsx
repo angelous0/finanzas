@@ -198,6 +198,89 @@ export const VentasPOS = () => {
       XLSX.writeFile(wb, filename);
       toast.success(`Exportadas ${excelData.length} ventas a Excel`);
     } catch (error) {
+
+
+  // Payment modal functions
+  const openPagosModal = async (venta) => {
+    setVentaSeleccionada(venta);
+    setShowPagosModal(true);
+    setLoadingPagos(true);
+    try {
+      const response = await getPagosVentaPOS(venta.id);
+      setPagos(response.data);
+    } catch (error) {
+      console.error('Error loading pagos:', error);
+      toast.error('Error al cargar pagos');
+    } finally {
+      setLoadingPagos(false);
+    }
+  };
+
+  const closePagosModal = () => {
+    setShowPagosModal(false);
+    setVentaSeleccionada(null);
+    setPagos([]);
+    setNuevoPago({
+      forma_pago: 'Efectivo',
+      monto: '',
+      referencia: '',
+      fecha_pago: new Date().toISOString().split('T')[0],
+      observaciones: ''
+    });
+  };
+
+  const handleAddPago = async () => {
+    if (!nuevoPago.monto || parseFloat(nuevoPago.monto) <= 0) {
+      toast.error('Ingrese un monto válido');
+      return;
+    }
+
+    try {
+      const response = await addPagoVentaPOS(ventaSeleccionada.id, {
+        ...nuevoPago,
+        monto: parseFloat(nuevoPago.monto)
+      });
+      
+      if (response.data.auto_confirmed) {
+        toast.success('✅ ' + response.data.message);
+        closePagosModal();
+        loadVentas();
+      } else {
+        toast.success(response.data.message + ` (Falta: S/ ${response.data.faltante.toFixed(2)})`);
+        // Reload pagos
+        const pagosResp = await getPagosVentaPOS(ventaSeleccionada.id);
+        setPagos(pagosResp.data);
+        
+        // Reset form
+        setNuevoPago({
+          ...nuevoPago,
+          monto: '',
+          referencia: '',
+          observaciones: ''
+        });
+      }
+    } catch (error) {
+      console.error('Error adding pago:', error);
+      toast.error('Error al agregar pago');
+    }
+  };
+
+  const handleDeletePago = async (pagoId) => {
+    if (!window.confirm('¿Eliminar este pago?')) return;
+    
+    try {
+      await deletePagoVentaPOS(ventaSeleccionada.id, pagoId);
+      toast.success('Pago eliminado');
+      
+      // Reload pagos
+      const response = await getPagosVentaPOS(ventaSeleccionada.id);
+      setPagos(response.data);
+    } catch (error) {
+      console.error('Error deleting pago:', error);
+      toast.error('Error al eliminar pago');
+    }
+  };
+
       console.error('Error exporting:', error);
       toast.error('Error al exportar a Excel');
     }
