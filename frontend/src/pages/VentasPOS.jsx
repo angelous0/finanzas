@@ -284,11 +284,6 @@ export const VentasPOS = () => {
     }
   };
 
-      console.error('Error exporting:', error);
-      toast.error('Error al exportar a Excel');
-    }
-  };
-
   // Filter ventas by search
   const filteredVentas = ventas.filter(v => {
     if (!search) return true;
