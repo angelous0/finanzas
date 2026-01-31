@@ -2853,7 +2853,7 @@ async def add_pago_venta_pos(id: int, pago: dict):
                         INSERT INTO finanzas2.cont_pago 
                         (tipo, numero, fecha, cuenta_financiera_id, forma_pago, 
                          monto_total, referencia, observaciones, venta_pos_id, conciliado)
-                        VALUES ('egreso', $1, $2, $3, $4, $5, $6, $7, $8, false)
+                        VALUES ('egreso', $1, $2::date, $3, $4, $5, $6, $7, $8, false)
                     """, numero_pago, pago_item['fecha_pago'], pago_item['cuenta_financiera_id'],
                         pago_item['forma_pago'], pago_item['monto'], pago_item['referencia'],
                         f"Pago de venta POS {venta['name']} - {pago_item['observaciones'] or ''}", id)
