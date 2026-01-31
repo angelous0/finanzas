@@ -552,13 +552,13 @@ export const VentasPOS = () => {
                         ) : (
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.25rem' }}>
                             <span style={{ color: '#059669', fontSize: '0.875rem', fontWeight: 600 }}>
-                              S/ {venta.pagos_asignados ? parseFloat(venta.pagos_asignados).toFixed(2) : '0.00'}
+                              S/ {venta.pagos_oficiales ? parseFloat(venta.pagos_oficiales).toFixed(2) : '0.00'}
                             </span>
-                            {venta.num_pagos > 0 && (
+                            {venta.num_pagos_oficiales > 0 && (
                               <button
                                 className="btn btn-sm btn-outline"
                                 onClick={() => verPagosConfirmada(venta)}
-                                title="Ver pagos en Excel"
+                                title="Ver y exportar pagos"
                                 style={{ padding: '0.25rem', fontSize: '0.7rem' }}
                               >
                                 <Eye size={12} />
