@@ -551,9 +551,21 @@ export const VentasPOS = () => {
                             S/ {venta.pagos_asignados ? parseFloat(venta.pagos_asignados).toFixed(2) : '0.00'}
                           </button>
                         ) : (
-                          <span style={{ color: '#666', fontSize: '0.85rem' }}>
-                            S/ {venta.pagos_asignados ? parseFloat(venta.pagos_asignados).toFixed(2) : '0.00'}
-                          </span>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.25rem' }}>
+                            <span style={{ color: '#059669', fontSize: '0.875rem', fontWeight: 600 }}>
+                              S/ {venta.pagos_asignados ? parseFloat(venta.pagos_asignados).toFixed(2) : '0.00'}
+                            </span>
+                            {venta.num_pagos > 0 && (
+                              <button
+                                className="btn btn-sm btn-outline"
+                                onClick={() => verPagosConfirmada(venta)}
+                                title="Ver pagos en Excel"
+                                style={{ padding: '0.25rem', fontSize: '0.7rem' }}
+                              >
+                                <Eye size={12} />
+                              </button>
+                            )}
+                          </div>
                         )}
                       </td>
                       <td className="text-right" style={{ fontWeight: 500 }}>
