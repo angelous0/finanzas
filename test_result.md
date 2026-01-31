@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Test VentasPOS complete payment assignment and auto-confirmation flow - Verify Pendientes tab, payment assignment modal, auto-confirmation, Confirmadas tab, and Excel export functionality"
+user_problem_statement: "Test VentasPOS complete payment assignment and auto-confirmation flow with official payment creation - Verify backend flow creates records in cont_pago, cont_pago_detalle, and cont_pago_aplicacion tables"
 
 backend:
   - task: "VentasPOS - Payment insertion backend fix"
@@ -119,6 +119,21 @@ backend:
       - working: true
         agent: "testing"
         comment: "✅ FIXED: Updated payment insertion code (lines 2872-2890) to use correct database schema. Now inserts into cont_pago table with proper columns (numero, tipo, fecha, cuenta_financiera_id, moneda_id, monto_total, referencia, notas) and cont_pago_detalle table for payment method details. Payment addition now working correctly."
+
+  - task: "VentasPOS - Complete payment confirmation flow"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Need to test complete flow: 1) Get pending sale 2) Get financial accounts 3) Assign payment with auto-confirmation 4) Verify sale confirmed 5) Verify official payments created in cont_pago tables 6) Verify pagos_oficiales and num_pagos_oficiales fields updated"
+      - working: true
+        agent: "testing"
+        comment: "✅ COMPREHENSIVE FLOW TESTED: Complete VentasPOS payment confirmation flow working perfectly. Tested sale ID=73 (BOSH GAMARRA/1277, Total=155.0): 1) Found pending sale ✅ 2) Got financial account (Caja Chica) ✅ 3) Assigned payment with auto-confirmation ✅ 4) Sale confirmed automatically ✅ 5) Official payment created (PAG-E-2026-00015) in cont_pago, cont_pago_detalle, cont_pago_aplicacion tables ✅ 6) Fields pagos_oficiales=155.0 and num_pagos_oficiales=1 correctly updated ✅. All database records created correctly as expected."
 
 frontend:
   - task: "VentasPOS - Pendientes tab navigation"
