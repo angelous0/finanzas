@@ -2702,12 +2702,30 @@ async def sync_ventas_pos(company: str = "ambission", days_back: int = 30):
 
 @api_router.post("/ventas-pos/{id}/confirmar")
 async def confirmar_venta_pos(id: int):
+    """
+    Confirm a POS sale. 
+    NOTE: Should have assigned payments before confirming, but this is not enforced yet.
+    """
     pool = await get_pool()
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
+        
+        # TODO: Validate that venta has assigned payments
+        # For now, just check if it exists
+        venta = await conn.fetchrow("SELECT * FROM finanzas2.cont_venta_pos WHERE id = $1", id)
+        if not venta:
+            raise HTTPException(404, "Venta not found")
+        
+        # Check if already processed
+        if venta['estado_local'] in ['confirmada', 'credito', 'descartada']:
+            raise HTTPException(400, f"Venta already {venta['estado_local']}")
+        
+        # TODO: Check if has payments assigned
+        # For now, just confirm
         await conn.execute("""
             UPDATE finanzas2.cont_venta_pos SET estado_local = 'confirmada' WHERE id = $1
         """, id)
+        
         return {"message": "Venta confirmada"}
 
 @api_router.post("/ventas-pos/{id}/credito")
