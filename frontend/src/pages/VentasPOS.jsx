@@ -250,7 +250,7 @@ export const VentasPOS = () => {
   // Ver pagos de venta confirmada
   const verPagosConfirmada = async (venta) => {
     try {
-      const response = await getPagosVentaPOS(venta.id);
+      const response = await getPagosOficialesVentaPOS(venta.id);
       const pagosData = response.data;
       
       if (pagosData.length === 0) {
@@ -260,10 +260,12 @@ export const VentasPOS = () => {
       
       // Export to Excel
       const excelData = pagosData.map(p => ({
+        'Número': p.numero,
         'Forma de Pago': p.forma_pago,
         'Monto': p.monto,
+        'Cuenta': p.cuenta_nombre || '-',
         'Referencia': p.referencia || '-',
-        'Fecha': new Date(p.fecha_pago).toLocaleDateString('es-PE'),
+        'Fecha': new Date(p.fecha).toLocaleDateString('es-PE'),
         'Observaciones': p.observaciones || '-'
       }));
       
