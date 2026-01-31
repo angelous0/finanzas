@@ -622,14 +622,16 @@ class FinanzasAPITester:
                      f"Found {len(pagos_oficiales)} official payments")
         
         # Step 6: Verify pagos_oficiales and num_pagos_oficiales fields in sale
-        success, venta_detail, status = self.make_request('GET', f'ventas-pos/{venta_id}')
-        if not success or not venta_detail:
-            self.log_test("VentasPOS Flow - Get Sale Details", False, f"Failed to get sale details: {venta_detail}")
+        # Get the sale again from the confirmed sales list to check the calculated fields
+        success, ventas_updated, status = self.make_request('GET', 'ventas-pos', params={'estado': 'confirmada'})
+        if not success:
+            self.log_test("VentasPOS Flow - Get Updated Sale Details", False, f"Failed to get updated sales: {ventas_updated}")
             return False
         
-        # The API returns a list, so get the first item
-        if isinstance(venta_detail, list) and len(venta_detail) > 0:
-            venta_detail = venta_detail[0]
+        venta_detail = next((v for v in ventas_updated if v['id'] == venta_id), None)
+        if not venta_detail:
+            self.log_test("VentasPOS Flow - Find Updated Sale", False, "Updated sale not found in confirmed sales")
+            return False
         
         pagos_oficiales_amount = venta_detail.get('pagos_oficiales', 0)
         num_pagos_oficiales = venta_detail.get('num_pagos_oficiales', 0)
