@@ -98,13 +98,22 @@ export const VentasPOS = () => {
   };
 
   const handleConfirmar = async (id) => {
+    // TODO: Check if venta has assigned payments before confirming
+    // For now, show a confirmation dialog
+    if (!window.confirm('¿Confirmar esta venta? Debe tener pagos asignados.')) return;
+    
     try {
       await confirmarVentaPOS(id);
       toast.success('Venta confirmada');
       loadVentas();
     } catch (error) {
       console.error('Error confirming:', error);
-      toast.error('Error al confirmar venta');
+      // Check if error is due to missing payments
+      if (error.response?.data?.detail?.includes('pago')) {
+        toast.error('Error: Debe asignar pagos antes de confirmar');
+      } else {
+        toast.error('Error al confirmar venta');
+      }
     }
   };
 
@@ -191,9 +200,10 @@ export const VentasPOS = () => {
     );
   });
 
-  // Calculate KPIs
-  const totalVentas = filteredVentas.length;
-  const montoTotal = filteredVentas.reduce((sum, v) => sum + parseFloat(v.amount_total || 0), 0);
+  // Calculate KPIs - ONLY confirmed sales count as real sales
+  const ventasConfirmadas = filteredVentas.filter(v => v.estado_local === 'confirmada');
+  const totalVentas = ventasConfirmadas.length;
+  const montoTotal = ventasConfirmadas.reduce((sum, v) => sum + parseFloat(v.amount_total || 0), 0);
 
   const tabs = [
     { id: 'pendiente', label: 'Pendientes' },
