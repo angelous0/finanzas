@@ -2868,15 +2868,25 @@ async def add_pago_venta_pos(id: int, pago: dict):
                     
                     numero_pago = f"PAG-E-{datetime.now().year}-{num:05d}"
                     
-                    # Insertar en cont_pago
-                    await conn.execute("""
+                    # Insertar en cont_pago (using correct schema)
+                    pago_result = await conn.fetchrow("""
                         INSERT INTO finanzas2.cont_pago 
-                        (tipo, numero, fecha, cuenta_financiera_id, forma_pago, 
-                         monto_total, referencia, observaciones, venta_pos_id, conciliado)
-                        VALUES ('egreso', $1, $2::date, $3, $4, $5, $6, $7, $8, false)
+                        (numero, tipo, fecha, cuenta_financiera_id, moneda_id, monto_total, referencia, notas)
+                        VALUES ($1, 'egreso', $2::date, $3, 1, $4, $5, $6)
+                        RETURNING id
                     """, numero_pago, pago_item['fecha_pago'], pago_item['cuenta_financiera_id'],
-                        pago_item['forma_pago'], pago_item['monto'], pago_item['referencia'],
-                        f"Pago de venta POS {venta['name']} - {pago_item['observaciones'] or ''}", id)
+                        pago_item['monto'], pago_item['referencia'],
+                        f"Pago de venta POS {venta['name']} - {pago_item['observaciones'] or ''}")
+                    
+                    pago_id = pago_result['id']
+                    
+                    # Insertar detalle del pago
+                    await conn.execute("""
+                        INSERT INTO finanzas2.cont_pago_detalle 
+                        (pago_id, cuenta_financiera_id, medio_pago, monto, referencia)
+                        VALUES ($1, $2, $3, $4, $5)
+                    """, pago_id, pago_item['cuenta_financiera_id'], pago_item['forma_pago'], 
+                        pago_item['monto'], pago_item['referencia'])
                 
                 return {
                     "message": "Pago agregado y venta confirmada automáticamente", 
