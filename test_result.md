@@ -210,9 +210,12 @@ frontend:
 
 test_plan:
   current_focus:
-    - "Bank Reconciliation - API filtering parameters"
-    - "Bank Reconciliation - Pendientes tab filtering"
-    - "Bank Reconciliation - Movimientos Banco filter"
+    - "VentasPOS - Pendientes tab navigation"
+    - "VentasPOS - Payment assignment modal"
+    - "VentasPOS - Payment form completion"
+    - "VentasPOS - Auto-confirmation functionality"
+    - "VentasPOS - Confirmadas tab verification"
+    - "VentasPOS - Excel export functionality"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
