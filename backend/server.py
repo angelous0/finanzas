@@ -2530,7 +2530,9 @@ async def list_ventas_pos(
         query = f"""
             SELECT v.*, 
                    COALESCE((SELECT SUM(p.monto) FROM finanzas2.cont_venta_pos_pago p WHERE p.venta_pos_id = v.id), 0) as pagos_asignados,
-                   COALESCE((SELECT COUNT(*) FROM finanzas2.cont_venta_pos_pago p WHERE p.venta_pos_id = v.id), 0) as num_pagos
+                   COALESCE((SELECT COUNT(*) FROM finanzas2.cont_venta_pos_pago p WHERE p.venta_pos_id = v.id), 0) as num_pagos,
+                   COALESCE((SELECT SUM(cp.monto_total) FROM finanzas2.cont_pago cp WHERE cp.venta_pos_id = v.id), 0) as pagos_oficiales,
+                   COALESCE((SELECT COUNT(*) FROM finanzas2.cont_pago cp WHERE cp.venta_pos_id = v.id), 0) as num_pagos_oficiales
             FROM finanzas2.cont_venta_pos v
             WHERE {' AND '.join(conditions)}
             ORDER BY v.date_order DESC
