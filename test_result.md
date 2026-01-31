@@ -105,7 +105,7 @@
 user_problem_statement: "Test VentasPOS complete payment assignment and auto-confirmation flow - Verify Pendientes tab, payment assignment modal, auto-confirmation, Confirmadas tab, and Excel export functionality"
 
 backend:
-  - task: "Bank Reconciliation - Save endpoint"
+  - task: "VentasPOS - Payment insertion backend fix"
     implemented: true
     working: true
     file: "/app/backend/server.py"
@@ -113,27 +113,12 @@ backend:
     priority: "high"
     needs_retesting: false
     status_history:
-      - working: "true"
-        agent: "main"
-        comment: "Endpoint POST /api/conciliacion/conciliar already exists at line 2998. Takes banco_ids and pago_ids as query params. Updates procesado=TRUE for bank movements and conciliado=TRUE for system payments. Tested via curl successfully."
-      - working: "true"
+      - working: false
         agent: "testing"
-        comment: "COMPREHENSIVE TESTING COMPLETED: ✅ Backend API endpoint working correctly - accepts banco_ids and pago_ids as query params, returns success message with counts. ✅ Database updates verified - bank movements marked as procesado=TRUE, payments marked as conciliado=TRUE. ✅ Fixed Pago model to include conciliado field. ✅ All core functionality working as expected. Minor fix applied: Added conciliado field to Pago model in models.py to ensure API returns reconciliation status."
-
-  - task: "Bank Reconciliation - API filtering parameters"
-    implemented: true
-    working: true
-    file: "/app/backend/server.py"
-    stuck_count: 0
-    priority: "high"
-    needs_retesting: false
-    status_history:
-      - working: "NA"
-        agent: "main"
-        comment: "Added cuenta_financiera_id and conciliado parameters to /api/pagos endpoint (lines 1376-1377, 1399-1406). This allows filtering payments by account and reconciliation status to fix the bug where reconciled payments were showing in Pendientes tab."
+        comment: "Database error found: column 'forma_pago' does not exist in 'cont_pago' table. Payment insertion failing with asyncpg.exceptions.UndefinedColumnError."
       - working: true
         agent: "testing"
-        comment: "✅ Backend API filtering VERIFIED: API correctly returns non-reconciled payments (PAG-E-2026-00006, PAG-E-2026-00005, PAG-E-2026-00004) when conciliado=false and reconciled payment (PAG-E-2026-00008) when conciliado=true. Bank movements API also working correctly with procesado filtering."
+        comment: "✅ FIXED: Updated payment insertion code (lines 2872-2890) to use correct database schema. Now inserts into cont_pago table with proper columns (numero, tipo, fecha, cuenta_financiera_id, moneda_id, monto_total, referencia, notas) and cont_pago_detalle table for payment method details. Payment addition now working correctly."
 
 frontend:
   - task: "VentasPOS - Pendientes tab navigation"
