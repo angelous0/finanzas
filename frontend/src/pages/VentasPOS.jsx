@@ -555,35 +555,42 @@ export const VentasPOS = () => {
 
       {/* Modal Asignar Pagos */}
       {showPagosModal && ventaSeleccionada && (
-        <div className="modal-overlay" onClick={closePagosModal}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '700px' }}>
-            <div className="modal-header">
-              <h2 className="modal-title">Asignar Pagos - {ventaSeleccionada.name}</h2>
-              <button className="modal-close" onClick={closePagosModal}>×</button>
+        <div className="modal-overlay" onClick={closePagosModal} style={{ backgroundColor: 'rgba(0, 0, 0, 0.6)', backdropFilter: 'blur(4px)' }}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '800px', backgroundColor: '#ffffff', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)' }}>
+            <div className="modal-header" style={{ borderBottom: '2px solid #f3f4f6', paddingBottom: '1rem' }}>
+              <div>
+                <h2 className="modal-title" style={{ fontSize: '1.25rem', fontWeight: 600, color: '#111827' }}>
+                  💳 Asignar Pagos
+                </h2>
+                <p style={{ fontSize: '0.875rem', color: '#6b7280', marginTop: '0.25rem' }}>
+                  {ventaSeleccionada.name} • {ventaSeleccionada.partner_name}
+                </p>
+              </div>
+              <button className="modal-close" onClick={closePagosModal} style={{ fontSize: '1.75rem', color: '#9ca3af' }}>×</button>
             </div>
 
-            <div className="modal-body">
+            <div className="modal-body" style={{ padding: '1.5rem' }}>
               {/* Info de la venta */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem', padding: '1rem', background: '#f8f9fa', borderRadius: '8px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem', marginBottom: '1.5rem', padding: '1.25rem', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', borderRadius: '12px', color: 'white' }}>
                 <div>
-                  <div style={{ fontSize: '0.75rem', color: '#666', marginBottom: '0.25rem' }}>Cliente</div>
-                  <div style={{ fontWeight: 500 }}>{ventaSeleccionada.partner_name}</div>
+                  <div style={{ fontSize: '0.7rem', opacity: 0.9, marginBottom: '0.25rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Cliente</div>
+                  <div style={{ fontWeight: 600, fontSize: '0.875rem' }}>{ventaSeleccionada.partner_name}</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: '0.75rem', color: '#666', marginBottom: '0.25rem' }}>Total Venta</div>
-                  <div style={{ fontWeight: 600, fontSize: '1.25rem', color: '#2563eb' }}>
+                  <div style={{ fontSize: '0.7rem', opacity: 0.9, marginBottom: '0.25rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total Venta</div>
+                  <div style={{ fontWeight: 700, fontSize: '1.25rem' }}>
                     {formatCurrency(ventaSeleccionada.amount_total)}
                   </div>
                 </div>
                 <div>
-                  <div style={{ fontSize: '0.75rem', color: '#666', marginBottom: '0.25rem' }}>Pagos Asignados</div>
-                  <div style={{ fontWeight: 600, color: '#16a34a' }}>
+                  <div style={{ fontSize: '0.7rem', opacity: 0.9, marginBottom: '0.25rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Pagado</div>
+                  <div style={{ fontWeight: 700, fontSize: '1.25rem', color: '#a7f3d0' }}>
                     {formatCurrency(pagos.reduce((sum, p) => sum + parseFloat(p.monto || 0), 0))}
                   </div>
                 </div>
                 <div>
-                  <div style={{ fontSize: '0.75rem', color: '#666', marginBottom: '0.25rem' }}>Faltante</div>
-                  <div style={{ fontWeight: 600, color: '#dc2626' }}>
+                  <div style={{ fontSize: '0.7rem', opacity: 0.9, marginBottom: '0.25rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Faltante</div>
+                  <div style={{ fontWeight: 700, fontSize: '1.25rem', color: '#fca5a5' }}>
                     {formatCurrency(ventaSeleccionada.amount_total - pagos.reduce((sum, p) => sum + parseFloat(p.monto || 0), 0))}
                   </div>
                 </div>
@@ -592,20 +599,23 @@ export const VentasPOS = () => {
               {/* Lista de pagos existentes */}
               {pagos.length > 0 && (
                 <div style={{ marginBottom: '1.5rem' }}>
-                  <h4 style={{ fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.5rem' }}>Pagos Registrados</h4>
-                  <div style={{ border: '1px solid #e5e7eb', borderRadius: '6px', overflow: 'hidden' }}>
+                  <h4 style={{ fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.75rem', color: '#374151' }}>📋 Pagos Registrados</h4>
+                  <div style={{ border: '1px solid #e5e7eb', borderRadius: '8px', overflow: 'hidden', backgroundColor: '#fafbfc' }}>
                     {pagos.map(pago => (
-                      <div key={pago.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.75rem', borderBottom: '1px solid #f3f4f6' }}>
+                      <div key={pago.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.875rem 1rem', borderBottom: '1px solid #f3f4f6', backgroundColor: '#fff' }}>
                         <div style={{ flex: 1 }}>
-                          <div style={{ fontWeight: 500 }}>{pago.forma_pago} - {formatCurrency(pago.monto)}</div>
+                          <div style={{ fontWeight: 600, color: '#111827', marginBottom: '0.125rem' }}>
+                            {pago.forma_pago} - {formatCurrency(pago.monto)}
+                          </div>
                           {pago.referencia && (
-                            <div style={{ fontSize: '0.75rem', color: '#666' }}>Ref: {pago.referencia}</div>
+                            <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>Ref: {pago.referencia}</div>
                           )}
                         </div>
                         <button 
-                          className="btn btn-sm btn-outline"
+                          className="btn btn-sm"
                           onClick={() => handleDeletePago(pago.id)}
-                          style={{ color: '#dc2626' }}
+                          style={{ color: '#dc2626', padding: '0.375rem', backgroundColor: '#fef2f2', border: '1px solid #fecaca', borderRadius: '6px' }}
+                          title="Eliminar pago"
                         >
                           <Trash2 size={14} />
                         </button>
@@ -616,28 +626,36 @@ export const VentasPOS = () => {
               )}
 
               {/* Formulario nuevo pago */}
-              <div style={{ border: '1px solid #e5e7eb', borderRadius: '8px', padding: '1rem', background: '#fafbfc' }}>
-                <h4 style={{ fontSize: '0.875rem', fontWeight: 600, marginBottom: '1rem' }}>Agregar Pago</h4>
+              <div style={{ border: '2px solid #e5e7eb', borderRadius: '12px', padding: '1.25rem', background: '#ffffff' }}>
+                <h4 style={{ fontSize: '0.9375rem', fontWeight: 600, marginBottom: '1.25rem', color: '#111827', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <Plus size={18} style={{ color: '#10b981' }} />
+                  Agregar Nuevo Pago
+                </h4>
                 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
                   <div>
-                    <label className="form-label">Forma de Pago</label>
+                    <label className="form-label" style={{ fontWeight: 500, marginBottom: '0.5rem', display: 'block', color: '#374151' }}>
+                      Forma de Pago <span style={{ color: '#dc2626' }}>*</span>
+                    </label>
                     <select 
                       className="form-select"
                       value={nuevoPago.forma_pago}
                       onChange={(e) => setNuevoPago({...nuevoPago, forma_pago: e.target.value})}
+                      style={{ fontSize: '0.9375rem', padding: '0.625rem 0.75rem', borderRadius: '8px', border: '1.5px solid #d1d5db' }}
                     >
-                      <option>Efectivo</option>
-                      <option>Yape</option>
-                      <option>Plin</option>
-                      <option>Transferencia</option>
-                      <option>Tarjeta Débito</option>
-                      <option>Tarjeta Crédito</option>
+                      <option value="Efectivo">💵 Efectivo</option>
+                      <option value="Yape">📱 Yape</option>
+                      <option value="Plin">📱 Plin</option>
+                      <option value="Transferencia">🏦 Transferencia</option>
+                      <option value="Tarjeta Débito">💳 Tarjeta Débito</option>
+                      <option value="Tarjeta Crédito">💳 Tarjeta Crédito</option>
                     </select>
                   </div>
 
                   <div>
-                    <label className="form-label">Monto</label>
+                    <label className="form-label" style={{ fontWeight: 500, marginBottom: '0.5rem', display: 'block', color: '#374151' }}>
+                      Monto <span style={{ color: '#dc2626' }}>*</span>
+                    </label>
                     <input 
                       type="number"
                       className="form-input"
@@ -645,61 +663,93 @@ export const VentasPOS = () => {
                       step="0.01"
                       value={nuevoPago.monto}
                       onChange={(e) => setNuevoPago({...nuevoPago, monto: e.target.value})}
-                    />
-                  </div>
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
-                  <div>
-                    <label className="form-label">Referencia</label>
-                    <input 
-                      type="text"
-                      className="form-input"
-                      placeholder="Nro. operación, etc."
-                      value={nuevoPago.referencia}
-                      onChange={(e) => setNuevoPago({...nuevoPago, referencia: e.target.value})}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="form-label">Fecha</label>
-                    <input 
-                      type="date"
-                      className="form-input"
-                      value={nuevoPago.fecha_pago}
-                      onChange={(e) => setNuevoPago({...nuevoPago, fecha_pago: e.target.value})}
+                      style={{ fontSize: '0.9375rem', padding: '0.625rem 0.75rem', borderRadius: '8px', border: '1.5px solid #d1d5db', fontWeight: 600 }}
                     />
                   </div>
                 </div>
 
                 <div style={{ marginBottom: '1rem' }}>
-                  <label className="form-label">Observaciones</label>
+                  <label className="form-label" style={{ fontWeight: 500, marginBottom: '0.5rem', display: 'block', color: '#374151' }}>
+                    Cuenta / Caja <span style={{ color: '#dc2626' }}>*</span>
+                  </label>
+                  <select 
+                    className="form-select"
+                    value={nuevoPago.cuenta_financiera_id}
+                    onChange={(e) => setNuevoPago({...nuevoPago, cuenta_financiera_id: e.target.value})}
+                    style={{ fontSize: '0.9375rem', padding: '0.625rem 0.75rem', borderRadius: '8px', border: '1.5px solid #d1d5db' }}
+                  >
+                    <option value="">Seleccione una cuenta...</option>
+                    {cuentasFinancieras.map(cuenta => (
+                      <option key={cuenta.id} value={cuenta.id}>
+                        {cuenta.tipo === 'banco' ? '🏦' : '💰'} {cuenta.nombre} {cuenta.banco ? `- ${cuenta.banco}` : ''}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+                  <div>
+                    <label className="form-label" style={{ fontWeight: 500, marginBottom: '0.5rem', display: 'block', color: '#374151' }}>
+                      Referencia / N° Comprobante
+                    </label>
+                    <input 
+                      type="text"
+                      className="form-input"
+                      placeholder="Auto-generado..."
+                      value={nuevoPago.referencia}
+                      onChange={(e) => setNuevoPago({...nuevoPago, referencia: e.target.value})}
+                      style={{ fontSize: '0.875rem', padding: '0.625rem 0.75rem', borderRadius: '8px', border: '1.5px solid #d1d5db' }}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="form-label" style={{ fontWeight: 500, marginBottom: '0.5rem', display: 'block', color: '#374151' }}>
+                      Fecha
+                    </label>
+                    <input 
+                      type="date"
+                      className="form-input"
+                      value={nuevoPago.fecha_pago}
+                      onChange={(e) => setNuevoPago({...nuevoPago, fecha_pago: e.target.value})}
+                      style={{ fontSize: '0.875rem', padding: '0.625rem 0.75rem', borderRadius: '8px', border: '1.5px solid #d1d5db' }}
+                    />
+                  </div>
+                </div>
+
+                <div style={{ marginBottom: '1.25rem' }}>
+                  <label className="form-label" style={{ fontWeight: 500, marginBottom: '0.5rem', display: 'block', color: '#374151' }}>
+                    Observaciones
+                  </label>
                   <textarea 
                     className="form-input"
                     rows="2"
                     placeholder="Opcional..."
                     value={nuevoPago.observaciones}
                     onChange={(e) => setNuevoPago({...nuevoPago, observaciones: e.target.value})}
+                    style={{ fontSize: '0.875rem', padding: '0.625rem 0.75rem', borderRadius: '8px', border: '1.5px solid #d1d5db', resize: 'vertical' }}
                   />
                 </div>
 
                 <button 
                   className="btn btn-primary"
                   onClick={handleAddPago}
-                  style={{ width: '100%' }}
+                  style={{ width: '100%', padding: '0.75rem', fontSize: '0.9375rem', fontWeight: 600, borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
                 >
-                  <Plus size={16} />
+                  <Plus size={18} />
                   Agregar Pago
                 </button>
               </div>
 
-              <div style={{ marginTop: '1rem', padding: '0.75rem', background: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '6px', fontSize: '0.8125rem', color: '#1e40af' }}>
-                💡 <strong>Nota:</strong> Cuando la suma de pagos sea igual al total, la venta se confirmará automáticamente.
+              <div style={{ marginTop: '1.25rem', padding: '1rem', background: '#eff6ff', border: '1.5px solid #bfdbfe', borderRadius: '8px', fontSize: '0.8125rem', color: '#1e40af', display: 'flex', alignItems: 'start', gap: '0.5rem' }}>
+                <span style={{ fontSize: '1.25rem' }}>💡</span>
+                <div>
+                  <strong>Nota:</strong> Cuando la suma de pagos sea igual al total, la venta se confirmará automáticamente.
+                </div>
               </div>
             </div>
 
-            <div className="modal-footer">
-              <button className="btn btn-outline" onClick={closePagosModal}>
+            <div className="modal-footer" style={{ borderTop: '2px solid #f3f4f6', paddingTop: '1rem', display: 'flex', justifyContent: 'flex-end' }}>
+              <button className="btn btn-outline" onClick={closePagosModal} style={{ padding: '0.625rem 1.25rem', borderRadius: '8px' }}>
                 Cerrar
               </button>
             </div>
