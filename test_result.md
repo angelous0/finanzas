@@ -228,12 +228,7 @@ frontend:
 
 test_plan:
   current_focus:
-    - "VentasPOS - Pendientes tab navigation"
-    - "VentasPOS - Payment assignment modal"
-    - "VentasPOS - Payment form completion"
-    - "VentasPOS - Auto-confirmation functionality"
-    - "VentasPOS - Confirmadas tab verification"
-    - "VentasPOS - Excel export functionality"
+    - "VentasPOS - Complete payment confirmation flow"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
@@ -245,3 +240,5 @@ agent_communication:
     message: "CRITICAL BACKEND FIX APPLIED: Found and fixed database schema error in payment insertion. The cont_pago table was missing 'forma_pago' column causing payment addition to fail. Updated code to use correct schema with cont_pago and cont_pago_detalle tables. Backend restarted successfully."
   - agent: "testing"
     message: "✅ VENTAS POS TESTING COMPLETED SUCCESSFULLY: All 6 core functionalities working perfectly! 1) Pendientes tab navigation ✅ 2) Payment modal opening ✅ 3) Form completion with pre-filled data ✅ 4) Auto-confirmation when payment equals total ✅ 5) Sale appears in Confirmadas tab ✅ 6) Excel export functionality ✅. Complete payment assignment and auto-confirmation flow is fully functional. Ready for production use."
+  - agent: "testing"
+    message: "✅ BACKEND PAYMENT FLOW COMPREHENSIVE TEST COMPLETED: Tested complete VentasPOS payment confirmation flow with official payment creation. All steps working perfectly: 1) Get pending sale (ID=73, Total=155.0) ✅ 2) Get financial accounts ✅ 3) Assign payment with auto-confirmation ✅ 4) Verify sale confirmed ✅ 5) Verify official payments created in cont_pago, cont_pago_detalle, cont_pago_aplicacion tables ✅ 6) Verify pagos_oficiales=155.0 and num_pagos_oficiales=1 fields correctly updated ✅. Backend flow creates all required database records as expected. Payment number PAG-E-2026-00015 generated correctly."
