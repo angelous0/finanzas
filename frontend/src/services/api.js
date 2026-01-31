@@ -133,6 +133,7 @@ export const descartarVentaPOS = (id) => api.post(`/ventas-pos/${id}/descartar`)
 
 // Ventas POS - Pagos
 export const getPagosVentaPOS = (ventaId) => api.get(`/ventas-pos/${ventaId}/pagos`);
+export const getPagosOficialesVentaPOS = (ventaId) => api.get(`/ventas-pos/${ventaId}/pagos-oficiales`);
 export const addPagoVentaPOS = (ventaId, pago) => api.post(`/ventas-pos/${ventaId}/pagos`, pago);
 export const deletePagoVentaPOS = (ventaId, pagoId) => api.delete(`/ventas-pos/${ventaId}/pagos/${pagoId}`);
 
