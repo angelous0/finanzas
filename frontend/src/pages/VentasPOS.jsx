@@ -456,8 +456,21 @@ export const VentasPOS = () => {
                         {venta.x_pagos || '-'}
                       </td>
                       <td className="text-center">
-                        {/* TODO: Show assigned payments count */}
-                        <span style={{ color: '#666', fontSize: '0.85rem' }}>-</span>
+                        {venta.estado_local === 'pendiente' ? (
+                          <button 
+                            className="btn btn-sm btn-primary"
+                            onClick={() => openPagosModal(venta)}
+                            title="Asignar pagos"
+                            style={{ fontSize: '0.75rem', padding: '0.25rem 0.5rem' }}
+                          >
+                            <Plus size={12} style={{ marginRight: '0.25rem' }} />
+                            S/ {venta.pagos_asignados ? parseFloat(venta.pagos_asignados).toFixed(2) : '0.00'}
+                          </button>
+                        ) : (
+                          <span style={{ color: '#666', fontSize: '0.85rem' }}>
+                            S/ {venta.pagos_asignados ? parseFloat(venta.pagos_asignados).toFixed(2) : '0.00'}
+                          </span>
+                        )}
                       </td>
                       <td className="text-right" style={{ fontWeight: 500 }}>
                         {formatCurrency(venta.amount_total)}
