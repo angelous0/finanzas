@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Test Bank Reconciliation filtering functionality - Verify that reconciled payments don't appear in Pendientes tab and that Movimientos Banco filter works correctly"
+user_problem_statement: "Test VentasPOS complete payment assignment and auto-confirmation flow - Verify Pendientes tab, payment assignment modal, auto-confirmation, Confirmadas tab, and Excel export functionality"
 
 backend:
   - task: "Bank Reconciliation - Save endpoint"
