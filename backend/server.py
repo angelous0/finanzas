@@ -2787,6 +2787,24 @@ async def get_pagos_venta_pos(id: int):
         
         return [dict(p) for p in pagos]
 
+@api_router.get("/ventas-pos/{id}/pagos-oficiales")
+async def get_pagos_oficiales_venta_pos(id: int):
+    """Get official payments from cont_pago for a confirmed POS sale"""
+    pool = await get_pool()
+    async with pool.acquire() as conn:
+        await conn.execute("SET search_path TO finanzas2, public")
+        
+        pagos = await conn.fetch("""
+            SELECT p.id, p.numero, p.fecha, p.forma_pago, p.monto_total as monto,
+                   p.referencia, p.observaciones, cf.nombre as cuenta_nombre
+            FROM finanzas2.cont_pago p
+            LEFT JOIN finanzas2.cont_cuenta_financiera cf ON cf.id = p.cuenta_financiera_id
+            WHERE p.venta_pos_id = $1
+            ORDER BY p.fecha DESC, p.id DESC
+        """, id)
+        
+        return [dict(p) for p in pagos]
+
 @api_router.post("/ventas-pos/{id}/pagos")
 async def add_pago_venta_pos(id: int, pago: dict):
     """Add a payment to a POS sale. Auto-confirms if total matches."""
