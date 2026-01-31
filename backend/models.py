@@ -584,6 +584,8 @@ class VentaPOS(BaseModel):
     cxc_id: Optional[int] = None
     pagos_asignados: Optional[float] = 0
     num_pagos: Optional[int] = 0
+    pagos_oficiales: Optional[float] = 0
+    num_pagos_oficiales: Optional[int] = 0
     synced_at: Optional[datetime] = None
 
 # =====================
