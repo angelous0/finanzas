@@ -2528,9 +2528,12 @@ async def list_ventas_pos(
             idx += 1
         
         query = f"""
-            SELECT * FROM finanzas2.cont_venta_pos
+            SELECT v.*, 
+                   COALESCE((SELECT SUM(p.monto) FROM finanzas2.cont_venta_pos_pago p WHERE p.venta_pos_id = v.id), 0) as pagos_asignados,
+                   COALESCE((SELECT COUNT(*) FROM finanzas2.cont_venta_pos_pago p WHERE p.venta_pos_id = v.id), 0) as num_pagos
+            FROM finanzas2.cont_venta_pos v
             WHERE {' AND '.join(conditions)}
-            ORDER BY date_order DESC
+            ORDER BY v.date_order DESC
         """
         rows = await conn.fetch(query, *params)
         return [dict(r) for r in rows]
