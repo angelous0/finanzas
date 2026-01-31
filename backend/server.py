@@ -2887,6 +2887,13 @@ async def add_pago_venta_pos(id: int, pago: dict):
                         VALUES ($1, $2, $3, $4, $5)
                     """, pago_id, pago_item['cuenta_financiera_id'], pago_item['forma_pago'], 
                         pago_item['monto'], pago_item['referencia'])
+                    
+                    # Vincular el pago con la venta POS en cont_pago_aplicacion
+                    await conn.execute("""
+                        INSERT INTO finanzas2.cont_pago_aplicacion
+                        (pago_id, tipo_documento, documento_id, monto_aplicado)
+                        VALUES ($1, 'venta_pos', $2, $3)
+                    """, pago_id, id, pago_item['monto'])
                 
                 return {
                     "message": "Pago agregado y venta confirmada automáticamente", 
