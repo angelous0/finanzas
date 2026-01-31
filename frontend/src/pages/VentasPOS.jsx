@@ -198,7 +198,10 @@ export const VentasPOS = () => {
       XLSX.writeFile(wb, filename);
       toast.success(`Exportadas ${excelData.length} ventas a Excel`);
     } catch (error) {
-
+      console.error('Error exporting:', error);
+      toast.error('Error al exportar a Excel');
+    }
+  };
 
   // Payment modal functions
   const openPagosModal = async (venta) => {
