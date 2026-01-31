@@ -332,31 +332,38 @@ export const VentasPOS = () => {
               <table className="data-table" data-testid="ventas-table">
                 <thead>
                   <tr>
-                    <th>Orden</th>
                     <th>Fecha</th>
-                    <th>Cliente</th>
+                    <th>Tipo</th>
+                    <th>N° Comprobante</th>
+                    <th>Orden</th>
                     <th>Empresa</th>
-                    <th>Vendedor</th>
-                    <th className="text-right">Monto</th>
-                    <th>Estado</th>
+                    <th>Cliente</th>
+                    <th>Tienda</th>
+                    <th>Pagos Odoo</th>
+                    <th>Pagos Asignados</th>
+                    <th className="text-right">Total</th>
                     <th className="text-center">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredVentas.map((venta) => (
                     <tr key={venta.id} data-testid={`venta-row-${venta.id}`}>
-                      <td style={{ fontWeight: 500 }}>{venta.name}</td>
                       <td>{formatDateTime(venta.date_order)}</td>
-                      <td>{venta.partner_name || '-'}</td>
+                      <td>{venta.tipo_comp || '-'}</td>
+                      <td>{venta.num_comp || '-'}</td>
+                      <td style={{ fontWeight: 500 }}>{venta.name}</td>
                       <td>{venta.company_name || '-'}</td>
-                      <td>{venta.vendedor_name || '-'}</td>
+                      <td>{venta.partner_name || '-'}</td>
+                      <td>{venta.tienda_name || '-'}</td>
+                      <td style={{ fontSize: '0.8rem', maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {venta.x_pagos || '-'}
+                      </td>
+                      <td className="text-center">
+                        {/* TODO: Show assigned payments count */}
+                        <span style={{ color: '#666', fontSize: '0.85rem' }}>-</span>
+                      </td>
                       <td className="text-right" style={{ fontWeight: 500 }}>
                         {formatCurrency(venta.amount_total)}
-                      </td>
-                      <td>
-                        <span className={estadoBadge(venta.estado_local)}>
-                          {venta.estado_local}
-                        </span>
                       </td>
                       <td className="text-center">
                         {venta.estado_local === 'pendiente' && (
@@ -364,7 +371,7 @@ export const VentasPOS = () => {
                             <button 
                               className="btn btn-outline btn-sm btn-icon"
                               onClick={() => handleConfirmar(venta.id)}
-                              title="Confirmar"
+                              title="Confirmar (requiere pagos asignados)"
                               data-testid={`confirmar-${venta.id}`}
                             >
                               <Check size={14} />
@@ -372,7 +379,7 @@ export const VentasPOS = () => {
                             <button 
                               className="btn btn-outline btn-sm btn-icon"
                               onClick={() => handleCredito(venta.id)}
-                              title="Marcar Crédito"
+                              title="Marcar Crédito (va a módulo CxC)"
                               data-testid={`credito-${venta.id}`}
                             >
                               <CreditCard size={14} />
