@@ -66,8 +66,10 @@ export const VentasPOS = () => {
   const [ventaSeleccionada, setVentaSeleccionada] = useState(null);
   const [pagos, setPagos] = useState([]);
   const [loadingPagos, setLoadingPagos] = useState(false);
+  const [cuentasFinancieras, setCuentasFinancieras] = useState([]);
   const [nuevoPago, setNuevoPago] = useState({
     forma_pago: 'Efectivo',
+    cuenta_financiera_id: '',
     monto: '',
     referencia: '',
     fecha_pago: new Date().toISOString().split('T')[0],
