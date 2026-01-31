@@ -130,6 +130,12 @@ export const marcarCreditoVentaPOS = (id, fechaVencimiento) =>
   api.post(`/ventas-pos/${id}/credito`, null, { params: { fecha_vencimiento: fechaVencimiento } });
 export const descartarVentaPOS = (id) => api.post(`/ventas-pos/${id}/descartar`);
 
+
+// Ventas POS - Pagos
+export const getPagosVentaPOS = (ventaId) => api.get(`/ventas-pos/${ventaId}/pagos`);
+export const addPagoVentaPOS = (ventaId, pago) => api.post(`/ventas-pos/${ventaId}/pagos`, pago);
+export const deletePagoVentaPOS = (ventaId, pagoId) => api.delete(`/ventas-pos/${ventaId}/pagos/${pagoId}`);
+
 // CxC
 export const getCxC = (params) => api.get('/cxc', { params });
 
