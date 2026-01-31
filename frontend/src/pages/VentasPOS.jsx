@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { 
   getVentasPOS, syncVentasPOS, confirmarVentaPOS, 
-  marcarCreditoVentaPOS, descartarVentaPOS 
+  marcarCreditoVentaPOS, descartarVentaPOS,
+  getPagosVentaPOS, addPagoVentaPOS, deletePagoVentaPOS
 } from '../services/api';
-import { RefreshCw, Check, CreditCard, X, Filter, ShoppingCart, Download } from 'lucide-react';
+import { RefreshCw, Check, CreditCard, X, Filter, ShoppingCart, Download, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
 
