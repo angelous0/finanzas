@@ -1,92 +1,165 @@
 <analysis>**original_problem_statement:**
-The user wants to create a QuickBooks-like application named Finanzas 4.0 using PostgreSQL with a  schema.
+The user wants to create a QuickBooks-like application named Finanzas 4.0 using PostgreSQL. This session focused on fixing bugs in the Bank Reconciliation module and then building out a comprehensive POS Sales module () with Odoo integration.
 
-**PRODUCT REQUIREMENTS:**
--   **Core Modules:** Base Catalogs, Purchase Orders, Supplier Invoices (CxP), Centralized Payments, Bills of Exchange (Letras), Expenses, Items/Inventory, Payroll, POS Sales (from Odoo), Budgets, Bank Reconciliation, and Reports. All must have full CRUD.
--   **UI/UX:** Inspired by user screenshots, featuring a fixed sidebar, table-based views with filters, and modern UI elements.
--   **Specific Feature Requests during this session:**
-    -   Implement the save functionality for Bank Reconciliation.
-    -   Add an Excel import preview modal.
-    -   Simplify bank movement data to a single  field and adjust the UI table to show fewer columns.
-    -   Create a new, separate Historial de Conciliaciones page with a user-provided layout, including search, filters, summary cards, and a unified table.
-    -   Add functionality to Desconciliar (un-reconcile) movements from the history page.
-    -   Add an Edit button for payments, blocking deletion if a payment is reconciled and only allowing the  field to be edited.
-    -   Improve UI aesthetics: shorten menu names, add color-coding to differentiate bank vs. system data, and increase padding between the sidebar and page content.
-    -   Relocate the Pendientes/Conciliados filter to the correct tab.
-    -   Fix a bug where reconciled system movements were still visible in the Pendientes view.
+**PRODUCT REQUIREMENTS (This Session):**
+-   **Bug Fixes (Bank Reconciliation):**
+    -   Fix an issue where reconciled system payments still appeared in the Pendientes list.
+    -   Fix a non-functional Conciliados filter in the Movimientos Banco tab.
+    -   Fix the Excel import functionality for the IBK bank format, which was using incorrect column mappings.
+-   **Odoo Integration (Ventas POS):**
+    -   Integrate with the user's Odoo instance to sync POS sales () from two different companies (Ambission and Proyecto Moda), each with its own credentials.
+    -   Map a detailed list of fields from Odoo to the local  table.
+    -   Implement filters on the Ventas POS page, including a company filter that works correctly with the different Odoo company IDs.
+    -   Set default date filters to the previous day and handle all dates in the Lima (UTC-5) timezone.
+    -   Implement an Export to Excel feature.
+    -   Prevent the system from re-importing or updating sales that have already been processed (e.g., confirmed, moved to credit).
+-   **Payment Assignment Workflow (Ventas POS):**
+    -   Create a system for manually assigning payments to POS sales. Pagos Asignados column should be a button that opens a modal.
+    -   The payment modal must:
+        -   Have a professional design with a modal overlay.
+        -   Include fields for Account (), Payment Method, Amount, Date, and Reference.
+        -   Automatically calculate and pre-fill the remaining amount to be paid.
+        -   Automatically generate a reference for subsequent payments (e.g., ).
+    -   When the sum of assigned payments equals the sale total, the sale should be automatically confirmed.
+    -   When a sale is confirmed, the assigned payments must be created as formal records in the main  table.
+    -   When a sale is marked as Crédito, it should create an entry in the Accounts Receivable (CxC) module.
+-   **UI & Logic (Ventas POS):**
+    -   Ensure all tabs (Pendientes, Confirmadas, Crédito, etc.) display the same set of columns.
+    -   For Confirmadas sales, provide a button to view and export the associated payments.
+    -   Dashboard KPIs and reports should only consider confirmed sales.
 
 **User's preferred language**: Spanish
 
 **what currently exists?**
-The application is a full-stack FastAPI/React app using PostgreSQL. It has several functional modules. This session heavily focused on the Bank Reconciliation feature, bringing it to a near-complete state.
-
--   **Conciliacion Bancaria (Bank Reconciliation):**
-    -   Save functionality is now implemented and working.
-    -   Excel import includes a data preview modal and correctly handles different bank formats (BCP, BBVA, IBK).
-    -   The UI for pending movements has been refined.
-    -   A new, separate Historial de Conciliaciones page has been created with a professional layout, summary cards, search/filter capabilities, and color-coded columns to differentiate bank vs. system data.
-    -   Users can desconciliar (un-reconcile) movements directly from the history page.
-    -   A filter to view Pendientes or Conciliados bank movements has been added to the Movimientos Banco tab.
-
--   **Pagos (Payments):**
-    -   Payments now have an Edit functionality.
-    -   The system prevents the deletion of reconciled payments.
-    -   When editing a reconciled payment, only the Referencia field is editable, protecting data integrity.
-
--   **General UI:**
-    -   Global CSS has been updated to add more padding between the sidebar and the main content area for a less cramped look.
+The application is a full-stack FastAPI/React app with a PostgreSQL database.
+-   **Bank Reconciliation:** The critical bugs reported by the user (pending items visibility, broken filter) and the IBK Excel import issue have been fixed.
+-   **Odoo Integration:** A robust, two-way synchronization mechanism for POS Sales () is implemented. It connects to the user's Odoo instance, fetches orders from two separate companies using different credentials, and stores them locally.
+-   **Ventas POS Module:** This module has been significantly built out. It features:
+    -   A multi-tab interface (Pendientes, Confirmadas, etc.).
+    -   Filtering by date and company. Default dates are set to the previous day in the Lima timezone.
+    -   A complete manual payment assignment system via a detailed modal, which includes auto-calculation of remaining amounts and auto-confirmation.
+    -   Logic to prevent re-importing already processed sales.
+    -   Backend logic to create official payment records () upon sale confirmation.
+    -   An Export to Excel functionality.
 
 **Last working item**:
--   **Last item agent was working:** The user reported two final issues: 1) the Pendientes/Conciliados filter was in the wrong tab (Pendientes instead of Movimientos Banco), and 2) after reconciling a transaction, the corresponding system payment was still appearing in the list of pending items. The agent relocated the filter and fixed the logic to correctly hide reconciled system payments.
--   **Status:** USER VERIFICATION PENDING
--   **Agent Testing Done:** Y
+-   **Last item agent was working:** The user reported a frontend compile error after the agent added functionality to view/export payments for confirmed sales. The error is a , indicating a syntax issue like a missing comma or brace in the component's code.
+-   **Status:** IN PROGRESS
+-   **Agent Testing Done:** N
 -   **Which testing method agent to use?** frontend testing agent
 -   **User Testing Done:** N
 
 **All Pending/In progress Issue list**:
--   **Issue 1 (P0):** Verify the latest Bank Reconciliation UI fixes.
--   **Issue 2 (P1):** The company selector filter does not work for the  and  modules.
--   **Issue 3 (P2):** The backend  error, a recurring issue, has still not been investigated.
--   **Issue 4 (P3):** The Payroll () generation modal does not pre-fill the base salary for employees.
+-   **Issue 1 (P0):** Frontend compile error in .
+-   **Issue 2 (P1):** Recurring backend error  related to date conversion.
+-   **Issue 3 (P2):** The company selector filter does not work for the  and  modules.
+-   **Issue 4 (P3):** The backend  error remains uninvestigated.
+-   **Issue 5 (P4):** The Payroll () generation modal does not pre-fill the base salary.
 
 **Issues Detail:**
--   **Issue 1: Verify Bank Reconciliation UI Fixes**
-    -   **Attempted fixes:** The agent moved the filter component to the Movimientos Banco tab and updated the  function in  to filter out reconciled system payments from the Pendientes view.
+-   **Issue 1: Frontend compile error in **
+    -   **Attempted fixes:** None yet. The error appeared right at the end of the last session.
     -   **Next debug checklist:**
-        1.  Ask the user to test the Bank Reconciliation page.
-        2.  Confirm that the Pendientes/Conciliados filter only appears and works within the Movimientos Banco tab.
-        3.  Confirm that after reconciling an item, the corresponding system payment disappears from the Movimientos del Sistema list in the Pendientes tab.
-    -   **Why fix this issue and what will be achieved with the fix?** To confirm the successful implementation of the user's final UI requests for this module.
-    -   **Status:** USER VERIFICATION PENDING
+        1.  Examine  around line 244.
+        2.  Look for missing commas in object definitions, unclosed parentheses, or incorrect function declaration syntax, likely introduced during the last  operation.
+        3.  Check the function definition for  and the code immediately preceding it.
+    -   **Why fix this issue and what will be achieved with the fix?** The frontend is currently broken and will not load. Fixing this is critical to unblock all further development and testing of the  module.
+    -   **Status:** IN PROGRESS
     -   **Is recurring issue?** N
     -   **Should Test frontend/backend/both after fix?** frontend
     -   **Blocked on other issue:** None
 
--   **Issue 2: Company Filter Not Working (Adelantos/Planilla)**
-    -   **Attempted fixes:** None in this session. The issue was identified in a previous session but postponed.
+-   **Issue 2: Recurring backend date conversion error**
+    -   **Attempted fixes:** The agent fixed this error multiple times by changing string-to-date conversions in SQL queries to use  instead of simple casting (). However, the error kept reappearing in different parts of the code.
+    -   **Next debug checklist:**
+        1.  Audit the entire backend () for all  and  queries that handle dates.
+        2.  Ensure every instance where a date string from the frontend or an external API is used in a query, it is explicitly converted using .
+        3.  Consider creating a utility function to handle this conversion to avoid future recurrences.
+    -   **Why fix this issue and what will be achieved with the fix?** This is a persistent, critical bug that breaks core functionality (like adding payments). A definitive fix will stabilize the application.
+    -   **Status:** NOT STARTED
+    -   **Is recurring issue?** Y
+    -   **Should Test frontend/backend/both after fix?** backend
+    -   **Blocked on other issue:** None
+
+-   **Issue 3: Company Filter Not Working (Adelantos/Planilla)**
+    -   **Attempted fixes:** None. Postponed from a previous session.
     -   **Next debug checklist:**
         1.  Add  column to  and .
-        2.  Update all related  and  queries in  to use .
-        3.  Update frontend API calls to pass .
-    -   **Why fix this issue and what will be achieved with the fix?** This is critical for data isolation in a multi-company application.
+        2.  Update backend code in  to filter these modules by .
+    -   **Why fix this issue and what will be achieved with the fix?** Critical for data isolation in a multi-company app.
     -   **Status:** NOT STARTED
     -   **Is recurring issue?** N
     -   **Should Test frontend/backend/both after fix?** both
     -   **Blocked on other issue:** None
 
--   **Issue 3: Ignored Backend 'asyncio' Error**
-    -   **Attempted fixes:** None. This issue has been ignored for several sessions.
-    -   **Next debug checklist:**
-        1.  Check backend logs for the error trace: ==> /var/log/supervisor/backend.err.log <==
-  File "/root/.venv/lib/python3.11/site-packages/asyncpg/connection.py", line 2021, in _do_execute
-    stmt = await self._get_statement(
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/asyncpg/connection.py", line 443, in _get_statement
-    statement = await self._protocol.prepare(
-                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "asyncpg/protocol/protocol.pyx", line 165, in prepare
-asyncpg.exceptions.UndefinedColumnError: column p.tercero_id does not exist
+-   **Issue 4: Ignored Backend 'asyncio' Error**
+    -   **Attempted fixes:** None. Ignored for several sessions.
+    -   **Next debug checklist:** Check backend logs (==> /var/log/supervisor/backend.err.log <==
+    await super().__call__(scope, receive, send)
+  File "/root/.venv/lib/python3.11/site-packages/starlette/applications.py", line 123, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/root/.venv/lib/python3.11/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    raise exc
+  File "/root/.venv/lib/python3.11/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/root/.venv/lib/python3.11/site-packages/starlette/middleware/cors.py", line 93, in __call__
+    await self.simple_response(scope, receive, send, request_headers=headers)
+  File "/root/.venv/lib/python3.11/site-packages/starlette/middleware/cors.py", line 148, in simple_response
+    await self.app(scope, receive, send)
+  File "/root/.venv/lib/python3.11/site-packages/starlette/middleware/exceptions.py", line 65, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/root/.venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 64, in wrapped_app
+    raise exc
+  File "/root/.venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    await app(scope, receive, sender)
+  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 756, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 776, in app
+    await route.handle(scope, receive, send)
+  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 297, in handle
+    await self.app(scope, receive, send)
+  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 77, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/root/.venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 64, in wrapped_app
+    raise exc
+  File "/root/.venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    await app(scope, receive, sender)
+  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 72, in app
+    response = await func(request)
+               ^^^^^^^^^^^^^^^^^^^
+  File "/root/.venv/lib/python3.11/site-packages/fastapi/routing.py", line 278, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/.venv/lib/python3.11/site-packages/fastapi/routing.py", line 191, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/app/backend/server.py", line 2805, in add_pago_venta_pos
+    await conn.execute("""
+  File "/root/.venv/lib/python3.11/site-packages/asyncpg/connection.py", line 357, in execute
+    _, status, _ = await self._execute(
+                   ^^^^^^^^^^^^^^^^^^^^
+  File "/root/.venv/lib/python3.11/site-packages/asyncpg/connection.py", line 1873, in _execute
+    result, _ = await self.__execute(
+                ^^^^^^^^^^^^^^^^^^^^^
+  File "/root/.venv/lib/python3.11/site-packages/asyncpg/connection.py", line 1970, in __execute
+    result, stmt = await self._do_execute(
+                   ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/root/.venv/lib/python3.11/site-packages/asyncpg/connection.py", line 2036, in _do_execute
+    result = await executor(stmt, timeout)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "asyncpg/protocol/protocol.pyx", line 184, in bind_execute
+  File "asyncpg/protocol/prepared_stmt.pyx", line 204, in asyncpg.protocol.protocol.PreparedStatementState._encode_bind_msg
+asyncpg.exceptions.DataError: invalid input for query argument $6: '2026-01-31' ('str' object has no attribute 'toordinal')
 ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "asyncpg/protocol/prepared_stmt.pyx", line 175, in asyncpg.protocol.protocol.PreparedStatementState._encode_bind_msg
+  File "asyncpg/protocol/codecs/base.pyx", line 251, in asyncpg.protocol.protocol.Codec.encode
+  File "asyncpg/protocol/codecs/base.pyx", line 153, in asyncpg.protocol.protocol.Codec.encode_scalar
+  File "asyncpg/pgproto/codecs/datetime.pyx", line 97, in asyncpg.pgproto.pgproto.date_encode
+AttributeError: 'str' object has no attribute 'toordinal'
+
+The above exception was the direct cause of the following exception:
+
 Traceback (most recent call last):
   File "/root/.venv/lib/python3.11/site-packages/uvicorn/protocols/http/h11_impl.py", line 408, in run_asgi
     result = await app(  # type: ignore[func-returns-value]
@@ -133,394 +206,345 @@ Traceback (most recent call last):
   File "/root/.venv/lib/python3.11/site-packages/fastapi/routing.py", line 191, in run_endpoint_function
     return await dependant.call(**values)
            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/app/backend/server.py", line 3040, in get_historial_conciliaciones
-    rows = await conn.fetch("""
-           ^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/asyncpg/connection.py", line 694, in fetch
-    return await self._execute(
-           ^^^^^^^^^^^^^^^^^^^^
+  File "/app/backend/server.py", line 2805, in add_pago_venta_pos
+    await conn.execute("""
+  File "/root/.venv/lib/python3.11/site-packages/asyncpg/connection.py", line 357, in execute
+    _, status, _ = await self._execute(
+                   ^^^^^^^^^^^^^^^^^^^^
   File "/root/.venv/lib/python3.11/site-packages/asyncpg/connection.py", line 1873, in _execute
     result, _ = await self.__execute(
                 ^^^^^^^^^^^^^^^^^^^^^
   File "/root/.venv/lib/python3.11/site-packages/asyncpg/connection.py", line 1970, in __execute
     result, stmt = await self._do_execute(
                    ^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/asyncpg/connection.py", line 2021, in _do_execute
-    stmt = await self._get_statement(
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/asyncpg/connection.py", line 443, in _get_statement
-    statement = await self._protocol.prepare(
-                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "asyncpg/protocol/protocol.pyx", line 165, in prepare
-asyncpg.exceptions.UndefinedColumnError: column p.tercero_id does not exist
-ERROR:    Exception in ASGI application
-Traceback (most recent call last):
-  File "/root/.venv/lib/python3.11/site-packages/uvicorn/protocols/http/h11_impl.py", line 408, in run_asgi
-    result = await app(  # type: ignore[func-returns-value]
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/uvicorn/middleware/proxy_headers.py", line 84, in __call__
-    return await self.app(scope, receive, send)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/fastapi/applications.py", line 1054, in __call__
-    await super().__call__(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/applications.py", line 123, in __call__
-    await self.middleware_stack(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/middleware/errors.py", line 186, in __call__
-    raise exc
-  File "/root/.venv/lib/python3.11/site-packages/starlette/middleware/errors.py", line 164, in __call__
-    await self.app(scope, receive, _send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/middleware/cors.py", line 85, in __call__
-    await self.app(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/middleware/exceptions.py", line 65, in __call__
-    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 64, in wrapped_app
-    raise exc
-  File "/root/.venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
-    await app(scope, receive, sender)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 756, in __call__
-    await self.middleware_stack(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 776, in app
-    await route.handle(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 297, in handle
-    await self.app(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 77, in app
-    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 64, in wrapped_app
-    raise exc
-  File "/root/.venv/lib/python3.11/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
-    await app(scope, receive, sender)
-  File "/root/.venv/lib/python3.11/site-packages/starlette/routing.py", line 72, in app
-    response = await func(request)
-               ^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/fastapi/routing.py", line 278, in app
-    raw_response = await run_endpoint_function(
-                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/fastapi/routing.py", line 191, in run_endpoint_function
-    return await dependant.call(**values)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/app/backend/server.py", line 3040, in get_historial_conciliaciones
-    rows = await conn.fetch("""
-           ^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/asyncpg/connection.py", line 694, in fetch
-    return await self._execute(
-           ^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/asyncpg/connection.py", line 1873, in _execute
-    result, _ = await self.__execute(
-                ^^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/asyncpg/connection.py", line 1970, in __execute
-    result, stmt = await self._do_execute(
-                   ^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/asyncpg/connection.py", line 2021, in _do_execute
-    stmt = await self._get_statement(
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/asyncpg/connection.py", line 443, in _get_statement
-    statement = await self._protocol.prepare(
-                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "asyncpg/protocol/protocol.pyx", line 165, in prepare
-asyncpg.exceptions.UndefinedColumnError: column p.tercero_id does not exist
+  File "/root/.venv/lib/python3.11/site-packages/asyncpg/connection.py", line 2036, in _do_execute
+    result = await executor(stmt, timeout)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "asyncpg/protocol/protocol.pyx", line 184, in bind_execute
+  File "asyncpg/protocol/prepared_stmt.pyx", line 204, in asyncpg.protocol.protocol.PreparedStatementState._encode_bind_msg
+asyncpg.exceptions.DataError: invalid input for query argument $6: '2026-01-31' ('str' object has no attribute 'toordinal')
 WARNING:  WatchFiles detected changes in 'server.py'. Reloading...
 INFO:     Shutting down
 INFO:     Waiting for application shutdown.
-2026-01-30 19:59:12,233 - database - INFO - PostgreSQL connection pool closed
-2026-01-30 19:59:12,233 - server - INFO - Finanzas 4.0 API shutdown complete
+2026-01-31 04:47:56,022 - database - INFO - PostgreSQL connection pool closed
+2026-01-31 04:47:56,022 - server - INFO - Finanzas 4.0 API shutdown complete
 INFO:     Application shutdown complete.
-INFO:     Finished server process [7271]
-INFO:     Started server process [8019]
+INFO:     Finished server process [268]
+INFO:     Started server process [359]
 INFO:     Waiting for application startup.
-2026-01-30 19:59:12,734 - server - INFO - Starting Finanzas 4.0 API...
-2026-01-30 19:59:12,734 - database - INFO - Connecting to PostgreSQL...
-2026-01-30 19:59:13,874 - database - INFO - PostgreSQL connection pool created successfully
-2026-01-30 19:59:19,561 - database - INFO - Schema finanzas2 and all tables created successfully
-2026-01-30 19:59:20,116 - server - INFO - Seed data already exists, skipping...
-2026-01-30 19:59:20,254 - server - INFO - Finanzas 4.0 API started successfully
+2026-01-31 04:47:56,501 - server - INFO - Starting Finanzas 4.0 API...
+2026-01-31 04:47:56,501 - database - INFO - Connecting to PostgreSQL...
+2026-01-31 04:47:57,663 - database - INFO - PostgreSQL connection pool created successfully
+2026-01-31 04:48:03,668 - database - INFO - Schema finanzas2 and all tables created successfully
+2026-01-31 04:48:04,226 - server - INFO - Seed data already exists, skipping...
+2026-01-31 04:48:04,365 - server - INFO - Finanzas 4.0 API started successfully
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'models.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+2026-01-31 04:51:40,269 - database - INFO - PostgreSQL connection pool closed
+2026-01-31 04:51:40,269 - server - INFO - Finanzas 4.0 API shutdown complete
+INFO:     Application shutdown complete.
+INFO:     Finished server process [359]
+INFO:     Started server process [670]
+INFO:     Waiting for application startup.
+2026-01-31 04:51:40,731 - server - INFO - Starting Finanzas 4.0 API...
+2026-01-31 04:51:40,731 - database - INFO - Connecting to PostgreSQL...
+2026-01-31 04:51:41,876 - database - INFO - PostgreSQL connection pool created successfully
+2026-01-31 04:51:47,784 - database - INFO - Schema finanzas2 and all tables created successfully
+2026-01-31 04:51:48,334 - server - INFO - Seed data already exists, skipping...
+2026-01-31 04:51:48,471 - server - INFO - Finanzas 4.0 API started successfully
 INFO:     Application startup complete.
 WARNING:  WatchFiles detected changes in 'server.py'. Reloading...
 INFO:     Shutting down
 INFO:     Waiting for application shutdown.
-2026-01-30 20:09:03,359 - database - INFO - PostgreSQL connection pool closed
-2026-01-30 20:09:03,360 - server - INFO - Finanzas 4.0 API shutdown complete
+2026-01-31 04:56:58,344 - database - INFO - PostgreSQL connection pool closed
+2026-01-31 04:56:58,344 - server - INFO - Finanzas 4.0 API shutdown complete
 INFO:     Application shutdown complete.
-INFO:     Finished server process [8019]
-INFO:     Started server process [8819]
+INFO:     Finished server process [670]
+INFO:     Started server process [772]
 INFO:     Waiting for application startup.
-2026-01-30 20:09:04,077 - server - INFO - Starting Finanzas 4.0 API...
-2026-01-30 20:09:04,077 - database - INFO - Connecting to PostgreSQL...
-2026-01-30 20:09:05,246 - database - INFO - PostgreSQL connection pool created successfully
-2026-01-30 20:09:10,929 - database - INFO - Schema finanzas2 and all tables created successfully
-2026-01-30 20:09:11,482 - server - INFO - Seed data already exists, skipping...
-2026-01-30 20:09:11,619 - server - INFO - Finanzas 4.0 API started successfully
+2026-01-31 04:56:59,018 - server - INFO - Starting Finanzas 4.0 API...
+2026-01-31 04:56:59,018 - database - INFO - Connecting to PostgreSQL...
+2026-01-31 04:57:00,163 - database - INFO - PostgreSQL connection pool created successfully
+2026-01-31 04:57:06,161 - database - INFO - Schema finanzas2 and all tables created successfully
+2026-01-31 04:57:06,720 - server - INFO - Seed data already exists, skipping...
+2026-01-31 04:57:06,860 - server - INFO - Finanzas 4.0 API started successfully
 INFO:     Application startup complete.
 WARNING:  WatchFiles detected changes in 'server.py'. Reloading...
 INFO:     Shutting down
 INFO:     Waiting for application shutdown.
-2026-01-30 20:24:12,980 - database - INFO - PostgreSQL connection pool closed
-2026-01-30 20:24:12,980 - server - INFO - Finanzas 4.0 API shutdown complete
+2026-01-31 05:00:26,270 - database - INFO - PostgreSQL connection pool closed
+2026-01-31 05:00:26,270 - server - INFO - Finanzas 4.0 API shutdown complete
 INFO:     Application shutdown complete.
-INFO:     Finished server process [8819]
-INFO:     Started server process [10082]
+INFO:     Finished server process [772]
+INFO:     Started server process [1192]
 INFO:     Waiting for application startup.
-2026-01-30 20:24:13,482 - server - INFO - Starting Finanzas 4.0 API...
-2026-01-30 20:24:13,482 - database - INFO - Connecting to PostgreSQL...
-2026-01-30 20:24:14,624 - database - INFO - PostgreSQL connection pool created successfully
-2026-01-30 20:24:20,303 - database - INFO - Schema finanzas2 and all tables created successfully
-2026-01-30 20:24:20,856 - server - INFO - Seed data already exists, skipping...
-2026-01-30 20:24:20,994 - server - INFO - Finanzas 4.0 API started successfully
+2026-01-31 05:00:26,998 - server - INFO - Starting Finanzas 4.0 API...
+2026-01-31 05:00:26,998 - database - INFO - Connecting to PostgreSQL...
+2026-01-31 05:00:28,146 - database - INFO - PostgreSQL connection pool created successfully
+2026-01-31 05:00:34,076 - database - INFO - Schema finanzas2 and all tables created successfully
+2026-01-31 05:00:34,630 - server - INFO - Seed data already exists, skipping...
+2026-01-31 05:00:34,767 - server - INFO - Finanzas 4.0 API started successfully
 INFO:     Application startup complete.
 INFO:     Will watch for changes in these directories: ['/app/backend']
 INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
-INFO:     Started reloader process [42] using WatchFiles
-INFO:     Started server process [79]
+INFO:     Started reloader process [48] using WatchFiles
+INFO:     Started server process [85]
 INFO:     Waiting for application startup.
-2026-01-30 20:48:29,042 - server - INFO - Starting Finanzas 4.0 API...
-2026-01-30 20:48:29,042 - database - INFO - Connecting to PostgreSQL...
-2026-01-30 20:48:30,227 - database - INFO - PostgreSQL connection pool created successfully
-2026-01-30 20:48:36,045 - database - INFO - Schema finanzas2 and all tables created successfully
-2026-01-30 20:48:36,616 - server - INFO - Seed data already exists, skipping...
-2026-01-30 20:48:36,754 - server - INFO - Finanzas 4.0 API started successfully
-INFO:     Application startup complete.
+2026-01-31 05:04:33,718 - server - INFO - Starting Finanzas 4.0 API...
+2026-01-31 05:04:33,718 - database - INFO - Connecting to PostgreSQL...
+2026-01-31 05:04:34,881 - database - INFO - PostgreSQL connection pool created successfully
 
 ==> /var/log/supervisor/backend.out.log <==
-INFO:     10.64.129.10:59124 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.129.13:49398 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.135.173:32820 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.129.7:55430 - "GET /api/conciliacion/movimientos-banco?cuenta_financiera_id=1&procesado=true HTTP/1.1" 200 OK
-INFO:     10.64.129.13:49400 - "GET /api/conciliacion/movimientos-banco?cuenta_financiera_id=1&procesado=false HTTP/1.1" 200 OK
-INFO:     10.64.129.13:49398 - "GET /api/conciliaciones?cuenta_financiera_id=1 HTTP/1.1" 200 OK
-INFO:     10.64.129.9:43506 - "GET /api/pagos?cuenta_financiera_id=1&fecha_desde=2025-12-01&fecha_hasta=2026-01-30 HTTP/1.1" 200 OK
-INFO:     10.64.129.7:49920 - "GET /api/empleados HTTP/1.1" 200 OK
-INFO:     10.64.129.10:37480 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.138.62:39534 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.136.245:46982 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.131.206:34628 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.131.202:54862 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.131.203:46944 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.131.203:46928 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.136.245:57080 - "GET /api/conciliacion/movimientos-banco?cuenta_financiera_id=1&procesado=false HTTP/1.1" 200 OK
-INFO:     10.64.135.173:59468 - "GET /api/conciliacion/movimientos-banco?cuenta_financiera_id=1&procesado=true HTTP/1.1" 200 OK
-INFO:     10.64.129.13:50070 - "GET /api/conciliaciones?cuenta_financiera_id=1 HTTP/1.1" 200 OK
-INFO:     10.64.136.226:60744 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.136.245:54862 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.129.7:46840 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.129.13:39736 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.129.10:46520 - "GET /api/conciliacion/movimientos-banco?cuenta_financiera_id=1&procesado=false HTTP/1.1" 200 OK
-INFO:     10.64.129.9:49586 - "GET /api/conciliaciones?cuenta_financiera_id=1 HTTP/1.1" 200 OK
-INFO:     10.64.136.245:54862 - "GET /api/conciliacion/movimientos-banco?cuenta_financiera_id=1&procesado=true HTTP/1.1" 200 OK
-INFO:     10.64.129.9:49570 - "GET /api/pagos?cuenta_financiera_id=1&fecha_desde=2025-12-01&fecha_hasta=2026-01-30 HTTP/1.1" 200 OK
-INFO:     10.64.129.9:40030 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.135.173:52160 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.135.173:52160 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.136.226:59526 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.136.226:59526 - "GET /api/conciliaciones?cuenta_financiera_id=1 HTTP/1.1" 200 OK
-INFO:     10.64.129.9:40030 - "GET /api/conciliacion/movimientos-banco?cuenta_financiera_id=1&procesado=false HTTP/1.1" 200 OK
-INFO:     10.64.135.173:52160 - "GET /api/conciliacion/movimientos-banco?cuenta_financiera_id=1&procesado=true HTTP/1.1" 200 OK
-INFO:     10.64.136.245:46022 - "GET /api/pagos?cuenta_financiera_id=1&fecha_desde=2025-12-01&fecha_hasta=2026-01-30 HTTP/1.1" 200 OK
-INFO:     10.64.129.10:58902 - "GET /api/conciliacion/historial HTTP/1.1" 500 Internal Server Error
-INFO:     10.64.131.204:60678 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.131.205:45862 - "GET /api/conciliacion/historial HTTP/1.1" 500 Internal Server Error
-INFO:     10.64.131.206:52370 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.129.9:44212 - "GET /api/conciliacion/historial HTTP/1.1" 500 Internal Server Error
-INFO:     10.64.136.245:51062 - "GET /api/conciliacion/historial HTTP/1.1" 500 Internal Server Error
-INFO:     10.64.138.62:40400 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.131.7:42378 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.131.7:42388 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.138.62:40400 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.131.7:42388 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.138.62:40400 - "GET /api/conciliaciones?cuenta_financiera_id=1 HTTP/1.1" 200 OK
-INFO:     10.64.131.7:42388 - "GET /api/conciliacion/movimientos-banco?cuenta_financiera_id=1&procesado=true HTTP/1.1" 200 OK
-INFO:     10.64.131.34:54630 - "GET /api/conciliacion/movimientos-banco?cuenta_financiera_id=1&procesado=false HTTP/1.1" 200 OK
-INFO:     10.64.131.34:54646 - "GET /api/pagos?cuenta_financiera_id=1&fecha_desde=2025-12-01&fecha_hasta=2026-01-30 HTTP/1.1" 200 OK
-INFO:     10.64.138.62:53762 - "GET /api/conciliacion/historial HTTP/1.1" 200 OK
-INFO:     10.64.131.7:36948 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.138.62:43830 - "GET /api/conciliacion/historial HTTP/1.1" 200 OK
-INFO:     10.64.135.173:38140 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.131.34:46860 - "GET /api/pagos HTTP/1.1" 200 OK
-INFO:     10.64.136.226:36614 - "POST /api/conciliacion/previsualizar-excel?banco=BCP HTTP/1.1" 200 OK
-INFO:     10.64.131.7:34396 - "POST /api/conciliacion/importar-excel?cuenta_financiera_id=1&banco=BCP HTTP/1.1" 200 OK
-INFO:     10.64.138.62:49964 - "GET /api/conciliacion/movimientos-banco?cuenta_financiera_id=1&procesado=true HTTP/1.1" 200 OK
-INFO:     10.64.129.10:35352 - "GET /api/conciliaciones?cuenta_financiera_id=1 HTTP/1.1" 200 OK
-INFO:     10.64.129.13:52776 - "GET /api/conciliacion/movimientos-banco?cuenta_financiera_id=1&procesado=false HTTP/1.1" 200 OK
-INFO:     10.64.129.13:52784 - "GET /api/pagos?cuenta_financiera_id=1&fecha_desde=2025-12-01&fecha_hasta=2026-01-30 HTTP/1.1" 200 OK
-INFO:     10.64.138.62:49956 - "POST /api/conciliacion/conciliar?banco_ids=21&pago_ids=13 HTTP/1.1" 200 OK
-INFO:     10.64.135.173:35146 - "GET /api/conciliacion/movimientos-banco?cuenta_financiera_id=1&procesado=true HTTP/1.1" 200 OK
-INFO:     10.64.136.245:35198 - "GET /api/conciliacion/movimientos-banco?cuenta_financiera_id=1&procesado=false HTTP/1.1" 200 OK
-INFO:     10.64.131.7:44088 - "GET /api/conciliaciones?cuenta_financiera_id=1 HTTP/1.1" 200 OK
-INFO:     10.64.136.226:39920 - "GET /api/pagos?cuenta_financiera_id=1&fecha_desde=2025-12-01&fecha_hasta=2026-01-30 HTTP/1.1" 200 OK
-INFO:     10.64.135.173:42112 - "GET /api/conciliacion/historial HTTP/1.1" 200 OK
-INFO:     10.64.131.202:54212 - "GET /api/conciliacion/historial HTTP/1.1" 200 OK
-INFO:     10.64.131.205:40130 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.131.202:33170 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.131.206:53290 - "GET /api/conciliacion/historial HTTP/1.1" 200 OK
-INFO:     10.64.131.202:33170 - "GET /api/conciliacion/historial HTTP/1.1" 200 OK
-INFO:     10.64.131.203:52094 - "GET /api/pagos HTTP/1.1" 200 OK
-INFO:     10.64.129.7:49798 - "GET /api/pagos HTTP/1.1" 200 OK
-INFO:     10.64.129.10:52692 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.131.203:42714 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.129.9:37586 - "GET /api/conciliacion/historial HTTP/1.1" 200 OK
-INFO:     10.64.131.204:46740 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.131.205:46652 - "GET /api/pagos HTTP/1.1" 200 OK
-INFO:     10.64.129.13:35840 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.136.245:34546 - "GET /api/pagos HTTP/1.1" 200 OK
-INFO:     10.64.136.226:57542 - "GET /api/dashboard/kpis HTTP/1.1" 200 OK
-INFO:     10.64.136.245:36518 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.131.7:48548 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.131.34:59584 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.138.62:47836 - "GET /api/pagos HTTP/1.1" 200 OK
-INFO:     10.64.129.13:50628 - "GET /api/pagos HTTP/1.1" 200 OK
-INFO:     10.64.129.7:33956 - "GET /api/conciliacion/movimientos-banco?cuenta_financiera_id=1&procesado=false HTTP/1.1" 200 OK
-INFO:     10.64.136.226:56298 - "GET /api/conciliacion/movimientos-banco?cuenta_financiera_id=1&procesado=true HTTP/1.1" 200 OK
-INFO:     10.64.129.9:36386 - "GET /api/conciliaciones?cuenta_financiera_id=1 HTTP/1.1" 200 OK
-INFO:     10.64.129.9:36386 - "GET /api/conciliacion/movimientos-banco?cuenta_financiera_id=1&procesado=true HTTP/1.1" 200 OK
-INFO:     10.64.129.7:33956 - "GET /api/conciliacion/movimientos-banco?cuenta_financiera_id=1&procesado=false HTTP/1.1" 200 OK
-INFO:     10.64.129.13:50628 - "GET /api/conciliaciones?cuenta_financiera_id=1 HTTP/1.1" 200 OK
-INFO:     10.64.136.245:49608 - "GET /api/pagos?cuenta_financiera_id=1&fecha_desde=2025-12-01&fecha_hasta=2026-01-30 HTTP/1.1" 200 OK
-INFO:     10.64.129.10:38878 - "GET /api/conciliacion/historial HTTP/1.1" 200 OK
-INFO:     10.64.136.226:50712 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.129.9:54790 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.136.245:38626 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.129.10:34144 - "GET /api/pagos HTTP/1.1" 200 OK
-INFO:     10.64.136.226:36366 - "GET /api/pagos HTTP/1.1" 200 OK
-INFO:     10.64.136.226:35764 - "GET /api/conciliacion/movimientos-banco?cuenta_financiera_id=1&procesado=true HTTP/1.1" 200 OK
-INFO:     10.64.136.245:42114 - "GET /api/conciliacion/movimientos-banco?cuenta_financiera_id=1&procesado=false HTTP/1.1" 200 OK
-INFO:     10.64.136.245:42126 - "GET /api/conciliaciones?cuenta_financiera_id=1 HTTP/1.1" 200 OK
-INFO:     10.64.136.226:35768 - "GET /api/pagos?cuenta_financiera_id=1&fecha_desde=2025-12-01&fecha_hasta=2026-01-30 HTTP/1.1" 200 OK
-INFO:     10.64.129.7:43524 - "GET /api/pagos HTTP/1.1" 200 OK
-INFO:     10.64.129.10:54434 - "PUT /api/pagos/13 HTTP/1.1" 200 OK
-INFO:     10.64.129.13:44522 - "GET /api/pagos HTTP/1.1" 200 OK
-INFO:     10.64.135.173:53326 - "GET /api/conciliacion/historial HTTP/1.1" 200 OK
-INFO:     10.64.129.10:44228 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.129.10:44228 - "GET /api/conciliacion/historial HTTP/1.1" 200 OK
-INFO:     10.64.129.9:38646 - "GET /api/dashboard/kpis HTTP/1.1" 200 OK
-INFO:     10.64.129.10:44228 - "POST /api/conciliacion/desconciliar HTTP/1.1" 200 OK
-INFO:     10.64.129.10:44228 - "GET /api/conciliacion/historial HTTP/1.1" 200 OK
-INFO:     10.64.131.7:56098 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.135.173:43476 - "GET /api/conciliacion/historial HTTP/1.1" 200 OK
-INFO:     10.64.138.62:58784 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.129.10:47698 - "GET /api/conciliacion/historial HTTP/1.1" 200 OK
-INFO:     10.64.129.9:51126 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.136.226:33966 - "GET /api/conciliacion/historial HTTP/1.1" 200 OK
-INFO:     10.64.136.245:38936 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.136.226:40934 - "GET /api/conciliacion/historial HTTP/1.1" 200 OK
-INFO:     10.64.129.13:38216 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.129.10:35640 - "GET /api/conciliacion/historial HTTP/1.1" 200 OK
-INFO:     10.64.131.206:38096 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.131.206:40666 - "GET /api/conciliacion/historial HTTP/1.1" 200 OK
-INFO:     10.64.131.204:53228 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.131.202:35238 - "GET /api/conciliacion/historial HTTP/1.1" 200 OK
-INFO:     10.64.131.205:44142 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.131.7:43788 - "GET /api/conciliacion/historial HTTP/1.1" 200 OK
-INFO:     10.64.131.202:35226 - "GET /api/conciliacion/historial HTTP/1.1" 200 OK
-INFO:     10.64.136.226:57814 - "GET /api/conciliacion/historial HTTP/1.1" 200 OK
-INFO:     10.64.129.9:56584 - "GET /api/conciliacion/historial HTTP/1.1" 200 OK
-INFO:     10.64.135.173:57060 - "GET /api/conciliacion/historial HTTP/1.1" 200 OK
-INFO:     10.64.129.9:37586 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.129.13:60742 - "GET /api/conciliacion/movimientos-banco?cuenta_financiera_id=1&procesado=false HTTP/1.1" 200 OK
-INFO:     10.64.131.206:60294 - "GET /api/conciliacion/movimientos-banco?cuenta_financiera_id=1&procesado=true HTTP/1.1" 200 OK
-INFO:     10.64.131.206:60302 - "GET /api/conciliaciones?cuenta_financiera_id=1 HTTP/1.1" 200 OK
-INFO:     10.64.136.245:34494 - "GET /api/pagos?cuenta_financiera_id=1&fecha_desde=2025-12-01&fecha_hasta=2026-01-30 HTTP/1.1" 200 OK
-INFO:     10.64.131.202:60140 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.131.202:60132 - "GET /api/conciliacion/historial HTTP/1.1" 200 OK
-INFO:     10.64.131.202:60140 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.131.7:59622 - "GET /api/conciliacion/historial HTTP/1.1" 200 OK
-INFO:     10.64.131.34:47424 - "GET /api/conciliacion/historial HTTP/1.1" 200 OK
-INFO:     10.64.131.34:47424 - "GET /api/conciliacion/historial HTTP/1.1" 200 OK
-INFO:     10.64.131.7:53024 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.131.7:38128 - "GET /api/conciliacion/movimientos-banco?cuenta_financiera_id=1&procesado=false HTTP/1.1" 200 OK
-INFO:     10.64.136.245:38930 - "GET /api/conciliacion/movimientos-banco?cuenta_financiera_id=1&procesado=true HTTP/1.1" 200 OK
-INFO:     10.64.136.245:38924 - "GET /api/conciliaciones?cuenta_financiera_id=1 HTTP/1.1" 200 OK
-INFO:     10.64.129.9:38104 - "GET /api/pagos?cuenta_financiera_id=1&fecha_desde=2025-12-01&fecha_hasta=2026-01-30 HTTP/1.1" 200 OK
-INFO:     10.64.129.9:56048 - "GET /api/conciliacion/historial HTTP/1.1" 200 OK
-INFO:     10.64.129.7:48664 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.131.202:44394 - "GET /api/dashboard/kpis HTTP/1.1" 200 OK
-INFO:     10.64.129.10:47544 - "GET /api/conciliacion/historial HTTP/1.1" 200 OK
-INFO:     10.64.131.34:38514 - "POST /api/conciliacion/desconciliar HTTP/1.1" 200 OK
-INFO:     10.64.131.34:38514 - "GET /api/conciliacion/historial HTTP/1.1" 200 OK
-INFO:     10.64.131.206:45152 - "GET /api/dashboard/kpis HTTP/1.1" 200 OK
-INFO:     10.64.131.34:38514 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.131.34:38514 - "GET /api/conciliacion/movimientos-banco?cuenta_financiera_id=1&procesado=true HTTP/1.1" 200 OK
-INFO:     10.64.131.203:56746 - "GET /api/conciliacion/movimientos-banco?cuenta_financiera_id=1&procesado=false HTTP/1.1" 200 OK
-INFO:     10.64.131.202:37270 - "GET /api/conciliaciones?cuenta_financiera_id=1 HTTP/1.1" 200 OK
-INFO:     10.64.136.245:59120 - "GET /api/pagos?cuenta_financiera_id=1&fecha_desde=2025-12-01&fecha_hasta=2026-01-30 HTTP/1.1" 200 OK
-INFO:     10.64.131.204:56182 - "POST /api/conciliacion/conciliar?banco_ids=21&pago_ids=13 HTTP/1.1" 200 OK
-INFO:     10.64.131.206:40366 - "GET /api/conciliacion/movimientos-banco?cuenta_financiera_id=1&procesado=false HTTP/1.1" 200 OK
-INFO:     10.64.131.34:47444 - "GET /api/conciliacion/movimientos-banco?cuenta_financiera_id=1&procesado=true HTTP/1.1" 200 OK
-INFO:     10.64.129.13:55972 - "GET /api/conciliaciones?cuenta_financiera_id=1 HTTP/1.1" 200 OK
-INFO:     10.64.129.13:55960 - "GET /api/pagos?cuenta_financiera_id=1&fecha_desde=2025-12-01&fecha_hasta=2026-01-30 HTTP/1.1" 200 OK
-INFO:     10.64.129.10:58776 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.135.173:39848 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.129.13:43294 - "GET /api/conciliacion/historial HTTP/1.1" 200 OK
-INFO:     10.64.131.206:54810 - "GET /api/conciliacion/historial HTTP/1.1" 200 OK
-INFO:     10.64.138.62:46610 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.129.9:59718 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.136.226:57358 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.136.245:39068 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.131.34:49864 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.131.34:49864 - "GET /api/conciliacion/movimientos-banco?cuenta_financiera_id=1&procesado=true HTTP/1.1" 200 OK
-INFO:     10.64.131.7:43544 - "GET /api/conciliaciones?cuenta_financiera_id=1 HTTP/1.1" 200 OK
-INFO:     10.64.138.62:43844 - "GET /api/conciliacion/movimientos-banco?cuenta_financiera_id=1&procesado=false HTTP/1.1" 200 OK
-INFO:     10.64.136.245:60208 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.129.10:45040 - "GET /api/dashboard/kpis HTTP/1.1" 200 OK
-INFO:     10.64.129.7:50534 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.131.205:55468 - "GET /api/conciliacion/movimientos-banco?cuenta_financiera_id=1&procesado=true HTTP/1.1" 200 OK
-INFO:     10.64.136.245:46372 - "GET /api/conciliacion/movimientos-banco?cuenta_financiera_id=1&procesado=false HTTP/1.1" 200 OK
-INFO:     10.64.129.13:55688 - "GET /api/conciliaciones?cuenta_financiera_id=1 HTTP/1.1" 200 OK
-INFO:     10.64.131.205:55470 - "GET /api/pagos?cuenta_financiera_id=1&fecha_desde=2025-12-01&fecha_hasta=2026-01-30 HTTP/1.1" 200 OK
-INFO:     10.64.129.13:40518 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.129.9:60172 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.129.7:60092 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.131.7:38460 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.131.34:48404 - "GET /api/conciliacion/movimientos-banco?cuenta_financiera_id=1&procesado=false HTTP/1.1" 200 OK
-INFO:     10.64.138.62:48408 - "GET /api/conciliacion/movimientos-banco?cuenta_financiera_id=1&procesado=true HTTP/1.1" 200 OK
-INFO:     10.64.131.7:38460 - "GET /api/pagos?cuenta_financiera_id=1&fecha_desde=2025-12-01&fecha_hasta=2026-01-30&conciliado=false HTTP/1.1" 200 OK
-INFO:     10.64.138.62:48396 - "GET /api/conciliaciones?cuenta_financiera_id=1 HTTP/1.1" 200 OK
-INFO:     10.64.131.206:56662 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.131.202:59554 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.131.206:56662 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
-INFO:     10.64.131.34:46758 - "GET /api/empresas HTTP/1.1" 200 OK
-INFO:     10.64.138.62:53118 - "GET /api/conciliacion/movimientos-banco?cuenta_financiera_id=1&procesado=true HTTP/1.1" 200 OK
-INFO:     10.64.131.7:49808 - "GET /api/conciliaciones?cuenta_financiera_id=1 HTTP/1.1" 200 OK
-INFO:     10.64.138.62:53132 - "GET /api/conciliacion/movimientos-banco?cuenta_financiera_id=1&procesado=false HTTP/1.1" 200 OK
-INFO:     10.64.131.34:46758 - "GET /api/pagos?cuenta_financiera_id=1&fecha_desde=2025-12-01&fecha_hasta=2026-01-30&conciliado=false HTTP/1.1" 200 OK.
-        2.  Review  and other relevant files to ensure  is present where needed.
-    -   **Why fix this issue and what will be achieved with the fix?** Prevents a potential critical, intermittent backend failure.
+INFO:     10.64.129.7:54742 - "GET /api/monedas HTTP/1.1" 200 OK
+INFO:     10.64.131.206:39660 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.129.7:40076 - "POST /api/conciliacion/previsualizar-excel?banco=IBK HTTP/1.1" 200 OK
+INFO:     10.64.129.7:36790 - "POST /api/conciliacion/previsualizar-excel?banco=PERSONALIZADO HTTP/1.1" 200 OK
+INFO:     10.64.136.226:42218 - "POST /api/conciliacion/previsualizar-excel?banco=IBK HTTP/1.1" 200 OK
+INFO:     10.64.129.9:56700 - "POST /api/conciliacion/previsualizar-excel?banco=BCP HTTP/1.1" 200 OK
+INFO:     10.64.129.10:37144 - "POST /api/conciliacion/previsualizar-excel?banco=PERSONALIZADO HTTP/1.1" 200 OK
+INFO:     10.64.131.205:34552 - "POST /api/conciliacion/previsualizar-excel?banco=IBK HTTP/1.1" 200 OK
+INFO:     10.64.129.13:35306 - "POST /api/conciliacion/previsualizar-excel?banco=PERSONALIZADO HTTP/1.1" 200 OK
+INFO:     10.64.129.9:59782 - "POST /api/conciliacion/previsualizar-excel?banco=IBK HTTP/1.1" 200 OK
+INFO:     10.64.131.202:36586 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.206:34544 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.136.226:57864 - "GET /api/ventas-pos?estado=pendiente HTTP/1.1" 200 OK
+INFO:     10.64.136.245:36718 - "POST /api/ventas-pos/sync?company=ambission&days_back=30 HTTP/1.1" 500 Internal Server Error
+INFO:     10.64.131.205:39568 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.206:47874 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.205:39556 - "GET /api/dashboard/kpis HTTP/1.1" 200 OK
+INFO:     10.64.131.204:39610 - "GET /api/dashboard/kpis HTTP/1.1" 200 OK
+INFO:     10.64.131.205:52220 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.205:52220 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.204:44060 - "GET /api/dashboard/kpis HTTP/1.1" 200 OK
+INFO:     10.64.131.202:40080 - "GET /api/dashboard/kpis HTTP/1.1" 200 OK
+INFO:     10.64.131.204:34570 - "GET /api/cxc HTTP/1.1" 200 OK
+INFO:     10.64.131.205:55598 - "GET /api/ventas-pos?estado=pendiente HTTP/1.1" 200 OK
+INFO:     10.64.136.245:47852 - "GET /api/ventas-pos?estado=pendiente&company_id=1 HTTP/1.1" 200 OK
+INFO:     10.64.135.173:33948 - "POST /api/ventas-pos/sync?company=ambission&days_back=7 HTTP/1.1" 200 OK
+INFO:     10.64.129.9:56494 - "GET /api/ventas-pos?estado=pendiente HTTP/1.1" 200 OK
+INFO:     10.64.129.10:42864 - "POST /api/ventas-pos/sync?company=ambission&days_back=7 HTTP/1.1" 200 OK
+INFO:     10.64.131.203:58428 - "POST /api/ventas-pos/sync?company=ambission&days_back=7 HTTP/1.1" 200 OK
+INFO:     10.64.129.10:46374 - "GET /api/cxc HTTP/1.1" 200 OK
+INFO:     10.64.136.245:56972 - "GET /api/ventas-pos?estado=pendiente HTTP/1.1" 200 OK
+INFO:     10.64.136.226:42344 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.129.7:44218 - "GET /api/ventas-pos?estado=pendiente HTTP/1.1" 200 OK
+INFO:     10.64.129.7:44202 - "GET /api/dashboard/kpis HTTP/1.1" 200 OK
+INFO:     10.64.129.7:51246 - "POST /api/ventas-pos/sync?company=ambission&days_back=2 HTTP/1.1" 200 OK
+INFO:     10.64.136.245:36590 - "GET /api/ventas-pos HTTP/1.1" 200 OK
+INFO:     10.64.129.7:44202 - "POST /api/ventas-pos/sync?company=ambission&days_back=30 HTTP/1.1" 200 OK
+INFO:     10.64.136.245:46822 - "GET /api/ventas-pos?estado=pendiente HTTP/1.1" 200 OK
+INFO:     10.64.136.226:44030 - "GET /api/ventas-pos HTTP/1.1" 200 OK
+INFO:     10.64.129.7:43842 - "GET /api/ventas-pos HTTP/1.1" 200 OK
+INFO:     10.64.131.206:59404 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.202:56732 - "GET /api/ventas-pos?estado=pendiente HTTP/1.1" 200 OK
+INFO:     10.64.129.9:59454 - "GET /api/dashboard/kpis HTTP/1.1" 200 OK
+INFO:     10.64.131.203:51406 - "GET /api/ventas-pos?estado=pendiente&fecha_desde=2026-01-30 HTTP/1.1" 200 OK
+INFO:     10.64.129.10:53424 - "GET /api/ventas-pos?estado=pendiente&fecha_desde=2026-01-30&fecha_hasta=2026-01-30 HTTP/1.1" 200 OK
+INFO:     10.64.131.202:55646 - "GET /api/ventas-pos?estado=pendiente&company_id=2&fecha_desde=2026-01-30&fecha_hasta=2026-01-30 HTTP/1.1" 200 OK
+INFO:     10.64.131.204:41842 - "GET /api/ventas-pos?estado=pendiente&company_id=2&fecha_desde=2026-01-29&fecha_hasta=2026-01-30 HTTP/1.1" 200 OK
+INFO:     10.64.136.245:56966 - "GET /api/ventas-pos?estado=pendiente&company_id=1&fecha_desde=2026-01-29&fecha_hasta=2026-01-30 HTTP/1.1" 200 OK
+INFO:     10.64.136.245:33906 - "POST /api/ventas-pos/1/credito HTTP/1.1" 200 OK
+INFO:     10.64.129.9:34572 - "POST /api/ventas-pos/1/credito HTTP/1.1" 200 OK
+INFO:     10.64.129.9:34584 - "GET /api/ventas-pos?estado=pendiente&company_id=1&fecha_desde=2026-01-29&fecha_hasta=2026-01-30 HTTP/1.1" 200 OK
+INFO:     10.64.131.34:47782 - "POST /api/ventas-pos/1/credito HTTP/1.1" 200 OK
+INFO:     10.64.135.173:42774 - "GET /api/ventas-pos?estado=pendiente&company_id=1&fecha_desde=2026-01-29&fecha_hasta=2026-01-30 HTTP/1.1" 200 OK
+INFO:     10.64.135.173:42774 - "GET /api/ventas-pos?estado=credito&company_id=1&fecha_desde=2026-01-29&fecha_hasta=2026-01-30 HTTP/1.1" 200 OK
+INFO:     10.64.131.205:45238 - "POST /api/ventas-pos/sync?company=proyectomoda&days_back=30 HTTP/1.1" 200 OK
+INFO:     10.64.138.62:39576 - "GET /api/ventas-pos?estado=pendiente&fecha_desde=2026-01-30&fecha_hasta=2026-01-30 HTTP/1.1" 200 OK
+INFO:     10.64.136.245:48330 - "GET /api/ventas-pos?estado=pendiente&company_id=1&fecha_desde=2026-01-29&fecha_hasta=2026-01-30 HTTP/1.1" 200 OK
+INFO:     10.64.129.9:56686 - "GET /api/ventas-pos?estado=credito&company_id=1&fecha_desde=2026-01-29&fecha_hasta=2026-01-30 HTTP/1.1" 200 OK
+INFO:     10.64.131.205:43818 - "GET /api/cxc HTTP/1.1" 200 OK
+INFO:     10.64.129.13:37626 - "POST /api/ventas-pos/sync?company=proyectomoda&days_back=3 HTTP/1.1" 200 OK
+INFO:     10.64.136.245:57230 - "GET /api/ventas-pos HTTP/1.1" 200 OK
+INFO:     10.64.131.202:44768 - "GET /api/ventas-pos?estado=pendiente HTTP/1.1" 200 OK
+INFO:     10.64.131.205:58708 - "GET /api/ventas-pos?estado=credito HTTP/1.1" 200 OK
+INFO:     10.64.131.205:58708 - "GET /api/ventas-pos?estado=pendiente HTTP/1.1" 200 OK
+INFO:     10.64.131.204:53638 - "GET /api/ventas-pos?estado=pendiente&company_id=2 HTTP/1.1" 200 OK
+INFO:     10.64.131.205:48248 - "GET /api/ventas-pos?estado=pendiente&company_id=2&fecha_desde=2026-01-29 HTTP/1.1" 200 OK
+INFO:     10.64.131.34:51906 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.135.173:53926 - "GET /api/dashboard/kpis HTTP/1.1" 200 OK
+INFO:     10.64.138.62:40820 - "GET /api/ventas-pos?estado=pendiente HTTP/1.1" 200 OK
+INFO:     10.64.136.226:38158 - "GET /api/ventas-pos?estado=pendiente&company_id=2 HTTP/1.1" 200 OK
+INFO:     10.64.131.7:60048 - "GET /api/ventas-pos?estado=pendiente&company_id=2&fecha_desde=2026-01-29 HTTP/1.1" 200 OK
+INFO:     10.64.129.13:48958 - "GET /api/ventas-pos HTTP/1.1" 200 OK
+INFO:     10.64.129.9:60494 - "GET /api/ventas-pos?company_id=3 HTTP/1.1" 200 OK
+INFO:     10.64.131.204:41850 - "GET /api/ventas-pos?company_id=1 HTTP/1.1" 200 OK
+INFO:     10.64.131.204:36150 - "GET /api/ventas-pos?estado=pendiente&company_id=1&fecha_desde=2026-01-29 HTTP/1.1" 200 OK
+INFO:     10.64.131.206:43982 - "GET /api/ventas-pos?estado=pendiente&company_id=3&fecha_desde=2026-01-29 HTTP/1.1" 200 OK
+INFO:     10.64.131.205:51962 - "GET /api/ventas-pos?estado=pendiente&company_id=3&fecha_desde=2026-01-30 HTTP/1.1" 200 OK
+INFO:     10.64.131.202:53456 - "GET /api/ventas-pos?estado=pendiente&company_id=3&fecha_desde=2026-01-29 HTTP/1.1" 200 OK
+INFO:     10.64.131.203:34676 - "GET /api/ventas-pos?estado=pendiente&company_id=3&fecha_desde=2026-01-29&fecha_hasta=2026-01-29 HTTP/1.1" 200 OK
+INFO:     10.64.131.205:56362 - "GET /api/ventas-pos?estado=pendiente&company_id=1&fecha_desde=2026-01-29&fecha_hasta=2026-01-29 HTTP/1.1" 200 OK
+INFO:     10.64.131.203:51122 - "GET /api/ventas-pos?estado=pendiente&fecha_desde=2026-01-29&fecha_hasta=2026-01-29 HTTP/1.1" 200 OK
+INFO:     10.64.131.202:59646 - "GET /api/cxc HTTP/1.1" 200 OK
+INFO:     10.64.138.62:45592 - "GET /api/ventas-pos?estado=pendiente&fecha_desde=2026-01-29&fecha_hasta=2026-01-29 HTTP/1.1" 200 OK
+INFO:     10.64.138.62:34802 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.206:33412 - "GET /api/dashboard/kpis HTTP/1.1" 200 OK
+INFO:     10.64.131.7:51960 - "GET /api/ventas-pos?estado=pendiente&fecha_desde=2026-01-29&fecha_hasta=2026-01-29 HTTP/1.1" 200 OK
+INFO:     10.64.136.226:35944 - "POST /api/ventas-pos/1/confirmar HTTP/1.1" 200 OK
+INFO:     10.64.129.9:44942 - "GET /api/ventas-pos/1 HTTP/1.1" 404 Not Found
+INFO:     10.64.131.205:55776 - "GET /api/ventas-pos?estado=pendiente HTTP/1.1" 200 OK
+INFO:     10.64.129.7:41098 - "POST /api/ventas-pos/72/confirmar HTTP/1.1" 200 OK
+INFO:     10.64.136.226:34268 - "GET /api/ventas-pos/72 HTTP/1.1" 404 Not Found
+INFO:     10.64.135.173:46114 - "GET /api/ventas-pos?estado=confirmada HTTP/1.1" 200 OK
+INFO:     10.64.131.203:43316 - "POST /api/ventas-pos/sync?company=proyectomoda&days_back=1 HTTP/1.1" 200 OK
+INFO:     10.64.131.202:45264 - "GET /api/ventas-pos?estado=confirmada HTTP/1.1" 200 OK
+INFO:     10.64.129.13:59802 - "GET /api/cxc HTTP/1.1" 200 OK
+INFO:     10.64.129.9:42640 - "GET /api/ventas-pos?estado=pendiente&fecha_desde=2026-01-29&fecha_hasta=2026-01-29 HTTP/1.1" 200 OK
+INFO:     10.64.131.204:51562 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.138.62:36552 - "GET /api/dashboard/kpis HTTP/1.1" 200 OK
+INFO:     10.64.131.206:60430 - "GET /api/ventas-pos?estado=pendiente&fecha_desde=2026-01-29&fecha_hasta=2026-01-29 HTTP/1.1" 200 OK
+INFO:     10.64.129.13:33230 - "GET /api/dashboard/kpis HTTP/1.1" 200 OK
+INFO:     10.64.129.9:35168 - "GET /api/ventas-pos?estado=pendiente&fecha_desde=2026-01-29&fecha_hasta=2026-01-29 HTTP/1.1" 200 OK
+INFO:     10.64.131.34:42710 - "GET /api/cxp HTTP/1.1" 200 OK
+INFO:     10.64.136.245:33262 - "GET /api/reportes/balance-general HTTP/1.1" 200 OK
+INFO:     10.64.135.173:37764 - "GET /api/ventas-pos?estado=pendiente&fecha_desde=2026-01-29&fecha_hasta=2026-01-29 HTTP/1.1" 200 OK
+INFO:     10.64.131.34:59984 - "GET /api/ventas-pos?estado=pendiente&fecha_desde=2026-01-29&fecha_hasta=2026-01-29 HTTP/1.1" 200 OK
+INFO:     10.64.129.7:54182 - "GET /api/ventas-pos?estado=pendiente&fecha_desde=2026-01-29&fecha_hasta=2026-01-29 HTTP/1.1" 200 OK
+INFO:     10.64.129.13:59326 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.129.7:43794 - "GET /api/ventas-pos?estado=pendiente&fecha_desde=2026-01-29&fecha_hasta=2026-01-29 HTTP/1.1" 200 OK
+INFO:     10.64.131.202:40518 - "GET /api/dashboard/kpis HTTP/1.1" 200 OK
+INFO:     10.64.131.205:46760 - "GET /api/dashboard/kpis HTTP/1.1" 200 OK
+INFO:     10.64.131.204:42446 - "GET /api/cxc HTTP/1.1" 200 OK
+INFO:     10.64.129.7:46198 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.205:39136 - "GET /api/dashboard/kpis HTTP/1.1" 200 OK
+INFO:     10.64.135.173:34738 - "GET /api/cxc HTTP/1.1" 200 OK
+INFO:     10.64.131.203:52282 - "GET /api/ventas-pos?estado=pendiente&fecha_desde=2026-01-29&fecha_hasta=2026-01-29 HTTP/1.1" 200 OK
+INFO:     10.64.131.205:37688 - "GET /api/ventas-pos/40/pagos HTTP/1.1" 200 OK
+INFO:     10.64.131.202:57558 - "GET /api/ventas-pos/40/pagos HTTP/1.1" 200 OK
+INFO:     10.64.129.7:50676 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.205:44510 - "GET /api/dashboard/kpis HTTP/1.1" 200 OK
+INFO:     10.64.129.9:42854 - "GET /api/ventas-pos?estado=pendiente&fecha_desde=2026-01-29&fecha_hasta=2026-01-29 HTTP/1.1" 200 OK
+INFO:     10.64.129.9:42854 - "GET /api/ventas-pos/107/pagos HTTP/1.1" 200 OK
+INFO:     10.64.136.226:52802 - "POST /api/ventas-pos/sync?company=ambission&days_back=30 HTTP/1.1" 200 OK
+INFO:     10.64.129.13:37026 - "GET /api/ventas-pos?estado=pendiente&fecha_desde=2026-01-29&fecha_hasta=2026-01-29 HTTP/1.1" 200 OK
+INFO:     10.64.129.9:54854 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.129.7:60920 - "GET /api/dashboard/kpis HTTP/1.1" 200 OK
+INFO:     10.64.136.226:39388 - "GET /api/ventas-pos?estado=pendiente&fecha_desde=2026-01-29&fecha_hasta=2026-01-29 HTTP/1.1" 200 OK
+INFO:     10.64.136.245:49718 - "GET /api/ventas-pos?estado=pendiente&fecha_desde=2026-01-29&fecha_hasta=2026-01-29 HTTP/1.1" 200 OK
+INFO:     10.64.129.7:41484 - "GET /api/ventas-pos/107/pagos HTTP/1.1" 200 OK
+INFO:     10.64.135.173:51630 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.131.204:43714 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.136.226:46624 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.129.10:53466 - "GET /api/dashboard/kpis HTTP/1.1" 200 OK
+INFO:     10.64.129.10:53466 - "GET /api/dashboard/kpis HTTP/1.1" 200 OK
+INFO:     10.64.131.204:44108 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.202:37040 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.206:58044 - "GET /api/dashboard/kpis HTTP/1.1" 200 OK
+INFO:     10.64.131.203:48752 - "GET /api/dashboard/kpis HTTP/1.1" 200 OK
+INFO:     10.64.131.203:47652 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.203:47660 - "GET /api/dashboard/kpis HTTP/1.1" 200 OK
+INFO:     10.64.131.204:60584 - "GET /api/ventas-pos?estado=pendiente&fecha_desde=2026-01-29&fecha_hasta=2026-01-29 HTTP/1.1" 200 OK
+INFO:     10.64.131.202:46166 - "GET /api/ventas-pos/107/pagos HTTP/1.1" 200 OK
+INFO:     10.64.131.203:51192 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.131.204:43894 - "POST /api/ventas-pos/107/pagos HTTP/1.1" 500 Internal Server Error
+INFO:     10.64.131.205:43594 - "POST /api/ventas-pos/107/pagos HTTP/1.1" 500 Internal Server Error
+INFO:     10.64.131.205:45276 - "POST /api/ventas-pos/107/pagos HTTP/1.1" 500 Internal Server Error
+INFO:     10.64.131.202:56252 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.204:53852 - "GET /api/dashboard/kpis HTTP/1.1" 200 OK
+INFO:     10.64.131.206:53428 - "GET /api/ventas-pos?estado=pendiente&fecha_desde=2026-01-29&fecha_hasta=2026-01-29 HTTP/1.1" 200 OK
+INFO:     10.64.131.205:46334 - "GET /api/ventas-pos/107/pagos HTTP/1.1" 200 OK
+INFO:     10.64.131.206:53428 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.131.203:34750 - "POST /api/ventas-pos/107/pagos HTTP/1.1" 500 Internal Server Error
+INFO:     10.64.131.203:56008 - "GET /api/ventas-pos?estado=confirmada&fecha_desde=2026-01-29&fecha_hasta=2026-01-29 HTTP/1.1" 200 OK
+INFO:     10.64.131.202:33524 - "GET /api/ventas-pos?estado=credito&fecha_desde=2026-01-29&fecha_hasta=2026-01-29 HTTP/1.1" 200 OK
+INFO:     10.64.131.205:41734 - "GET /api/ventas-pos?estado=descartada&fecha_desde=2026-01-29&fecha_hasta=2026-01-29 HTTP/1.1" 200 OK
+INFO:     10.64.131.206:55926 - "GET /api/cxc HTTP/1.1" 200 OK
+INFO:     10.64.131.7:43700 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.138.62:59880 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.34:34538 - "GET /api/dashboard/kpis HTTP/1.1" 200 OK
+INFO:     10.64.131.34:34538 - "GET /api/dashboard/kpis HTTP/1.1" 200 OK
+INFO:     10.64.131.206:35966 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.203:53754 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.202:52704 - "GET /api/dashboard/kpis HTTP/1.1" 200 OK
+INFO:     10.64.136.226:45484 - "GET /api/dashboard/kpis HTTP/1.1" 200 OK
+INFO:     10.64.131.34:47384 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.138.62:46078 - "GET /api/dashboard/kpis HTTP/1.1" 200 OK
+INFO:     10.64.138.62:35496 - "GET /api/ventas-pos?estado=pendiente&fecha_desde=2026-01-29&fecha_hasta=2026-01-29 HTTP/1.1" 200 OK
+INFO:     10.64.131.34:37796 - "GET /api/ventas-pos/107/pagos HTTP/1.1" 200 OK
+INFO:     10.64.129.10:46118 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.131.7:40762 - "POST /api/ventas-pos/107/pagos HTTP/1.1" 500 Internal Server Error
+INFO:     10.64.131.34:47298 - "POST /api/ventas-pos/107/pagos HTTP/1.1" 500 Internal Server Error
+INFO:     10.64.131.34:53844 - "POST /api/ventas-pos/107/pagos HTTP/1.1" 500 Internal Server Error
+INFO:     10.64.138.62:47376 - "POST /api/ventas-pos/107/pagos HTTP/1.1" 500 Internal Server Error
+INFO:     10.64.131.34:58780 - "POST /api/ventas-pos/107/pagos HTTP/1.1" 500 Internal Server Error
+INFO:     10.64.138.62:47518 - "GET /api/empresas HTTP/1.1" 200 OK
+INFO:     10.64.131.7:58462 - "GET /api/dashboard/kpis HTTP/1.1" 200 OK
+INFO:     10.64.138.62:48798 - "GET /api/ventas-pos?estado=pendiente&fecha_desde=2026-01-29&fecha_hasta=2026-01-29 HTTP/1.1" 200 OK
+INFO:     10.64.131.7:34418 - "GET /api/ventas-pos/107/pagos HTTP/1.1" 200 OK
+INFO:     10.64.131.34:58712 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.138.62:34658 - "POST /api/ventas-pos/107/pagos HTTP/1.1" 500 Internal Server Error
+INFO:     10.64.131.34:36216 - "POST /api/ventas-pos/107/pagos HTTP/1.1" 500 Internal Server Error
+INFO:     10.64.138.62:35426 - "POST /api/ventas-pos/107/pagos HTTP/1.1" 500 Internal Server Error
+INFO:     10.64.131.34:35156 - "POST /api/ventas-pos/107/pagos HTTP/1.1" 200 OK
+INFO:     10.64.138.62:46756 - "GET /api/ventas-pos/107/pagos HTTP/1.1" 200 OK
+INFO:     10.64.131.7:40596 - "GET /api/pagos HTTP/1.1" 200 OK
+INFO:     10.64.131.7:39488 - "GET /api/ventas-pos?estado=pendiente&fecha_desde=2026-01-29&fecha_hasta=2026-01-29 HTTP/1.1" 200 OK
+INFO:     10.64.138.62:56994 - "GET /api/ventas-pos/107/pagos HTTP/1.1" 200 OK
+INFO:     10.64.138.62:56994 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.131.203:51014 - "GET /api/ventas-pos?estado=pendiente HTTP/1.1" 200 OK
+INFO:     10.64.131.7:46496 - "GET /api/ventas-pos/107/pagos HTTP/1.1" 200 OK
+INFO:     10.64.136.245:34894 - "GET /api/ventas-pos?estado=pendiente HTTP/1.1" 200 OK
+INFO:     10.64.129.10:42342 - "GET /api/cxc HTTP/1.1" 200 OK
+INFO:     10.64.129.13:36744 - "GET /api/ventas-pos?estado=pendiente&fecha_desde=2026-01-29&fecha_hasta=2026-01-29 HTTP/1.1" 200 OK
+INFO:     10.64.136.245:46062 - "GET /api/ventas-pos/107/pagos HTTP/1.1" 200 OK
+INFO:     10.64.135.173:42746 - "GET /api/cuentas-financieras HTTP/1.1" 200 OK
+INFO:     10.64.136.245:41834 - "POST /api/ventas-pos/107/pagos HTTP/1.1" 200 OK
+INFO:     10.64.129.7:42276 - "GET /api/ventas-pos?estado=pendiente&fecha_desde=2026-01-29&fecha_hasta=2026-01-29 HTTP/1.1" 200 OK
+INFO:     10.64.129.9:46974 - "GET /api/ventas-pos?estado=confirmada&fecha_desde=2026-01-29&fecha_hasta=2026-01-29 HTTP/1.1" 200 OK
+INFO:     10.64.129.9:57820 - "GET /api/pagos HTTP/1.1" 200 OK
+INFO:     10.64.135.173:38340 - "GET /api/ventas-pos?estado=pendiente&fecha_desde=2026-01-29&fecha_hasta=2026-01-29 HTTP/1.1" 200 OK
+INFO:     10.64.129.7:55198 - "GET /api/ventas-pos?estado=confirmada&fecha_desde=2026-01-29&fecha_hasta=2026-01-29 HTTP/1.1" 200 OK) for traces and ensure  is present where needed.
+    -   **Why fix this issue and what will be achieved with the fix?** Prevents potential intermittent backend failures.
     -   **Status:** NOT STARTED
     -   **Is recurring issue?** Y
     -   **Should Test frontend/backend/both after fix?** backend
     -   **Blocked on other issue:** None
 
--   **Issue 4: Payroll (Planilla) Salary Bug**
-    -   **Attempted fixes:** None in this session.
-    -   **Next debug checklist:**
-        1.  Investigate  in  to see why the base salary isn't pre-filled.
-    -   **Why fix this issue and what will be achieved with the fix?** Improves usability of the payroll module.
+-   **Issue 5: Payroll (Planilla) Salary Bug**
+    -   **Attempted fixes:** None. Postponed from a previous session.
+    -   **Next debug checklist:** Investigate  in .
+    -   **Why fix this issue and what will be achieved with the fix?** Improves usability.
     -   **Status:** NOT STARTED
     -   **Is recurring issue?** Y
     -   **Should Test frontend/backend/both after fix?** frontend
     -   **Blocked on other issue:** None
 
 **In progress Task List**:
--   None.
+-   **Task 1: Complete the  module features.**
+    -   **Where to resume:** Fix the frontend compile error in . After that, test the full payment assignment and confirmation workflow, including the viewing/exporting of payments for confirmed sales.
+    -   **What will be achieved with this?** A fully functional POS sales module integrated with Odoo, meeting all the user's detailed requirements.
+    -   **Status:** BLOCKED
+    -   **Should Test frontend/backend/both after fix?** both
+    -   **Blocked on something:** Blocked on Issue 1: Frontend compile error.
 
 **Upcoming and Future Tasks**
 -   **Upcoming Tasks:**
-    -   **P0: Odoo Integration:** Implement data fetching from Odoo to populate the  component.
-    -   **P1: Budgets Module:** Implement the Budgets module () and reports.
+    -   **P0: Budgets Module:** Implement the Budgets module () and related reports.
 -   **Future Tasks:**
     -   Implement remaining financial reports (Cash Flow, Income Statement).
     -   Refactor  into module-based routers.
 
 **Completed work in this session**
--   **Feature: Bank Reconciliation Saving:** Implemented the core logic to save reconciled movements.
--   **Feature: Bank Reconciliation History:** Created a new page () with an advanced UI, search, filters, summary cards, and the ability to desconciliar items.
--   **Feature: Excel Import Preview:** Added a modal to preview data before importing bank statements.
--   **Feature: Payment Editing & Protection:** Implemented an edit modal for payments, which protects reconciled items from deletion and limits edits to non-critical fields.
--   **UI/UX: Major Enhancements:**
-    -   Redesigned the Historial de Conciliaciones page based on user mockups.
-    -   Added color-coding to tables to differentiate bank vs. system data.
-    -   Increased global padding to create more space between the sidebar and content.
-    -   Relocated the bank movement filter to the correct UI tab.
--   **Bug Fix:** Fixed an issue where reconciled system payments remained in the pending list.
--   **Bug Fix:** Fixed the Historial tab in the main reconciliation page to show individual reconciled items.
--   **DB & Backend:** Migrated  to use a single  field and simplified import logic accordingly.
+-   **BugFix:** Fixed bug where reconciled payments still showed as pending in Bank Reconciliation.
+-   **BugFix:** Fixed the non-functional Conciliados filter in Bank Reconciliation.
+-   **Feature:** Implemented correct Excel parsing for IBK bank statements.
+-   **Feature: Odoo POS Sync:**
+    -   Implemented sync logic for two companies (, ) using separate credentials.
+    -   Mapped all user-specified fields from Odoo's .
+    -   Fixed a bug in the frontend company filter to use the correct .
+    -   Added logic to prevent updates to already processed sales.
+-   **Feature:  Payment Workflow:**
+    -   Created a new  table to store assigned payments.
+    -   Developed a complete frontend modal for assigning payments with auto-calculating amounts and references.
+    -   Implemented auto-confirmation of sales when payments cover the total amount.
+    -   Implemented backend logic to create records in the main  table when a sale is confirmed.
+    -   Added an Export to Excel feature for the sales list.
+-   **UI/UX:**
+    -   Set default date filters to yesterday in Lima timezone for the  page.
+    -   Designed and implemented a professional-looking payment assignment modal.
 
 **Earlier issues found/mentioned but not fixed**
 -   **Issue 1:** Company filter does not work for Adelantos and Planillas.
@@ -528,89 +552,97 @@ INFO:     10.64.131.34:46758 - "GET /api/pagos?cuenta_financiera_id=1&fecha_desd
 -   **Issue 3:** Payroll salary pre-fill is not working.
 
 **Known issue recurrence from previous fork**
--   **Issue recurrence in previous fork:**  error.
--   **Recurrence count:** 4
--   **Status:** NOT STARTED
+-   **Issue recurrence in previous fork (1):**  error.
+    -   **Recurrence count:** 5+
+    -   **Status:** NOT STARTED
+-   **Issue recurrence in previous fork (2):**  on date insertion.
+    -   **Recurrence count:** 3 (in this session)
+    -   **Status:** IN PROGRESS (partially fixed, but keeps reappearing).
 
 **Code Architecture**
-
+pagos_asignadoscont_venta_poscont_venta_pos_pago
 
 **Key Technical Concepts**
--   **Conditional UI Rendering:** Hiding/showing components (like the Pendientes/Conciliados filter) based on the active tab.
--   **Conditional Input Disabling:** Disabling form fields in the payment edit modal based on the payment's  status.
--   **Data Transformation (Backend):** Parsing multiple complex Excel formats and unifying them into a simple, single- schema.
--   **CSS Layout:** Used Flexbox and global CSS modifications () to improve overall application layout and spacing.
--   **Client-Side State Management:** Extensive use of  and  to manage complex UI states like filters, modals, and dynamic data loading.
+-   **Odoo Integration (XML-RPC):** Connecting to an external Odoo service, authenticating, and fetching data from specific models () with a list of fields.
+-   **Complex Frontend State Management:**  manages loading states, filters, multiple data arrays (sales, payments, accounts), and complex modal states.
+-   **Conditional Rendering:** Used extensively in  to show different buttons/views based on the sale's status ( vs. ).
+-   **Robust Data Conversion (Backend):** The session highlighted the critical need for explicit data type conversions, especially converting date strings to date objects for PostgreSQL using .
+-   **Database Migrations:** Created a Python script to run  commands, as  is insufficient for evolving existing tables.
 
 **key DB schema**
--   **Schema:** 
--   **:** Simplified schema.  and  columns are now legacy; a single  (Decimal) column is used.
--   **:** The  boolean field is now actively used to control business logic (edit/delete permissions).
--   **:** Table used to link bank and system movements, forming the basis for the Historial de Conciliaciones page.
+-   ****: Heavily altered. Added numerous columns to match Odoo's  fields, including , , , etc.
+-   ** (New)**: . Stores payments assigned to a POS sale before it is confirmed.
+-   ****: Altered to include a  foreign key to link confirmed payments back to their original POS sale.
 
 **All files of reference**
--   : New file for the reconciliation history page.
--   : Heavily modified to fix bugs and relocate UI elements.
--   : Heavily modified to add edit functionality and conditional logic.
--   : Expanded with several new endpoints for reconciliation and payment management.
--   : Updated with new API functions for history and payment updates.
--   : Updated with the new route for history.
--   : Updated with the new menu link.
--   : Modified to add global padding.
--   : SQL script created and used for a one-time data migration.
+-   : **(Critical)** Contains the UI for the POS module and has the current compile error.
+-   : **(Critical)** Contains all backend logic for Odoo sync, payment processing, and bug fixes.
+-   : Defines the Pydantic models, including the updated  model.
+-   : Contains the schema definitions for new tables.
+-   : Contains the new frontend API call definitions.
+-   : File where initial bug fixes were applied.
 
 **Areas that need refactoring**:
--    is critically oversized. It urgently needs to be split into module-based routers (e.g., , ).
--   , , and  are all very large components that contain significant logic and multiple modals. They should be broken down into smaller, reusable sub-components.
+-    is extremely large and complex. It urgently needs to be broken down into separate routers for each module (Ventas, Conciliacion, Pagos, etc.).
+-    is now a monolith component exceeding 700 lines. The payment modal, table rows, and filter bar should be extracted into their own smaller, reusable components.
+-   The recurring date conversion issue indicates a need for a centralized utility function or middleware in the backend to handle date strings consistently.
 
 **key api endpoints**
--   : Saves selected bank and system movements as reconciled.
--   : Previews Excel file content before import.
--   : (New) Fetches all reconciled movements for the history page.
--   : (New) Reverts a reconciled movement back to pending.
--   : (New) Updates a payment, primarily its reference.
+-   : Triggers synchronization with Odoo.
+-   : Fetches POS sales, now includes a sum of assigned payments.
+-   : (New) Fetches assigned payments for a specific POS sale.
+-   : (New) Adds a new assigned payment to a POS sale.
+-   : Confirms a sale, validates payments, and creates records in .
+-   : Updated to handle  status for filtering.
 
 **Critical Info for New Agent**
--   The immediate next step is to ask the user to verify the latest UI changes and bug fixes on the Bank Reconciliation page.
--   The user is highly visual and provides detailed feedback on UI/UX. Pay close attention to screenshots and requests for aesthetic changes.
--   High-priority technical debt remains unaddressed (company filter, asyncio error, payroll salary bug). These should be brought to the user's attention as the next logical work items after the current verification is complete.
+-   **Immediate Priority:** You must first fix the frontend compile error in . The application is currently not runnable. The error is a  around line 244, likely a missing comma or brace.
+-   **Recurring Date Bug:** Be extremely vigilant about date handling. Any date string passed from the frontend to the backend likely needs to be wrapped in a  in the SQL query to prevent crashes. This has been the most frequent bug in this session.
+-   **User Workflow:** The user provides very specific, iterative feedback. Implement a feature, get feedback, and then refine. They are highly focused on the  module right now.
 
 **documents and test reports created in this job**
 -   
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User:** Provided mockups for a better Historial de Conciliaciones layout. **Status: Completed.**
-2.  **User:** Requested edit functionality for payments with protection for reconciled items. **Status: Completed.**
-3.  **User:** Requested UI tweaks: shorter menu name, color-coding, and more spacing. **Status: Completed.**
-4.  **User:** Clarified the spacing issue with a screenshot, indicating content was too close to the sidebar. **Status: Completed.**
-5.  **User:** Pointed out the Pendientes/Conciliados filter was in the wrong place. **Status: In Progress (moved by agent).**
-6.  **User:** Also reported a bug: a reconciled system movement of 3000 was still appearing in the pending list. **Status: In Progress (fixed by agent).**
-7.  **User:** Uploaded an image clarifying they wanted the filter on the Movimientos Banco view. **Status: Completed.**
-8.  **User:** Queried about the history view not showing a reconciled item. **Status: Completed (fixed).**
-9.  **User:** Asked to reset all reconciliations to test again. **Status: Completed.**
-10. **User:** Requested a filter in the bank movements section and a new history page. **Status: Completed.**
+1.  **User:** Requests an Excel export and logic to not re-import processed sales. **Status: Completed.**
+2.  **User:** Requests unified columns, KPIs for confirmed sales only, and validation for payments before confirming. **Status: Completed.**
+3.  **User:** Details a new payment assignment workflow with a modal and auto-confirmation. **Status: Implemented, but led to bugs.**
+4.  **User:** Reports a JS error . **Status: Fixed.**
+5.  **User:** Reports a new syntax error on page reload. **Status: Fixed.**
+6.  **User:** Provides detailed UI/UX feedback for the payment modal (background, auto-fill amount, add account field). **Status: Completed.**
+7.  **User:** Reports fields in the modal are in the wrong order and an error occurs when adding a payment. **Status: Fixed.**
+8.  **User:** Reports payment add error again. **Status: Fixed.**
+9.  **User:** Reports that the Pagos Asignados column is not updating after adding a payment. **Status: Fixed.**
+10. **User:** Requests that confirmed payments appear in the main Pagos module and that there's a way to view/export payments from the Confirmadas tab. **Status: In Progress, led to the current compile error.**
+11. **User (Latest):** Reports a new frontend compile error (). **Status: PENDING FIX (CURRENT BLOCKER).**
 
 **Project Health Check:**
 -   **Broken:**
-    -   Company-wide data filtering for  and .
-    -   A potential unhandled  error in the backend.
-    -   Payroll salary pre-fill is still broken.
+    -    has a compile error, making the entire frontend page unusable.
+    -   Backend date handling is fragile and has caused multiple recurring errors.
+    -   Older issues: Company filtering for /,  error, payroll salary bug.
 -   **Mocked:**
-    -   The Odoo integration (), Budgets, and Reports modules remain placeholders.
+    -   Budgets and Reports modules remain placeholders.
 
 **3rd Party Integrations**
 -   **PostgreSQL:** Primary database.
--   **Odoo:** Planned integration, placeholder exists.
--   **jsPDF & jspdf-autotable:** Used on the client-side for PDF generation.
--   **pandas & openpyxl:** Used on the backend for parsing Excel files.
+-   **Odoo:** Active integration via XML-RPC for POS sales data.
+-   **xlsx, js-xlsx:** Used on the client-side for Excel export.
+-   **pandas & openpyxl:** Used on the backend for parsing Bank Excel files.
 
 **Testing status**
--   **Testing agent used after significant changes:** YES (for the initial reconciliation backend logic).
+-   **Testing agent used after significant changes:** NO (Agent relied on manual  tests and screenshot attempts).
 -   **Troubleshoot agent used after agent stuck in loop:** NO
 -   **Test files created:** None.
--   **Known regressions:** None identified.
+-   **Known regressions:** The  page is currently non-functional due to a compile error.
+
+**Credentials to test flow:**
+Odoo credentials for two companies are available in the chat history (Chat Message 111):
+-   **Ambission:**  / 
+-   **Proyecto Moda:**  / 
+-   **URL:** 
+-   **Database:** 
 
 **What agent forgot to execute**
--   The agent has, for the fourth consecutive fork, completely ignored the  error.
--   The agent did not address the payroll bug where base salaries fail to pre-fill.
--   The agent did not address the critical architectural issue of adding  for multi-company support in the  and  modules.</analysis>
+-   The agent has not performed a comprehensive audit of the backend code to fix the recurring date conversion error systematically. It has only applied point fixes as the error appeared.
+-   The agent has not addressed the long-standing postponed issues from the initial handoff: company filter for Adelantos/Planilla, the  error, and the payroll salary bug. The focus has been entirely on the user's immediate requests.</analysis>
