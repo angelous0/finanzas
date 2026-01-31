@@ -5,7 +5,7 @@ import {
   getPagosVentaPOS, addPagoVentaPOS, deletePagoVentaPOS,
   getCuentasFinancieras
 } from '../services/api';
-import { RefreshCw, Check, CreditCard, X, Filter, ShoppingCart, Download, Plus, Trash2 } from 'lucide-react';
+import { RefreshCw, Check, CreditCard, X, Filter, ShoppingCart, Download, Plus, Trash2, Eye } from 'lucide-react';
 import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
 
