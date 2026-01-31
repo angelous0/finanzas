@@ -281,16 +281,6 @@ export const VentasPOS = () => {
     }
   };
 
-      });
-      
-    } catch (error) {
-      console.error('Error loading pagos:', error);
-      toast.error('Error al cargar pagos');
-    } finally {
-      setLoadingPagos(false);
-    }
-  };
-
   const closePagosModal = () => {
     setShowPagosModal(false);
     setVentaSeleccionada(null);
