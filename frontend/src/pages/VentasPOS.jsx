@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   getVentasPOS, syncVentasPOS, confirmarVentaPOS, 
   marcarCreditoVentaPOS, descartarVentaPOS,
-  getPagosVentaPOS, addPagoVentaPOS, deletePagoVentaPOS,
+  getPagosVentaPOS, getPagosOficialesVentaPOS, addPagoVentaPOS, deletePagoVentaPOS,
   getCuentasFinancieras
 } from '../services/api';
 import { RefreshCw, Check, CreditCard, X, Filter, ShoppingCart, Download, Plus, Trash2, Eye } from 'lucide-react';
