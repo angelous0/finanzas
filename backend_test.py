@@ -532,6 +532,122 @@ class FinanzasAPITester:
         
         print(f"\n🧹 Cleaned up {cleanup_count} test records")
 
+    def test_ventas_pos_payment_flow(self):
+        """Test complete VentasPOS payment assignment and auto-confirmation flow"""
+        print("\n🔍 Testing VentasPOS Payment Flow...")
+        
+        # Step 1: Get a pending sale
+        success, ventas_data, status = self.make_request('GET', 'ventas-pos', params={'estado': 'pendiente'})
+        if not success or not ventas_data:
+            self.log_test("VentasPOS Flow - Get Pending Sale", False, f"No pending sales found: {ventas_data}")
+            return False
+        
+        venta = ventas_data[0]
+        venta_id = venta['id']
+        venta_name = venta['name']
+        amount_total = float(venta['amount_total'])
+        
+        print(f"   📋 Found pending sale: ID={venta_id}, Name={venta_name}, Total={amount_total}")
+        self.log_test("VentasPOS Flow - Get Pending Sale", True, 
+                     f"Found sale ID={venta_id}, Total={amount_total}")
+        
+        # Step 2: Get available financial accounts
+        success, cuentas_data, status = self.make_request('GET', 'cuentas-financieras')
+        if not success or not cuentas_data:
+            self.log_test("VentasPOS Flow - Get Financial Accounts", False, f"No accounts found: {cuentas_data}")
+            return False
+        
+        cuenta = cuentas_data[0]
+        cuenta_id = cuenta['id']
+        cuenta_nombre = cuenta['nombre']
+        
+        print(f"   💳 Using account: ID={cuenta_id}, Name={cuenta_nombre}")
+        self.log_test("VentasPOS Flow - Get Financial Accounts", True, 
+                     f"Found account ID={cuenta_id}, Name={cuenta_nombre}")
+        
+        # Step 3: Assign payment (should auto-confirm since amount = total)
+        pago_data = {
+            "cuenta_financiera_id": cuenta_id,
+            "forma_pago": "Efectivo",
+            "monto": amount_total,
+            "referencia": "TEST-PAGO-AUTO",
+            "fecha_pago": "2026-01-30",
+            "observaciones": "Pago de prueba automático"
+        }
+        
+        success, pago_response, status = self.make_request('POST', f'ventas-pos/{venta_id}/pagos', pago_data)
+        if not success:
+            self.log_test("VentasPOS Flow - Assign Payment", False, f"Failed to assign payment: {pago_response}")
+            return False
+        
+        if not pago_response.get('auto_confirmed'):
+            self.log_test("VentasPOS Flow - Auto Confirmation", False, 
+                         f"Payment not auto-confirmed: {pago_response}")
+            return False
+        
+        print(f"   ✅ Payment assigned and auto-confirmed: {pago_response.get('message')}")
+        self.log_test("VentasPOS Flow - Assign Payment & Auto-Confirm", True, 
+                     f"Auto-confirmed with {pago_response.get('pagos_registrados')} payments")
+        
+        # Step 4: Verify sale is confirmed
+        success, ventas_confirmadas, status = self.make_request('GET', 'ventas-pos', params={'estado': 'confirmada'})
+        if not success:
+            self.log_test("VentasPOS Flow - Check Confirmed Sales", False, f"Failed to get confirmed sales: {ventas_confirmadas}")
+            return False
+        
+        venta_confirmada = next((v for v in ventas_confirmadas if v['id'] == venta_id), None)
+        if not venta_confirmada:
+            self.log_test("VentasPOS Flow - Sale Confirmation Status", False, "Sale not found in confirmed sales")
+            return False
+        
+        print(f"   ✅ Sale confirmed: Estado={venta_confirmada.get('estado_local')}")
+        self.log_test("VentasPOS Flow - Sale Confirmation Status", True, 
+                     f"Sale found in confirmed sales with estado={venta_confirmada.get('estado_local')}")
+        
+        # Step 5: Verify official payments were created
+        success, pagos_oficiales, status = self.make_request('GET', f'ventas-pos/{venta_id}/pagos-oficiales')
+        if not success:
+            self.log_test("VentasPOS Flow - Get Official Payments", False, f"Failed to get official payments: {pagos_oficiales}")
+            return False
+        
+        if not pagos_oficiales or len(pagos_oficiales) == 0:
+            self.log_test("VentasPOS Flow - Official Payments Created", False, "No official payments found")
+            return False
+        
+        print(f"   💰 Official payments found: {len(pagos_oficiales)} payments")
+        for pago in pagos_oficiales:
+            print(f"      - Pago: numero={pago.get('numero')}, monto={pago.get('monto')}, forma_pago={pago.get('forma_pago')}")
+        
+        self.log_test("VentasPOS Flow - Official Payments Created", True, 
+                     f"Found {len(pagos_oficiales)} official payments")
+        
+        # Step 6: Verify pagos_oficiales and num_pagos_oficiales fields in sale
+        success, venta_detail, status = self.make_request('GET', f'ventas-pos/{venta_id}')
+        if not success or not venta_detail:
+            self.log_test("VentasPOS Flow - Get Sale Details", False, f"Failed to get sale details: {venta_detail}")
+            return False
+        
+        # The API returns a list, so get the first item
+        if isinstance(venta_detail, list) and len(venta_detail) > 0:
+            venta_detail = venta_detail[0]
+        
+        pagos_oficiales_amount = venta_detail.get('pagos_oficiales', 0)
+        num_pagos_oficiales = venta_detail.get('num_pagos_oficiales', 0)
+        
+        print(f"   📊 Sale fields: pagos_oficiales={pagos_oficiales_amount}, num_pagos_oficiales={num_pagos_oficiales}")
+        
+        # Verify amounts match
+        if abs(float(pagos_oficiales_amount) - amount_total) < 0.01 and num_pagos_oficiales == 1:
+            self.log_test("VentasPOS Flow - Sale Fields Verification", True, 
+                         f"pagos_oficiales={pagos_oficiales_amount} matches total, num_pagos_oficiales={num_pagos_oficiales}")
+            
+            print("   🎉 Complete VentasPOS payment flow test PASSED!")
+            return True
+        else:
+            self.log_test("VentasPOS Flow - Sale Fields Verification", False, 
+                         f"Mismatch: pagos_oficiales={pagos_oficiales_amount} (expected {amount_total}), num_pagos_oficiales={num_pagos_oficiales} (expected 1)")
+            return False
+
     def run_all_tests(self):
         """Run all backend tests"""
         print("🚀 Starting Finanzas 4.0 Backend API Tests")
@@ -548,6 +664,7 @@ class FinanzasAPITester:
             ("Pagos Functionality", self.test_pagos_functionality),
             ("Letras Functionality", self.test_letras_functionality),
             ("Bank Reconciliation Save", self.test_bank_reconciliation_save),
+            ("VentasPOS Payment Flow", self.test_ventas_pos_payment_flow),
         ]
         
         for test_name, test_func in tests:
