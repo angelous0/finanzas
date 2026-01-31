@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { 
   getVentasPOS, syncVentasPOS, confirmarVentaPOS, 
   marcarCreditoVentaPOS, descartarVentaPOS,
-  getPagosVentaPOS, addPagoVentaPOS, deletePagoVentaPOS
+  getPagosVentaPOS, addPagoVentaPOS, deletePagoVentaPOS,
+  getCuentasFinancieras
 } from '../services/api';
 import { RefreshCw, Check, CreditCard, X, Filter, ShoppingCart, Download, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -210,9 +211,35 @@ export const VentasPOS = () => {
     setVentaSeleccionada(venta);
     setShowPagosModal(true);
     setLoadingPagos(true);
+    
     try {
+      // Load pagos
       const response = await getPagosVentaPOS(venta.id);
       setPagos(response.data);
+      
+      // Load cuentas financieras
+      const cuentasResp = await getCuentasFinancieras();
+      setCuentasFinancieras(cuentasResp.data);
+      
+      // Calculate faltante
+      const totalPagos = response.data.reduce((sum, p) => sum + parseFloat(p.monto || 0), 0);
+      const faltante = parseFloat(venta.amount_total) - totalPagos;
+      
+      // Pre-fill form with smart defaults
+      const numPagosExistentes = response.data.length;
+      const referenciaAuto = numPagosExistentes === 0 
+        ? venta.num_comp || venta.name 
+        : `${venta.num_comp || venta.name} - ${numPagosExistentes + 1}`;
+      
+      setNuevoPago({
+        forma_pago: 'Efectivo',
+        cuenta_financiera_id: cuentasResp.data.length > 0 ? cuentasResp.data[0].id : '',
+        monto: faltante > 0 ? faltante.toFixed(2) : '',
+        referencia: referenciaAuto,
+        fecha_pago: new Date().toISOString().split('T')[0],
+        observaciones: ''
+      });
+      
     } catch (error) {
       console.error('Error loading pagos:', error);
       toast.error('Error al cargar pagos');
