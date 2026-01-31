@@ -2821,10 +2821,48 @@ async def add_pago_venta_pos(id: int, pago: dict):
                 await conn.execute("""
                     UPDATE finanzas2.cont_venta_pos SET estado_local = 'confirmada' WHERE id = $1
                 """, id)
+                
+                # ✅ IMPORTANTE: Crear pagos en el módulo de Pagos (cont_pago)
+                # Obtener todos los pagos asignados de esta venta
+                pagos_venta = await conn.fetch("""
+                    SELECT * FROM finanzas2.cont_venta_pos_pago WHERE venta_pos_id = $1
+                """, id)
+                
+                # Crear un pago en cont_pago por cada pago asignado
+                for pago_item in pagos_venta:
+                    # Generar número de pago (PAG-E-YYYY-XXXXX)
+                    last_pago = await conn.fetchval("""
+                        SELECT numero FROM finanzas2.cont_pago 
+                        WHERE tipo = 'egreso' 
+                        ORDER BY id DESC LIMIT 1
+                    """)
+                    
+                    if last_pago and '-' in last_pago:
+                        parts = last_pago.split('-')
+                        if len(parts) >= 3:
+                            num = int(parts[-1]) + 1
+                        else:
+                            num = 1
+                    else:
+                        num = 1
+                    
+                    numero_pago = f"PAG-E-{datetime.now().year}-{num:05d}"
+                    
+                    # Insertar en cont_pago
+                    await conn.execute("""
+                        INSERT INTO finanzas2.cont_pago 
+                        (tipo, numero, fecha, cuenta_financiera_id, forma_pago, 
+                         monto_total, referencia, observaciones, venta_pos_id, conciliado)
+                        VALUES ('egreso', $1, $2, $3, $4, $5, $6, $7, $8, false)
+                    """, numero_pago, pago_item['fecha_pago'], pago_item['cuenta_financiera_id'],
+                        pago_item['forma_pago'], pago_item['monto'], pago_item['referencia'],
+                        f"Pago de venta POS {venta['name']} - {pago_item['observaciones'] or ''}", id)
+                
                 return {
                     "message": "Pago agregado y venta confirmada automáticamente", 
                     "total_pagos": float(total_pagos),
-                    "auto_confirmed": True
+                    "auto_confirmed": True,
+                    "pagos_registrados": len(pagos_venta)
                 }
             
             return {
