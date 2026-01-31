@@ -632,6 +632,27 @@ export const VentasPOS = () => {
                   Agregar Nuevo Pago
                 </h4>
                 
+                {/* PRIMERO: Cuenta */}
+                <div style={{ marginBottom: '1rem' }}>
+                  <label className="form-label" style={{ fontWeight: 600, marginBottom: '0.5rem', display: 'block', color: '#111827', fontSize: '0.9375rem' }}>
+                    Cuenta / Caja <span style={{ color: '#dc2626' }}>*</span>
+                  </label>
+                  <select 
+                    className="form-select"
+                    value={nuevoPago.cuenta_financiera_id}
+                    onChange={(e) => setNuevoPago({...nuevoPago, cuenta_financiera_id: e.target.value})}
+                    style={{ fontSize: '0.9375rem', padding: '0.75rem', borderRadius: '8px', border: '2px solid #d1d5db', fontWeight: 500 }}
+                  >
+                    <option value="">Seleccione una cuenta...</option>
+                    {cuentasFinancieras.map(cuenta => (
+                      <option key={cuenta.id} value={cuenta.id}>
+                        {cuenta.tipo === 'banco' ? '🏦' : '💰'} {cuenta.nombre} {cuenta.banco ? `- ${cuenta.banco}` : ''}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* SEGUNDO: Forma de Pago y Monto */}
                 <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
                   <div>
                     <label className="form-label" style={{ fontWeight: 500, marginBottom: '0.5rem', display: 'block', color: '#374151' }}>
@@ -666,25 +687,6 @@ export const VentasPOS = () => {
                       style={{ fontSize: '0.9375rem', padding: '0.625rem 0.75rem', borderRadius: '8px', border: '1.5px solid #d1d5db', fontWeight: 600 }}
                     />
                   </div>
-                </div>
-
-                <div style={{ marginBottom: '1rem' }}>
-                  <label className="form-label" style={{ fontWeight: 500, marginBottom: '0.5rem', display: 'block', color: '#374151' }}>
-                    Cuenta / Caja <span style={{ color: '#dc2626' }}>*</span>
-                  </label>
-                  <select 
-                    className="form-select"
-                    value={nuevoPago.cuenta_financiera_id}
-                    onChange={(e) => setNuevoPago({...nuevoPago, cuenta_financiera_id: e.target.value})}
-                    style={{ fontSize: '0.9375rem', padding: '0.625rem 0.75rem', borderRadius: '8px', border: '1.5px solid #d1d5db' }}
-                  >
-                    <option value="">Seleccione una cuenta...</option>
-                    {cuentasFinancieras.map(cuenta => (
-                      <option key={cuenta.id} value={cuenta.id}>
-                        {cuenta.tipo === 'banco' ? '🏦' : '💰'} {cuenta.nombre} {cuenta.banco ? `- ${cuenta.banco}` : ''}
-                      </option>
-                    ))}
-                  </select>
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
