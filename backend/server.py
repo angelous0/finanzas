@@ -2805,7 +2805,7 @@ async def add_pago_venta_pos(id: int, pago: dict):
             await conn.execute("""
                 INSERT INTO finanzas2.cont_venta_pos_pago 
                 (venta_pos_id, forma_pago, cuenta_financiera_id, monto, referencia, fecha_pago, observaciones)
-                VALUES ($1, $2, $3, $4, $5, $6::date, $7)
+                VALUES ($1, $2, $3, $4, $5, TO_DATE($6, 'YYYY-MM-DD'), $7)
             """, id, pago.get('forma_pago'), int(pago.get('cuenta_financiera_id')), pago.get('monto'), 
                 pago.get('referencia'), pago.get('fecha_pago'), pago.get('observaciones'))
             
