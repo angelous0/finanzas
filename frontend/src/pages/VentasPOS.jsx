@@ -60,6 +60,19 @@ export const VentasPOS = () => {
   const [fechaDesde, setFechaDesde] = useState(getYesterdayInLima());
   const [fechaHasta, setFechaHasta] = useState(getYesterdayInLima());
   const [search, setSearch] = useState('');
+  
+  // Modal pagos
+  const [showPagosModal, setShowPagosModal] = useState(false);
+  const [ventaSeleccionada, setVentaSeleccionada] = useState(null);
+  const [pagos, setPagos] = useState([]);
+  const [loadingPagos, setLoadingPagos] = useState(false);
+  const [nuevoPago, setNuevoPago] = useState({
+    forma_pago: 'Efectivo',
+    monto: '',
+    referencia: '',
+    fecha_pago: new Date().toISOString().split('T')[0],
+    observaciones: ''
+  });
 
   useEffect(() => {
     loadVentas();
