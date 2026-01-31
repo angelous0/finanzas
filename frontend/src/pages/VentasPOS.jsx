@@ -238,7 +238,14 @@ export const VentasPOS = () => {
         referencia: referenciaAuto,
         fecha_pago: new Date().toISOString().split('T')[0],
         observaciones: ''
-
+      });
+    } catch (error) {
+      console.error('Error loading pagos:', error);
+      toast.error('Error al cargar pagos');
+    } finally {
+      setLoadingPagos(false);
+    }
+  };
 
   // Ver pagos de venta confirmada
   const verPagosConfirmada = async (venta) => {
