@@ -135,6 +135,21 @@ backend:
         agent: "testing"
         comment: "✅ COMPREHENSIVE FLOW TESTED: Complete VentasPOS payment confirmation flow working perfectly. Tested sale ID=73 (BOSH GAMARRA/1277, Total=155.0): 1) Found pending sale ✅ 2) Got financial account (Caja Chica) ✅ 3) Assigned payment with auto-confirmation ✅ 4) Sale confirmed automatically ✅ 5) Official payment created (PAG-E-2026-00015) in cont_pago, cont_pago_detalle, cont_pago_aplicacion tables ✅ 6) Fields pagos_oficiales=155.0 and num_pagos_oficiales=1 correctly updated ✅. All database records created correctly as expected."
 
+  - task: "VentasPOS - Payment type verification (INGRESO vs EGRESO)"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Need to verify that VentasPOS payments are now created as INGRESOS (tipo='ingreso', número='PAG-I-YYYY-XXXXX') instead of EGRESOS (tipo='egreso', número='PAG-E-YYYY-XXXXX'). This is a critical business logic fix."
+      - working: true
+        agent: "testing"
+        comment: "✅ PAYMENT TYPE FIX VERIFIED: VentasPOS payments are now correctly created as INGRESOS. Tested with 2 different sales: 1) Sale ID=994 (Total=90.0) → Payment PAG-I-2026-00001 with tipo='ingreso' ✅ 2) Sale ID=995 (Total=73.0) → Payment PAG-I-2026-00002 with tipo='ingreso' ✅. Both payments correctly start with 'PAG-I-' and have tipo='ingreso'. Found total of 2 pagos INGRESO de ventas POS in system. The fix is working consistently and correctly."
+
 frontend:
   - task: "VentasPOS - Pendientes tab navigation"
     implemented: true
