@@ -2773,6 +2773,69 @@ async def descartar_venta_pos(id: int):
         """, id)
         return {"message": "Venta descartada"}
 
+@api_router.post("/ventas-pos/{id}/desconfirmar")
+async def desconfirmar_venta_pos(id: int):
+    """
+    Desconfirmar una venta POS confirmada.
+    - Elimina los pagos oficiales (cont_pago, cont_pago_detalle, cont_pago_aplicacion)
+    - Restaura los pagos temporales en cont_venta_pos_pago
+    - Cambia el estado de la venta a 'pendiente'
+    
+    Este patrón se puede reutilizar para facturas y otros documentos.
+    """
+    pool = await get_pool()
+    async with pool.acquire() as conn:
+        await conn.execute("SET search_path TO finanzas2, public")
+        
+        async with conn.transaction():
+            # Verificar que la venta existe y está confirmada
+            venta = await conn.fetchrow("SELECT * FROM finanzas2.cont_venta_pos WHERE id = $1", id)
+            if not venta:
+                raise HTTPException(404, "Venta not found")
+            
+            if venta['estado_local'] != 'confirmada':
+                raise HTTPException(400, f"La venta debe estar confirmada para desconfirmarla. Estado actual: {venta['estado_local']}")
+            
+            # Obtener los pagos oficiales vinculados a esta venta
+            pagos_oficiales = await conn.fetch("""
+                SELECT p.id as pago_id, pd.medio_pago, pd.monto, pd.referencia, 
+                       p.fecha, pd.cuenta_financiera_id, p.notas
+                FROM finanzas2.cont_pago_aplicacion pa
+                JOIN finanzas2.cont_pago p ON p.id = pa.pago_id
+                LEFT JOIN finanzas2.cont_pago_detalle pd ON pd.pago_id = p.id
+                WHERE pa.tipo_documento = 'venta_pos' AND pa.documento_id = $1
+            """, id)
+            
+            if not pagos_oficiales:
+                raise HTTPException(400, "No se encontraron pagos oficiales para esta venta")
+            
+            # Restaurar los pagos en cont_venta_pos_pago (tabla temporal)
+            for pago in pagos_oficiales:
+                await conn.execute("""
+                    INSERT INTO finanzas2.cont_venta_pos_pago 
+                    (venta_pos_id, forma_pago, cuenta_financiera_id, monto, referencia, fecha_pago, observaciones)
+                    VALUES ($1, $2, $3, $4, $5, $6, $7)
+                """, id, pago['medio_pago'], pago['cuenta_financiera_id'], 
+                    pago['monto'], pago['referencia'], pago['fecha'], 
+                    pago['notas'] or 'Pago restaurado desde confirmación')
+            
+            # Eliminar los pagos oficiales (CASCADE eliminará cont_pago_detalle y cont_pago_aplicacion)
+            for pago in pagos_oficiales:
+                await conn.execute("""
+                    DELETE FROM finanzas2.cont_pago WHERE id = $1
+                """, pago['pago_id'])
+            
+            # Cambiar estado de la venta a pendiente
+            await conn.execute("""
+                UPDATE finanzas2.cont_venta_pos SET estado_local = 'pendiente' WHERE id = $1
+            """, id)
+            
+            return {
+                "message": "Venta desconfirmada exitosamente",
+                "pagos_restaurados": len(pagos_oficiales),
+                "nuevo_estado": "pendiente"
+            }
+
 # Endpoints for payment management
 @api_router.get("/ventas-pos/{id}/pagos")
 async def get_pagos_venta_pos(id: int):
