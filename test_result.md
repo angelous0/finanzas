@@ -164,6 +164,24 @@ backend:
       - working: true
         agent: "testing"
         comment: "✅ DESCONFIRMAR FLOW VERIFIED: Complete VentasPOS desconfirmar functionality working correctly. Tested with sale ID=995 (Grau238/37441, Total=73.0): 1) Found confirmed sale with 1 official payment (PAG-I-2026-00002) ✅ 2) Successfully unconfirmed sale ✅ 3) Sale returned to 'pendiente' state ✅ 4) Official payments deleted (0 remaining) ✅ 5) Temporary payments restored (2 payments in cont_venta_pos_pago) ✅ 6) User can now reassign payments from Pendientes tab ✅. The desconfirmar endpoint correctly: deletes official payments from cont_pago tables, restores payments to temporary table, and changes sale state to pendiente. Flow is fully functional for production use."
+      - working: true
+        agent: "testing"
+        comment: "✅ DUPLICATE FIX VERIFIED: Comprehensive testing confirms that desconfirmar does NOT create duplicate payments. Tested multiple scenarios: 1) Sale ID=566 (Zapaton/16379) with 2 official payments (Total: S/ 246.01) ✅ 2) After desconfirmar: exactly 2 temporary payments with same total ✅ 3) Sale ID=568 (Zapaton/16377) with 1 official payment (Total: S/ 981.1) ✅ 4) After desconfirmar: exactly 1 temporary payment with same total ✅ 5) Complete cycle test (desconfirmar → confirm) works correctly ✅. Payment counts and totals match perfectly in all cases. NO DUPLICATES detected. The fix is working correctly and ready for production."
+
+  - task: "VentasPOS - Duplicate payment fix validation"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Need to test that desconfirmar does NOT create duplicate payments. Critical scenario: 1) Get confirmed sale with payments 2) Count official payments 3) Desconfirmar 4) Verify temporary payments count matches exactly 5) Verify totals match 6) Test complete cycle"
+      - working: true
+        agent: "testing"
+        comment: "✅ CRITICAL DUPLICATE FIX TEST PASSED: Executed exact user scenario successfully. Multiple test cases confirmed NO duplicates: Test 1 - Sale ID=566: 2 official payments (S/ 246.01) → 2 temporary payments (S/ 246.01) ✅ Test 2 - Sale ID=568: 1 official payment (S/ 981.1) → 1 temporary payment (S/ 981.1) ✅ All payment counts and totals match perfectly. Complete desconfirmar → confirm cycle works correctly. The duplicate fix is functioning as expected and prevents payment duplication during unconfirm operations."
 
 frontend:
   - task: "VentasPOS - Pendientes tab navigation"
