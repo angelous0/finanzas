@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  getVentasPOS, syncVentasPOS, confirmarVentaPOS, 
+  getVentasPOS, syncVentasPOS, confirmarVentaPOS, desconfirmarVentaPOS,
   marcarCreditoVentaPOS, descartarVentaPOS,
   getPagosVentaPOS, getPagosOficialesVentaPOS, addPagoVentaPOS, deletePagoVentaPOS,
   getCuentasFinancieras
