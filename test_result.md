@@ -276,7 +276,7 @@ frontend:
 
 test_plan:
   current_focus:
-    - "VentasPOS - Desconfirmar (unconfirm) sale flow"
+    - "VentasPOS - Duplicate payment fix validation"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
