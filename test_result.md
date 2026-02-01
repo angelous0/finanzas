@@ -150,6 +150,21 @@ backend:
         agent: "testing"
         comment: "✅ PAYMENT TYPE FIX VERIFIED: VentasPOS payments are now correctly created as INGRESOS. Tested with 2 different sales: 1) Sale ID=994 (Total=90.0) → Payment PAG-I-2026-00001 with tipo='ingreso' ✅ 2) Sale ID=995 (Total=73.0) → Payment PAG-I-2026-00002 with tipo='ingreso' ✅. Both payments correctly start with 'PAG-I-' and have tipo='ingreso'. Found total of 2 pagos INGRESO de ventas POS in system. The fix is working consistently and correctly."
 
+  - task: "VentasPOS - Desconfirmar (unconfirm) sale flow"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Need to test complete desconfirmar flow: 1) Get confirmed sale with payments 2) Verify official payments exist 3) Verify temporary payments empty 4) Desconfirmar sale 5) Verify sale returns to pendiente 6) Verify official payments deleted 7) Verify temporary payments restored"
+      - working: true
+        agent: "testing"
+        comment: "✅ DESCONFIRMAR FLOW VERIFIED: Complete VentasPOS desconfirmar functionality working correctly. Tested with sale ID=995 (Grau238/37441, Total=73.0): 1) Found confirmed sale with 1 official payment (PAG-I-2026-00002) ✅ 2) Successfully unconfirmed sale ✅ 3) Sale returned to 'pendiente' state ✅ 4) Official payments deleted (0 remaining) ✅ 5) Temporary payments restored (2 payments in cont_venta_pos_pago) ✅ 6) User can now reassign payments from Pendientes tab ✅. The desconfirmar endpoint correctly: deletes official payments from cont_pago tables, restores payments to temporary table, and changes sale state to pendiente. Flow is fully functional for production use."
+
 frontend:
   - task: "VentasPOS - Pendientes tab navigation"
     implemented: true
