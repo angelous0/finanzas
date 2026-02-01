@@ -931,6 +931,7 @@ class FinanzasAPITester:
             ("Bank Reconciliation Save", self.test_bank_reconciliation_save),
             ("VentasPOS Payment Flow", self.test_ventas_pos_payment_flow),
             ("VentasPOS Desconfirmar Flow", self.test_ventas_pos_desconfirmar_flow),
+            ("VentasPOS Duplicate Fix Test", self.test_ventas_pos_duplicate_fix),
         ]
         
         for test_name, test_func in tests:
