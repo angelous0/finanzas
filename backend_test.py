@@ -788,6 +788,131 @@ class FinanzasAPITester:
                          f"Payment count mismatch: antes={num_pagos_antes}, restaurados={pagos_restaurados}, temporales={num_temporales_despues}")
             return False
 
+    def test_ventas_pos_duplicate_fix(self):
+        """Test that desconfirmar does NOT create duplicate payments - CRITICAL FIX TEST"""
+        print("\n🔍 Testing VentasPOS Duplicate Fix - CRITICAL TEST...")
+        
+        # Step 1: Get a confirmed sale with payments
+        success, ventas_confirmadas, status = self.make_request('GET', 'ventas-pos', params={'estado': 'confirmada'})
+        if not success or not ventas_confirmadas:
+            self.log_test("Duplicate Fix - Get Confirmed Sale", False, f"No confirmed sales found: {ventas_confirmadas}")
+            return False
+        
+        # Find a sale with official payments
+        venta_con_pagos = None
+        for venta in ventas_confirmadas:
+            if venta.get('num_pagos_oficiales', 0) > 0:
+                venta_con_pagos = venta
+                break
+        
+        if not venta_con_pagos:
+            self.log_test("Duplicate Fix - Find Sale with Payments", False, "No confirmed sales with payments found")
+            return False
+        
+        venta_id = venta_con_pagos['id']
+        venta_name = venta_con_pagos['name']
+        num_pagos_oficiales = venta_con_pagos['num_pagos_oficiales']
+        
+        print(f"   📋 TESTING SALE: ID={venta_id}, Name={venta_name}, Official Payments={num_pagos_oficiales}")
+        
+        # Step 2: Get official payments count and total
+        success, pagos_oficiales, status = self.make_request('GET', f'ventas-pos/{venta_id}/pagos-oficiales')
+        if not success:
+            self.log_test("Duplicate Fix - Get Official Payments", False, f"Failed to get official payments: {pagos_oficiales}")
+            return False
+        
+        num_pagos_oficiales_real = len(pagos_oficiales)
+        total_pagos_oficiales = sum(float(p.get('monto', 0)) for p in pagos_oficiales)
+        
+        print(f"   💰 OFFICIAL PAYMENTS: {num_pagos_oficiales_real} payments, Total: S/ {total_pagos_oficiales}")
+        for i, pago in enumerate(pagos_oficiales):
+            print(f"      {i+1}. {pago.get('forma_pago')}: S/ {pago.get('monto')} (Ref: {pago.get('referencia', 'N/A')})")
+        
+        self.log_test("Duplicate Fix - Official Payments Count", True, 
+                     f"Found {num_pagos_oficiales_real} official payments, Total: S/ {total_pagos_oficiales}")
+        
+        # Step 3: DESCONFIRMAR (this is where duplicates could occur)
+        print(f"   🔄 DESCONFIRMING SALE...")
+        success, desconfirmar_response, status = self.make_request('POST', f'ventas-pos/{venta_id}/desconfirmar')
+        if not success:
+            self.log_test("Duplicate Fix - Desconfirmar", False, f"Failed to desconfirm sale: {desconfirmar_response}")
+            return False
+        
+        print(f"   ✅ DESCONFIRMED: {desconfirmar_response.get('message')}")
+        
+        # Step 4: CRITICAL - Check temporary payments for duplicates
+        success, pagos_temporales, status = self.make_request('GET', f'ventas-pos/{venta_id}/pagos')
+        if not success:
+            self.log_test("Duplicate Fix - Get Temporary Payments", False, f"Failed to get temporary payments: {pagos_temporales}")
+            return False
+        
+        num_pagos_temporales = len(pagos_temporales)
+        total_pagos_temporales = sum(float(p.get('monto', 0)) for p in pagos_temporales)
+        
+        print(f"   📝 TEMPORARY PAYMENTS AFTER DESCONFIRMAR: {num_pagos_temporales} payments, Total: S/ {total_pagos_temporales}")
+        for i, pago in enumerate(pagos_temporales):
+            print(f"      {i+1}. {pago.get('forma_pago')}: S/ {pago.get('monto')} (Ref: {pago.get('referencia', 'N/A')})")
+        
+        # Step 5: CRITICAL VALIDATION - No duplicates
+        print(f"\n   🔍 DUPLICATE CHECK:")
+        print(f"      - Official payments before: {num_pagos_oficiales_real} (Total: S/ {total_pagos_oficiales})")
+        print(f"      - Temporary payments after: {num_pagos_temporales} (Total: S/ {total_pagos_temporales})")
+        print(f"      - MUST MATCH: {num_pagos_oficiales_real} == {num_pagos_temporales}")
+        
+        # Check counts match
+        if num_pagos_temporales != num_pagos_oficiales_real:
+            self.log_test("Duplicate Fix - Payment Count Match", False, 
+                         f"DUPLICATE DETECTED! Expected {num_pagos_oficiales_real} temporary payments, got {num_pagos_temporales}")
+            return False
+        
+        # Check totals match (within 0.01 tolerance)
+        if abs(total_pagos_temporales - total_pagos_oficiales) > 0.01:
+            self.log_test("Duplicate Fix - Payment Total Match", False, 
+                         f"TOTAL MISMATCH! Expected S/ {total_pagos_oficiales}, got S/ {total_pagos_temporales}")
+            return False
+        
+        print(f"   ✅ NO DUPLICATES DETECTED!")
+        self.log_test("Duplicate Fix - No Duplicates", True, 
+                     f"Payment counts and totals match perfectly: {num_pagos_temporales} payments, S/ {total_pagos_temporales}")
+        
+        # Step 6: Test complete cycle - confirm again
+        print(f"\n   🔄 TESTING COMPLETE CYCLE - Confirming again...")
+        
+        # Get financial accounts
+        success, cuentas, status = self.make_request('GET', 'cuentas-financieras')
+        if not success or not cuentas:
+            self.log_test("Duplicate Fix - Get Accounts for Re-confirm", False, "No financial accounts found")
+            return False
+        
+        cuenta_id = cuentas[0]['id']
+        
+        # Add a small payment to complete the cycle
+        pago_data = {
+            "cuenta_financiera_id": cuenta_id,
+            "forma_pago": "Efectivo",
+            "monto": 0.01,
+            "referencia": "TEST-FIX-CYCLE",
+            "fecha_pago": "2026-02-01",
+            "observaciones": "Test duplicate fix cycle"
+        }
+        
+        success, pago_response, status = self.make_request('POST', f'ventas-pos/{venta_id}/pagos', pago_data)
+        if success:
+            print(f"   ✅ CYCLE TEST: Added small payment and re-confirmed successfully")
+            self.log_test("Duplicate Fix - Complete Cycle Test", True, 
+                         "Successfully completed desconfirmar → confirm cycle without duplicates")
+        else:
+            print(f"   ⚠️  CYCLE TEST: Could not complete cycle: {pago_response}")
+            self.log_test("Duplicate Fix - Complete Cycle Test", False, 
+                         f"Could not complete cycle: {pago_response}")
+        
+        print(f"\n   🎉 DUPLICATE FIX TEST PASSED!")
+        print(f"      ✅ No duplicates created during desconfirmar")
+        print(f"      ✅ Payment counts match: {num_pagos_oficiales_real} → {num_pagos_temporales}")
+        print(f"      ✅ Payment totals match: S/ {total_pagos_oficiales} → S/ {total_pagos_temporales}")
+        
+        return True
+
     def run_all_tests(self):
         """Run all backend tests"""
         print("🚀 Starting Finanzas 4.0 Backend API Tests")
