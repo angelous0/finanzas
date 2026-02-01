@@ -650,6 +650,144 @@ class FinanzasAPITester:
                          f"Mismatch: pagos_oficiales={pagos_oficiales_amount} (expected {amount_total}), num_pagos_oficiales={num_pagos_oficiales} (expected 1)")
             return False
 
+    def test_ventas_pos_desconfirmar_flow(self):
+        """Test complete VentasPOS desconfirmar (unconfirm) flow"""
+        print("\n🔍 Testing VentasPOS Desconfirmar Flow...")
+        
+        # Step 1: Get a confirmed sale with payments
+        success, ventas_confirmadas, status = self.make_request('GET', 'ventas-pos', params={'estado': 'confirmada'})
+        if not success or not ventas_confirmadas:
+            self.log_test("Desconfirmar Flow - Get Confirmed Sale", False, f"No confirmed sales found: {ventas_confirmadas}")
+            return False
+        
+        # Find a sale with official payments
+        venta_con_pagos = None
+        for venta in ventas_confirmadas:
+            if venta.get('num_pagos_oficiales', 0) > 0:
+                venta_con_pagos = venta
+                break
+        
+        if not venta_con_pagos:
+            self.log_test("Desconfirmar Flow - Find Sale with Payments", False, "No confirmed sales with payments found")
+            return False
+        
+        venta_id = venta_con_pagos['id']
+        venta_name = venta_con_pagos['name']
+        num_pagos_oficiales = venta_con_pagos['num_pagos_oficiales']
+        
+        print(f"   📋 Found confirmed sale with payments: ID={venta_id}, Name={venta_name}, Pagos={num_pagos_oficiales}")
+        self.log_test("Desconfirmar Flow - Find Sale with Payments", True, 
+                     f"Found sale ID={venta_id}, Name={venta_name}, Pagos={num_pagos_oficiales}")
+        
+        # Step 2: Verify official payments before unconfirming
+        success, pagos_oficiales_antes, status = self.make_request('GET', f'ventas-pos/{venta_id}/pagos-oficiales')
+        if not success:
+            self.log_test("Desconfirmar Flow - Get Official Payments Before", False, f"Failed to get official payments: {pagos_oficiales_antes}")
+            return False
+        
+        num_pagos_antes = len(pagos_oficiales_antes)
+        print(f"   💰 Official payments BEFORE: {num_pagos_antes}")
+        for pago in pagos_oficiales_antes:
+            print(f"      - {pago.get('numero')}: {pago.get('monto')} ({pago.get('forma_pago')})")
+        
+        self.log_test("Desconfirmar Flow - Official Payments Before", True, 
+                     f"Found {num_pagos_antes} official payments before unconfirming")
+        
+        # Step 3: Verify temporary payments before (should be empty)
+        success, pagos_temporales_antes, status = self.make_request('GET', f'ventas-pos/{venta_id}/pagos')
+        if not success:
+            self.log_test("Desconfirmar Flow - Get Temporary Payments Before", False, f"Failed to get temporary payments: {pagos_temporales_antes}")
+            return False
+        
+        num_temporales_antes = len(pagos_temporales_antes)
+        print(f"   📝 Temporary payments BEFORE: {num_temporales_antes} (should be 0)")
+        
+        if num_temporales_antes == 0:
+            self.log_test("Desconfirmar Flow - Temporary Payments Before", True, 
+                         "Temporary payments correctly empty before unconfirming")
+        else:
+            self.log_test("Desconfirmar Flow - Temporary Payments Before", False, 
+                         f"Expected 0 temporary payments, found {num_temporales_antes}")
+        
+        # Step 4: DESCONFIRMAR LA VENTA
+        success, desconfirmar_response, status = self.make_request('POST', f'ventas-pos/{venta_id}/desconfirmar')
+        if not success:
+            self.log_test("Desconfirmar Flow - Unconfirm Sale", False, f"Failed to unconfirm sale: {desconfirmar_response}")
+            return False
+        
+        pagos_restaurados = desconfirmar_response.get('pagos_restaurados', 0)
+        nuevo_estado = desconfirmar_response.get('nuevo_estado')
+        
+        print(f"   ✅ Sale unconfirmed: {desconfirmar_response.get('message')}")
+        print(f"      - Payments restored: {pagos_restaurados}")
+        print(f"      - New state: {nuevo_estado}")
+        
+        self.log_test("Desconfirmar Flow - Unconfirm Sale", True, 
+                     f"Sale unconfirmed successfully, {pagos_restaurados} payments restored")
+        
+        # Step 5: Verify sale returned to pending
+        success, ventas_pendientes, status = self.make_request('GET', 'ventas-pos', params={'estado': 'pendiente'})
+        if not success:
+            self.log_test("Desconfirmar Flow - Check Pending Sales", False, f"Failed to get pending sales: {ventas_pendientes}")
+            return False
+        
+        venta_en_pendientes = next((v for v in ventas_pendientes if v['id'] == venta_id), None)
+        if not venta_en_pendientes:
+            self.log_test("Desconfirmar Flow - Sale in Pending", False, "Sale not found in pending sales")
+            return False
+        
+        print(f"   ✅ Sale now in PENDING: {venta_en_pendientes['name']} - Estado: {venta_en_pendientes['estado_local']}")
+        self.log_test("Desconfirmar Flow - Sale in Pending", True, 
+                     f"Sale found in pending with estado={venta_en_pendientes['estado_local']}")
+        
+        # Step 6: Verify official payments were deleted
+        success, pagos_oficiales_despues, status = self.make_request('GET', f'ventas-pos/{venta_id}/pagos-oficiales')
+        if not success:
+            self.log_test("Desconfirmar Flow - Get Official Payments After", False, f"Failed to get official payments after: {pagos_oficiales_despues}")
+            return False
+        
+        num_pagos_despues = len(pagos_oficiales_despues)
+        print(f"   💰 Official payments AFTER: {num_pagos_despues} (should be 0)")
+        
+        if num_pagos_despues == 0:
+            self.log_test("Desconfirmar Flow - Official Payments Deleted", True, 
+                         "Official payments correctly deleted")
+        else:
+            self.log_test("Desconfirmar Flow - Official Payments Deleted", False, 
+                         f"Expected 0 official payments, found {num_pagos_despues}")
+            return False
+        
+        # Step 7: Verify temporary payments were restored
+        success, pagos_temporales_despues, status = self.make_request('GET', f'ventas-pos/{venta_id}/pagos')
+        if not success:
+            self.log_test("Desconfirmar Flow - Get Temporary Payments After", False, f"Failed to get temporary payments after: {pagos_temporales_despues}")
+            return False
+        
+        num_temporales_despues = len(pagos_temporales_despues)
+        print(f"   📝 Temporary payments AFTER: {num_temporales_despues} (should be > 0)")
+        for pago in pagos_temporales_despues:
+            print(f"      - {pago.get('forma_pago')}: {pago.get('monto')}")
+        
+        if num_temporales_despues > 0:
+            self.log_test("Desconfirmar Flow - Temporary Payments Restored", True, 
+                         f"Temporary payments correctly restored: {num_temporales_despues} payments")
+        else:
+            self.log_test("Desconfirmar Flow - Temporary Payments Restored", False, 
+                         "Expected > 0 temporary payments, found 0")
+            return False
+        
+        # Step 8: Verify the counts match
+        if num_temporales_despues == pagos_restaurados and pagos_restaurados == num_pagos_antes:
+            self.log_test("Desconfirmar Flow - Payment Count Consistency", True, 
+                         f"Payment counts consistent: {num_pagos_antes} → 0 official, {num_temporales_despues} temporary")
+            
+            print("   🎉 Complete VentasPOS desconfirmar flow test PASSED!")
+            return True
+        else:
+            self.log_test("Desconfirmar Flow - Payment Count Consistency", False, 
+                         f"Payment count mismatch: antes={num_pagos_antes}, restaurados={pagos_restaurados}, temporales={num_temporales_despues}")
+            return False
+
     def run_all_tests(self):
         """Run all backend tests"""
         print("🚀 Starting Finanzas 4.0 Backend API Tests")
@@ -667,6 +805,7 @@ class FinanzasAPITester:
             ("Letras Functionality", self.test_letras_functionality),
             ("Bank Reconciliation Save", self.test_bank_reconciliation_save),
             ("VentasPOS Payment Flow", self.test_ventas_pos_payment_flow),
+            ("VentasPOS Desconfirmar Flow", self.test_ventas_pos_desconfirmar_flow),
         ]
         
         for test_name, test_func in tests:
