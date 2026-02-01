@@ -252,19 +252,32 @@ export const VentasPOS = () => {
     }
   };
 
-  // Ver pagos de venta confirmada
+  // Ver pagos de venta confirmada (abre modal)
   const verPagosConfirmada = async (venta) => {
+    setVentaSeleccionada(venta);
+    setShowPagosOficialesModal(true);
+    setLoadingPagosOficiales(true);
+    
     try {
       const response = await getPagosOficialesVentaPOS(venta.id);
-      const pagosData = response.data;
-      
-      if (pagosData.length === 0) {
-        toast.info('Esta venta no tiene pagos registrados');
-        return;
-      }
-      
-      // Export to Excel
-      const excelData = pagosData.map(p => ({
+      setPagosOficiales(response.data);
+    } catch (error) {
+      console.error('Error loading pagos oficiales:', error);
+      toast.error('Error al cargar pagos');
+    } finally {
+      setLoadingPagosOficiales(false);
+    }
+  };
+  
+  // Exportar pagos oficiales a Excel
+  const exportarPagosOficiales = () => {
+    if (!pagosOficiales || pagosOficiales.length === 0) {
+      toast.error('No hay pagos para exportar');
+      return;
+    }
+    
+    try {
+      const excelData = pagosOficiales.map(p => ({
         'Número': p.numero,
         'Forma de Pago': p.forma_pago,
         'Monto': p.monto,
@@ -278,14 +291,21 @@ export const VentasPOS = () => {
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, 'Pagos');
       
-      const filename = `pagos_${venta.name}_${new Date().toISOString().split('T')[0]}.xlsx`;
+      const filename = `pagos_${ventaSeleccionada.name}_${new Date().toISOString().split('T')[0]}.xlsx`;
       XLSX.writeFile(wb, filename);
       
-      toast.success(`Exportados ${pagosData.length} pagos a Excel`);
+      toast.success(`Exportados ${pagosOficiales.length} pagos a Excel`);
     } catch (error) {
-      console.error('Error loading pagos:', error);
-      toast.error('Error al cargar pagos');
+      console.error('Error exporting:', error);
+      toast.error('Error al exportar pagos');
     }
+  };
+  
+  // Cerrar modal de pagos oficiales
+  const closePagosOficialesModal = () => {
+    setShowPagosOficialesModal(false);
+    setVentaSeleccionada(null);
+    setPagosOficiales([]);
   };
 
   const closePagosModal = () => {
