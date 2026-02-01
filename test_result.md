@@ -258,7 +258,7 @@ frontend:
 
 test_plan:
   current_focus:
-    - "VentasPOS - Payment type verification (INGRESO vs EGRESO)"
+    - "VentasPOS - Desconfirmar (unconfirm) sale flow"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
@@ -274,3 +274,5 @@ agent_communication:
     message: "✅ BACKEND PAYMENT FLOW COMPREHENSIVE TEST COMPLETED: Tested complete VentasPOS payment confirmation flow with official payment creation. All steps working perfectly: 1) Get pending sale (ID=73, Total=155.0) ✅ 2) Get financial accounts ✅ 3) Assign payment with auto-confirmation ✅ 4) Verify sale confirmed ✅ 5) Verify official payments created in cont_pago, cont_pago_detalle, cont_pago_aplicacion tables ✅ 6) Verify pagos_oficiales=155.0 and num_pagos_oficiales=1 fields correctly updated ✅. Backend flow creates all required database records as expected. Payment number PAG-E-2026-00015 generated correctly."
   - agent: "testing"
     message: "🎉 CRITICAL PAYMENT TYPE FIX VERIFIED: VentasPOS payments are now correctly created as INGRESOS (not EGRESOS). Tested payment assignment flow twice with different sales: 1) Sale ID=994 (Total=90.0) created payment PAG-I-2026-00001 ✅ 2) Sale ID=995 (Total=73.0) created payment PAG-I-2026-00002 ✅. Both payments have tipo='ingreso' and número starting with 'PAG-I-' as expected. The fix is working correctly and consistently. Total pagos INGRESO de ventas POS found: 2. Previous issue with PAG-E- (egreso) payments has been resolved."
+  - agent: "testing"
+    message: "✅ DESCONFIRMAR FLOW TESTING COMPLETED: Successfully tested complete VentasPOS desconfirmar (unconfirm) functionality. Verified all 7 steps of the flow: 1) Found confirmed sale with payments (ID=995, 1 official payment PAG-I-2026-00002) ✅ 2) Verified official payments before unconfirming ✅ 3) Called desconfirmar endpoint successfully ✅ 4) Verified sale returned to 'pendiente' state ✅ 5) Verified official payments deleted from cont_pago tables ✅ 6) Verified temporary payments restored to cont_venta_pos_pago ✅ 7) Confirmed user can now reassign payments ✅. The desconfirmar endpoint is working correctly and follows the expected business logic: deletes official payments, restores temporary payments, and changes sale state. Ready for production use."
