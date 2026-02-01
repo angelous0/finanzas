@@ -972,13 +972,26 @@ export const VentasPOS = () => {
             </div>
 
             <div className="modal-footer" style={{ borderTop: '2px solid #f3f4f6', paddingTop: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <button 
-                className="btn btn-outline" 
-                onClick={closePagosOficialesModal} 
-                style={{ padding: '0.625rem 1.25rem', borderRadius: '8px' }}
-              >
-                Cerrar
-              </button>
+              <div style={{ display: 'flex', gap: '0.75rem' }}>
+                <button 
+                  className="btn btn-outline" 
+                  onClick={closePagosOficialesModal} 
+                  style={{ padding: '0.625rem 1.25rem', borderRadius: '8px' }}
+                >
+                  Cerrar
+                </button>
+                {pagosOficiales.length > 0 && (
+                  <button 
+                    className="btn btn-error btn-outline"
+                    onClick={handleDesconfirmar}
+                    style={{ padding: '0.625rem 1.25rem', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                    title="Desconfirmar venta y eliminar pagos oficiales"
+                  >
+                    <RotateCcw size={16} />
+                    Desconfirmar Venta
+                  </button>
+                )}
+              </div>
               {pagosOficiales.length > 0 && (
                 <button 
                   className="btn btn-primary"
