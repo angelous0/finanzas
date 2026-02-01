@@ -126,6 +126,7 @@ export const getVentasPOS = (params) => api.get('/ventas-pos', { params });
 export const syncVentasPOS = (company, days) => 
   api.post(`/ventas-pos/sync?company=${company}&days_back=${days}`);
 export const confirmarVentaPOS = (id) => api.post(`/ventas-pos/${id}/confirmar`);
+export const desconfirmarVentaPOS = (id) => api.post(`/ventas-pos/${id}/desconfirmar`);
 export const marcarCreditoVentaPOS = (id, fechaVencimiento) => 
   api.post(`/ventas-pos/${id}/credito`, null, { params: { fecha_vencimiento: fechaVencimiento } });
 export const descartarVentaPOS = (id) => api.post(`/ventas-pos/${id}/descartar`);
