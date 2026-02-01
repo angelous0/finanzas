@@ -839,6 +839,129 @@ export const VentasPOS = () => {
           </div>
         </div>
       )}
+
+      {/* Modal Ver Pagos Oficiales (Confirmadas) */}
+      {showPagosOficialesModal && ventaSeleccionada && (
+        <div className="modal-overlay" onClick={closePagosOficialesModal} style={{ backgroundColor: 'rgba(0, 0, 0, 0.6)', backdropFilter: 'blur(4px)' }}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '900px', backgroundColor: '#ffffff', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)' }}>
+            <div className="modal-header" style={{ borderBottom: '2px solid #f3f4f6', paddingBottom: '1rem' }}>
+              <div>
+                <h2 className="modal-title" style={{ fontSize: '1.25rem', fontWeight: 600, color: '#111827' }}>
+                  📋 Pagos Registrados
+                </h2>
+                <p style={{ fontSize: '0.875rem', color: '#6b7280', marginTop: '0.25rem' }}>
+                  {ventaSeleccionada.name} • {ventaSeleccionada.partner_name}
+                </p>
+              </div>
+              <button className="modal-close" onClick={closePagosOficialesModal} style={{ fontSize: '1.75rem', color: '#9ca3af' }}>×</button>
+            </div>
+
+            <div className="modal-body" style={{ padding: '1.5rem' }}>
+              {/* Info de la venta */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1.5rem', padding: '1.25rem', background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)', borderRadius: '12px', color: 'white' }}>
+                <div>
+                  <div style={{ fontSize: '0.7rem', opacity: 0.9, marginBottom: '0.25rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Cliente</div>
+                  <div style={{ fontWeight: 600, fontSize: '0.875rem' }}>{ventaSeleccionada.partner_name}</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.7rem', opacity: 0.9, marginBottom: '0.25rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total Venta</div>
+                  <div style={{ fontWeight: 700, fontSize: '1.25rem' }}>
+                    {formatCurrency(ventaSeleccionada.amount_total)}
+                  </div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.7rem', opacity: 0.9, marginBottom: '0.25rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total Pagado</div>
+                  <div style={{ fontWeight: 700, fontSize: '1.25rem', color: '#d1fae5' }}>
+                    {formatCurrency(ventaSeleccionada.pagos_oficiales || 0)}
+                  </div>
+                </div>
+              </div>
+
+              {/* Tabla de pagos */}
+              {loadingPagosOficiales ? (
+                <div style={{ textAlign: 'center', padding: '2rem' }}>
+                  <div className="loading loading-spinner loading-lg"></div>
+                  <p style={{ marginTop: '1rem', color: '#6b7280' }}>Cargando pagos...</p>
+                </div>
+              ) : pagosOficiales.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '3rem', backgroundColor: '#f9fafb', borderRadius: '12px' }}>
+                  <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>💳</div>
+                  <p style={{ fontSize: '1rem', color: '#6b7280', marginBottom: '0.5rem' }}>No hay pagos registrados</p>
+                  <p style={{ fontSize: '0.875rem', color: '#9ca3af' }}>Esta venta no tiene pagos oficiales</p>
+                </div>
+              ) : (
+                <div style={{ border: '1px solid #e5e7eb', borderRadius: '12px', overflow: 'hidden' }}>
+                  <table className="table table-zebra" style={{ marginBottom: 0 }}>
+                    <thead style={{ backgroundColor: '#f9fafb' }}>
+                      <tr>
+                        <th style={{ fontWeight: 600, color: '#374151' }}>Número</th>
+                        <th style={{ fontWeight: 600, color: '#374151' }}>Fecha</th>
+                        <th style={{ fontWeight: 600, color: '#374151' }}>Forma de Pago</th>
+                        <th style={{ fontWeight: 600, color: '#374151' }}>Cuenta</th>
+                        <th style={{ fontWeight: 600, color: '#374151' }}>Referencia</th>
+                        <th className="text-right" style={{ fontWeight: 600, color: '#374151' }}>Monto</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {pagosOficiales.map((pago) => (
+                        <tr key={pago.id}>
+                          <td style={{ fontWeight: 500, color: '#111827' }}>{pago.numero}</td>
+                          <td>{new Date(pago.fecha).toLocaleDateString('es-PE')}</td>
+                          <td>
+                            <span style={{ 
+                              padding: '0.25rem 0.75rem', 
+                              backgroundColor: '#dbeafe', 
+                              color: '#1e40af', 
+                              borderRadius: '9999px', 
+                              fontSize: '0.75rem',
+                              fontWeight: 500
+                            }}>
+                              {pago.forma_pago}
+                            </span>
+                          </td>
+                          <td style={{ fontSize: '0.875rem', color: '#6b7280' }}>{pago.cuenta_nombre || '-'}</td>
+                          <td style={{ fontSize: '0.875rem', color: '#6b7280' }}>{pago.referencia || '-'}</td>
+                          <td className="text-right" style={{ fontWeight: 600, color: '#059669' }}>
+                            {formatCurrency(pago.monto)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                    <tfoot style={{ backgroundColor: '#f9fafb', borderTop: '2px solid #e5e7eb' }}>
+                      <tr>
+                        <td colSpan="5" style={{ fontWeight: 600, fontSize: '0.9375rem', color: '#111827' }}>TOTAL</td>
+                        <td className="text-right" style={{ fontWeight: 700, fontSize: '1.125rem', color: '#059669' }}>
+                          {formatCurrency(pagosOficiales.reduce((sum, p) => sum + parseFloat(p.monto || 0), 0))}
+                        </td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+              )}
+            </div>
+
+            <div className="modal-footer" style={{ borderTop: '2px solid #f3f4f6', paddingTop: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <button 
+                className="btn btn-outline" 
+                onClick={closePagosOficialesModal} 
+                style={{ padding: '0.625rem 1.25rem', borderRadius: '8px' }}
+              >
+                Cerrar
+              </button>
+              {pagosOficiales.length > 0 && (
+                <button 
+                  className="btn btn-primary"
+                  onClick={exportarPagosOficiales}
+                  style={{ padding: '0.625rem 1.25rem', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                >
+                  <Download size={16} />
+                  Exportar a Excel
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
