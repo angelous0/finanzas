@@ -2856,10 +2856,10 @@ async def add_pago_venta_pos(id: int, pago: dict):
                 
                 # Crear un pago en cont_pago por cada pago asignado
                 for pago_item in pagos_venta:
-                    # Generar número de pago (PAG-E-YYYY-XXXXX)
+                    # Generar número de pago INGRESO (PAG-I-YYYY-XXXXX) porque son ventas
                     last_pago = await conn.fetchval("""
                         SELECT numero FROM finanzas2.cont_pago 
-                        WHERE tipo = 'egreso' 
+                        WHERE tipo = 'ingreso' 
                         ORDER BY id DESC LIMIT 1
                     """)
                     
@@ -2872,13 +2872,13 @@ async def add_pago_venta_pos(id: int, pago: dict):
                     else:
                         num = 1
                     
-                    numero_pago = f"PAG-E-{datetime.now().year}-{num:05d}"
+                    numero_pago = f"PAG-I-{datetime.now().year}-{num:05d}"
                     
-                    # Insertar en cont_pago (using correct schema)
+                    # Insertar en cont_pago como INGRESO (ventas = dinero que entra)
                     pago_result = await conn.fetchrow("""
                         INSERT INTO finanzas2.cont_pago 
                         (numero, tipo, fecha, cuenta_financiera_id, moneda_id, monto_total, referencia, notas)
-                        VALUES ($1, 'egreso', $2::date, $3, 1, $4, $5, $6)
+                        VALUES ($1, 'ingreso', $2::date, $3, 1, $4, $5, $6)
                         RETURNING id
                     """, numero_pago, pago_item['fecha_pago'], pago_item['cuenta_financiera_id'],
                         pago_item['monto'], pago_item['referencia'],
