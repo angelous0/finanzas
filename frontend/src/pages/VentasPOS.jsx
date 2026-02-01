@@ -62,7 +62,7 @@ export const VentasPOS = () => {
   const [fechaHasta, setFechaHasta] = useState(getYesterdayInLima());
   const [search, setSearch] = useState('');
   
-  // Modal pagos
+  // Modal pagos (para asignar pagos a pendientes)
   const [showPagosModal, setShowPagosModal] = useState(false);
   const [ventaSeleccionada, setVentaSeleccionada] = useState(null);
   const [pagos, setPagos] = useState([]);
@@ -76,6 +76,11 @@ export const VentasPOS = () => {
     fecha_pago: new Date().toISOString().split('T')[0],
     observaciones: ''
   });
+  
+  // Modal pagos oficiales (para ver pagos de confirmadas)
+  const [showPagosOficialesModal, setShowPagosOficialesModal] = useState(false);
+  const [pagosOficiales, setPagosOficiales] = useState([]);
+  const [loadingPagosOficiales, setLoadingPagosOficiales] = useState(false);
 
   useEffect(() => {
     loadVentas();
