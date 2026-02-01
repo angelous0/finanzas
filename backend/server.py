@@ -2809,6 +2809,11 @@ async def desconfirmar_venta_pos(id: int):
             if not pagos_oficiales:
                 raise HTTPException(400, "No se encontraron pagos oficiales para esta venta")
             
+            # IMPORTANTE: Eliminar pagos temporales existentes (evita duplicados)
+            await conn.execute("""
+                DELETE FROM finanzas2.cont_venta_pos_pago WHERE venta_pos_id = $1
+            """, id)
+            
             # Restaurar los pagos en cont_venta_pos_pago (tabla temporal)
             for pago in pagos_oficiales:
                 await conn.execute("""
