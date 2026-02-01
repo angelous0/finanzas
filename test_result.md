@@ -243,7 +243,7 @@ frontend:
 
 test_plan:
   current_focus:
-    - "VentasPOS - Complete payment confirmation flow"
+    - "VentasPOS - Payment type verification (INGRESO vs EGRESO)"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
