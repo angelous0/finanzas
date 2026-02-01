@@ -307,6 +307,37 @@ export const VentasPOS = () => {
     setVentaSeleccionada(null);
     setPagosOficiales([]);
   };
+  
+  // Desconfirmar venta (volver a pendiente)
+  const handleDesconfirmar = async () => {
+    if (!ventaSeleccionada) return;
+    
+    // Confirmación del usuario
+    const confirmado = window.confirm(
+      `¿Está seguro que desea DESCONFIRMAR esta venta?\n\n` +
+      `Venta: ${ventaSeleccionada.name}\n` +
+      `Cliente: ${ventaSeleccionada.partner_name}\n` +
+      `Total: ${formatCurrency(ventaSeleccionada.amount_total)}\n\n` +
+      `La venta volverá a estado PENDIENTE y los pagos oficiales se eliminarán.\n` +
+      `Podrá volver a asignar pagos desde la pestaña Pendientes.`
+    );
+    
+    if (!confirmado) return;
+    
+    try {
+      const response = await desconfirmarVentaPOS(ventaSeleccionada.id);
+      toast.success(response.data.message);
+      
+      // Cerrar modal
+      closePagosOficialesModal();
+      
+      // Recargar lista de ventas
+      loadVentas();
+    } catch (error) {
+      console.error('Error desconfirmando venta:', error);
+      toast.error(error.response?.data?.detail || 'Error al desconfirmar venta');
+    }
+  };
 
   const closePagosModal = () => {
     setShowPagosModal(false);
