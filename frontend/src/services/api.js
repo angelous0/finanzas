@@ -136,7 +136,11 @@ export const descartarVentaPOS = (id) => api.post(`/ventas-pos/${id}/descartar`)
 export const getPagosVentaPOS = (ventaId) => api.get(`/ventas-pos/${ventaId}/pagos`);
 export const getPagosOficialesVentaPOS = (ventaId) => api.get(`/ventas-pos/${ventaId}/pagos-oficiales`);
 export const addPagoVentaPOS = (ventaId, pago) => api.post(`/ventas-pos/${ventaId}/pagos`, pago);
+export const updatePagoVentaPOS = (ventaId, pagoId, pago) => api.put(`/ventas-pos/${ventaId}/pagos/${pagoId}`, pago);
 export const deletePagoVentaPOS = (ventaId, pagoId) => api.delete(`/ventas-pos/${ventaId}/pagos/${pagoId}`);
+
+// Ventas POS - Líneas de productos
+export const getLineasVentaPOS = (ventaId) => api.get(`/ventas-pos/${ventaId}/lineas`);
 
 // CxC
 export const getCxC = (params) => api.get('/cxc', { params });
