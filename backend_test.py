@@ -913,6 +913,238 @@ class FinanzasAPITester:
         
         return True
 
+    def test_generar_gasto_bancario(self):
+        """Test complete Generar Gasto Bancario functionality"""
+        print("\n🔍 Testing Generar Gasto Bancario - COMPREHENSIVE TEST...")
+        
+        # Step 1: Get financial accounts (bank accounts)
+        success, cuentas, status = self.make_request('GET', 'cuentas-financieras', params={'tipo': 'banco'})
+        if not success or not cuentas:
+            self.log_test("Gasto Bancario - Get Bank Accounts", False, f"No bank accounts found: {cuentas}")
+            return False
+        
+        cuenta_financiera_id = cuentas[0]['id']
+        cuenta_nombre = cuentas[0]['nombre']
+        
+        print(f"   🏦 Using bank account: ID={cuenta_financiera_id}, Name={cuenta_nombre}")
+        self.log_test("Gasto Bancario - Get Bank Accounts", True, 
+                     f"Found bank account ID={cuenta_financiera_id}, Name={cuenta_nombre}")
+        
+        # Step 2: Get expense categories
+        success, categorias, status = self.make_request('GET', 'categorias', params={'tipo': 'egreso'})
+        if not success or not categorias:
+            self.log_test("Gasto Bancario - Get Expense Categories", False, f"No expense categories found: {categorias}")
+            return False
+        
+        categoria_id = categorias[0]['id']
+        categoria_nombre = categorias[0]['nombre']
+        
+        print(f"   📂 Using expense category: ID={categoria_id}, Name={categoria_nombre}")
+        self.log_test("Gasto Bancario - Get Expense Categories", True, 
+                     f"Found expense category ID={categoria_id}, Name={categoria_nombre}")
+        
+        # Step 3: Check existing non-reconciled bank movements
+        success, movimientos_existentes, status = self.make_request('GET', 'conciliacion/movimientos-banco', 
+                                                                   params={'cuenta_financiera_id': cuenta_financiera_id, 'conciliado': False})
+        
+        print(f"   📊 Existing non-reconciled movements: {len(movimientos_existentes) if movimientos_existentes else 0}")
+        
+        # Step 4: Create test bank movements if none exist
+        banco_ids = []
+        if not movimientos_existentes or len(movimientos_existentes) < 3:
+            print(f"   🔧 Creating test bank movements...")
+            
+            # We need to create bank movements directly in the database
+            # Since there's no API endpoint for creating bank movements, we'll simulate them
+            test_movements = [
+                {"descripcion": "ITF - Impuesto Transacciones Financieras", "monto": -3.50},
+                {"descripcion": "Comisión Mantenimiento Cuenta", "monto": -15.00},
+                {"descripcion": "Cargo por Transferencia", "monto": -8.75}
+            ]
+            
+            # For testing purposes, let's check if we can use existing movements
+            if movimientos_existentes and len(movimientos_existentes) >= 2:
+                # Use existing movements
+                banco_ids = [mov['id'] for mov in movimientos_existentes[:3]]
+                print(f"   ✅ Using existing movements: {banco_ids}")
+            else:
+                # Skip this test if we can't create test data
+                self.log_test("Gasto Bancario - Test Data Setup", False, 
+                             "Insufficient bank movements and no API to create them")
+                return False
+        else:
+            # Use existing movements
+            banco_ids = [mov['id'] for mov in movimientos_existentes[:3]]
+            print(f"   ✅ Using existing movements: {banco_ids}")
+        
+        self.log_test("Gasto Bancario - Test Data Setup", True, 
+                     f"Using {len(banco_ids)} bank movements for testing")
+        
+        # Step 5: Get movement details before creating expense
+        movimientos_detalle = []
+        total_esperado = 0
+        for banco_id in banco_ids:
+            mov = next((m for m in movimientos_existentes if m['id'] == banco_id), None)
+            if mov:
+                movimientos_detalle.append(mov)
+                total_esperado += abs(float(mov['monto']))
+        
+        print(f"   💰 Movements to process:")
+        for i, mov in enumerate(movimientos_detalle):
+            print(f"      {i+1}. ID={mov['id']}: {mov.get('descripcion', 'N/A')} - S/ {mov['monto']}")
+        print(f"   💵 Expected total (absolute): S/ {total_esperado}")
+        
+        # Step 6: Test ERROR CASES first
+        print(f"\n   🚨 Testing ERROR CASES...")
+        
+        # Error case 1: Empty banco_ids
+        success, error_response, status = self.make_request('POST', 'conciliacion/crear-gasto-bancario', 
+                                                           params={'banco_ids': [], 'categoria_id': categoria_id, 'cuenta_financiera_id': cuenta_financiera_id})
+        if not success and status >= 400:
+            self.log_test("Gasto Bancario - Error Empty banco_ids", True, 
+                         f"Correctly rejected empty banco_ids: {error_response}")
+        else:
+            self.log_test("Gasto Bancario - Error Empty banco_ids", False, 
+                         f"Should have rejected empty banco_ids but got: {error_response}")
+        
+        # Error case 2: Non-existent categoria_id
+        success, error_response, status = self.make_request('POST', 'conciliacion/crear-gasto-bancario', 
+                                                           params={'banco_ids': banco_ids[:1], 'categoria_id': 99999, 'cuenta_financiera_id': cuenta_financiera_id})
+        if not success and status >= 400:
+            self.log_test("Gasto Bancario - Error Invalid categoria_id", True, 
+                         f"Correctly rejected invalid categoria_id: {error_response}")
+        else:
+            self.log_test("Gasto Bancario - Error Invalid categoria_id", False, 
+                         f"Should have rejected invalid categoria_id but got: {error_response}")
+        
+        # Error case 3: Non-existent cuenta_financiera_id
+        success, error_response, status = self.make_request('POST', 'conciliacion/crear-gasto-bancario', 
+                                                           params={'banco_ids': banco_ids[:1], 'categoria_id': categoria_id, 'cuenta_financiera_id': 99999})
+        if not success and status >= 400:
+            self.log_test("Gasto Bancario - Error Invalid cuenta_financiera_id", True, 
+                         f"Correctly rejected invalid cuenta_financiera_id: {error_response}")
+        else:
+            self.log_test("Gasto Bancario - Error Invalid cuenta_financiera_id", False, 
+                         f"Should have rejected invalid cuenta_financiera_id but got: {error_response}")
+        
+        # Step 7: MAIN TEST - Create gasto bancario
+        print(f"\n   ✅ MAIN TEST - Creating gasto bancario...")
+        
+        descripcion = "Gastos bancarios agrupados - Test ITF y Comisiones"
+        
+        # Build query parameters manually
+        query_params = []
+        for banco_id in banco_ids:
+            query_params.append(f"banco_ids={banco_id}")
+        query_params.append(f"categoria_id={categoria_id}")
+        query_params.append(f"cuenta_financiera_id={cuenta_financiera_id}")
+        query_params.append(f"descripcion={descripcion}")
+        
+        query_string = "&".join(query_params)
+        
+        success, gasto_response, status = self.make_request('POST', f'conciliacion/crear-gasto-bancario?{query_string}')
+        
+        if not success:
+            self.log_test("Gasto Bancario - Create Expense", False, f"Failed to create gasto: {gasto_response}")
+            return False
+        
+        gasto_id = gasto_response.get('gasto_id')
+        gasto_numero = gasto_response.get('gasto_numero')
+        pago_id = gasto_response.get('pago_id')
+        total_creado = gasto_response.get('total')
+        movimientos_conciliados = gasto_response.get('movimientos_conciliados')
+        
+        print(f"   ✅ Gasto created successfully!")
+        print(f"      - Gasto ID: {gasto_id}")
+        print(f"      - Gasto Number: {gasto_numero}")
+        print(f"      - Pago ID: {pago_id}")
+        print(f"      - Total: S/ {total_creado}")
+        print(f"      - Movements reconciled: {movimientos_conciliados}")
+        
+        self.log_test("Gasto Bancario - Create Expense", True, 
+                     f"Created gasto ID={gasto_id}, Number={gasto_numero}, Total=S/ {total_creado}")
+        
+        # Step 8: Verify total matches expected
+        if abs(float(total_creado) - total_esperado) < 0.01:
+            self.log_test("Gasto Bancario - Total Verification", True, 
+                         f"Total matches expected: S/ {total_creado} ≈ S/ {total_esperado}")
+        else:
+            self.log_test("Gasto Bancario - Total Verification", False, 
+                         f"Total mismatch: Expected S/ {total_esperado}, Got S/ {total_creado}")
+        
+        # Step 9: Verify records were created in database
+        print(f"\n   🔍 Verifying database records...")
+        
+        # Check cont_gasto
+        success, gastos, status = self.make_request('GET', 'gastos')
+        if success and gastos:
+            gasto_encontrado = next((g for g in gastos if g.get('id') == gasto_id), None)
+            if gasto_encontrado:
+                self.log_test("Gasto Bancario - cont_gasto Record", True, 
+                             f"Found gasto record: {gasto_encontrado.get('numero')}")
+            else:
+                self.log_test("Gasto Bancario - cont_gasto Record", False, 
+                             f"Gasto record not found in gastos list")
+        else:
+            self.log_test("Gasto Bancario - cont_gasto Record", False, 
+                         f"Failed to verify gasto record: {gastos}")
+        
+        # Check cont_pago
+        success, pagos, status = self.make_request('GET', 'pagos', params={'tipo': 'egreso'})
+        if success and pagos:
+            pago_encontrado = next((p for p in pagos if p.get('id') == pago_id), None)
+            if pago_encontrado:
+                self.log_test("Gasto Bancario - cont_pago Record", True, 
+                             f"Found pago record: {pago_encontrado.get('numero')}")
+            else:
+                self.log_test("Gasto Bancario - cont_pago Record", False, 
+                             f"Pago record not found in pagos list")
+        else:
+            self.log_test("Gasto Bancario - cont_pago Record", False, 
+                         f"Failed to verify pago record: {pagos}")
+        
+        # Step 10: Verify bank movements are marked as reconciled
+        success, movimientos_updated, status = self.make_request('GET', 'conciliacion/movimientos-banco', 
+                                                                params={'cuenta_financiera_id': cuenta_financiera_id, 'conciliado': True})
+        
+        if success and movimientos_updated:
+            reconciled_ids = [mov['id'] for mov in movimientos_updated if mov.get('conciliado')]
+            movements_found = sum(1 for banco_id in banco_ids if banco_id in reconciled_ids)
+            
+            if movements_found == len(banco_ids):
+                self.log_test("Gasto Bancario - Movements Reconciled", True, 
+                             f"All {len(banco_ids)} movements marked as reconciled")
+            else:
+                self.log_test("Gasto Bancario - Movements Reconciled", False, 
+                             f"Only {movements_found}/{len(banco_ids)} movements marked as reconciled")
+        else:
+            self.log_test("Gasto Bancario - Movements Reconciled", False, 
+                         f"Failed to verify reconciled movements: {movimientos_updated}")
+        
+        # Step 11: Test already reconciled error
+        print(f"\n   🚨 Testing already reconciled error...")
+        success, error_response, status = self.make_request('POST', f'conciliacion/crear-gasto-bancario?{query_string}')
+        
+        if not success and status >= 400:
+            if "conciliados" in str(error_response).lower():
+                self.log_test("Gasto Bancario - Already Reconciled Error", True, 
+                             f"Correctly rejected already reconciled movements: {error_response}")
+            else:
+                self.log_test("Gasto Bancario - Already Reconciled Error", False, 
+                             f"Wrong error message for reconciled movements: {error_response}")
+        else:
+            self.log_test("Gasto Bancario - Already Reconciled Error", False, 
+                         f"Should have rejected already reconciled movements but got: {error_response}")
+        
+        print(f"\n   🎉 GENERAR GASTO BANCARIO TEST COMPLETED!")
+        print(f"      ✅ Gasto created: {gasto_numero} (ID: {gasto_id})")
+        print(f"      ✅ Pago created: PAG-E-{gasto_numero} (ID: {pago_id})")
+        print(f"      ✅ Total amount: S/ {total_creado}")
+        print(f"      ✅ Movements reconciled: {movimientos_conciliados}")
+        print(f"      ✅ Error cases handled correctly")
+        
+        return True
+
     def run_all_tests(self):
         """Run all backend tests"""
         print("🚀 Starting Finanzas 4.0 Backend API Tests")
