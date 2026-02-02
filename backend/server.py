@@ -2705,6 +2705,43 @@ async def sync_ventas_pos(company: str = "ambission", days_back: int = 30):
                             reserva_pendiente, reserva_facturada, is_cancel,
                             order_cancel, reserva, is_credit, reserva_use_id)
                     
+                    # Sync product lines for this order
+                    try:
+                        # Get the local venta_pos id
+                        local_venta = await conn.fetchrow("""
+                            SELECT id FROM finanzas2.cont_venta_pos WHERE odoo_id = $1
+                        """, odoo_id)
+                        
+                        if local_venta:
+                            venta_pos_id = local_venta['id']
+                            
+                            # Delete existing lines (to avoid duplicates on re-sync)
+                            await conn.execute("""
+                                DELETE FROM finanzas2.cont_venta_pos_linea WHERE venta_pos_id = $1
+                            """, venta_pos_id)
+                            
+                            # Get lines from Odoo with marca and tipo
+                            lines = odoo.get_order_lines(odoo_id)
+                            
+                            for line in lines:
+                                product_name = line['product_id'][1] if isinstance(line.get('product_id'), list) else 'Producto'
+                                product_id_val = line['product_id'][0] if isinstance(line.get('product_id'), list) else line.get('product_id')
+                                
+                                await conn.execute("""
+                                    INSERT INTO finanzas2.cont_venta_pos_linea
+                                    (venta_pos_id, odoo_line_id, product_id, product_name, product_code,
+                                     qty, price_unit, price_subtotal, price_subtotal_incl, discount,
+                                     marca, tipo)
+                                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+                                """, venta_pos_id, line.get('id'), product_id_val, product_name,
+                                    line.get('product_code', ''), line.get('qty', 0),
+                                    line.get('price_unit', 0), line.get('price_subtotal', 0),
+                                    line.get('price_subtotal_incl', 0), line.get('discount', 0),
+                                    line.get('marca', ''), line.get('tipo', ''))
+                    except Exception as line_error:
+                        logger.error(f"Error syncing lines for order {odoo_id}: {line_error}")
+                        # Continue even if lines fail - main order is synced
+                    
                     synced += 1
                     
                 except Exception as row_error:
