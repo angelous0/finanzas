@@ -754,34 +754,44 @@ export const VentasPOS = () => {
                         {formatCurrency(venta.amount_total)}
                       </td>
                       <td className="text-center">
-                        {venta.estado_local === 'pendiente' && (
-                          <div style={{ display: 'flex', gap: '0.25rem', justifyContent: 'center' }}>
-                            <button 
-                              className="btn btn-outline btn-sm btn-icon"
-                              onClick={() => handleConfirmar(venta.id)}
-                              title="Confirmar (requiere pagos asignados)"
-                              data-testid={`confirmar-${venta.id}`}
-                            >
-                              <Check size={14} />
-                            </button>
-                            <button 
-                              className="btn btn-outline btn-sm btn-icon"
-                              onClick={() => handleCredito(venta.id)}
-                              title="Marcar Crédito (va a módulo CxC)"
-                              data-testid={`credito-${venta.id}`}
-                            >
-                              <CreditCard size={14} />
-                            </button>
-                            <button 
-                              className="btn btn-outline btn-sm btn-icon"
-                              onClick={() => handleDescartar(venta.id)}
-                              title="Descartar"
-                              data-testid={`descartar-${venta.id}`}
-                            >
-                              <X size={14} />
-                            </button>
-                          </div>
-                        )}
+                        <div style={{ display: 'flex', gap: '0.25rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+                          <button 
+                            className="btn btn-outline btn-sm btn-icon"
+                            onClick={() => verLineasProductos(venta)}
+                            title="Ver productos"
+                            style={{ fontSize: '0.7rem' }}
+                          >
+                            <ShoppingCart size={14} />
+                          </button>
+                          {venta.estado_local === 'pendiente' && (
+                            <>
+                              <button 
+                                className="btn btn-outline btn-sm btn-icon"
+                                onClick={() => handleConfirmar(venta.id)}
+                                title="Confirmar (requiere pagos asignados)"
+                                data-testid={`confirmar-${venta.id}`}
+                              >
+                                <Check size={14} />
+                              </button>
+                              <button 
+                                className="btn btn-outline btn-sm btn-icon"
+                                onClick={() => handleCredito(venta.id)}
+                                title="Marcar Crédito (va a módulo CxC)"
+                                data-testid={`credito-${venta.id}`}
+                              >
+                                <CreditCard size={14} />
+                              </button>
+                              <button 
+                                className="btn btn-outline btn-sm btn-icon"
+                                onClick={() => handleDescartar(venta.id)}
+                                title="Descartar"
+                                data-testid={`descartar-${venta.id}`}
+                              >
+                                <X size={14} />
+                              </button>
+                            </>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))}
