@@ -545,6 +545,41 @@ async def create_schema():
             CREATE INDEX IF NOT EXISTS idx_venta_pos_pago_venta 
             ON finanzas2.cont_venta_pos_pago(venta_pos_id)
         """)
+        
+        # cont_venta_pos_linea (líneas de productos de ventas POS desde Odoo)
+        await conn.execute("""
+            CREATE TABLE IF NOT EXISTS finanzas2.cont_venta_pos_linea (
+                id SERIAL PRIMARY KEY,
+                venta_pos_id INTEGER REFERENCES finanzas2.cont_venta_pos(id) ON DELETE CASCADE,
+                odoo_line_id INTEGER,
+                product_id INTEGER,
+                product_name VARCHAR(255),
+                product_code VARCHAR(50),
+                qty DECIMAL(12, 3) NOT NULL,
+                price_unit DECIMAL(15, 2) NOT NULL,
+                price_subtotal DECIMAL(15, 2) NOT NULL,
+                price_subtotal_incl DECIMAL(15, 2),
+                discount DECIMAL(5, 2) DEFAULT 0,
+                marca VARCHAR(100),
+                tipo VARCHAR(100),
+                created_at TIMESTAMP DEFAULT NOW()
+            )
+        """)
+        
+        await conn.execute("""
+            CREATE INDEX IF NOT EXISTS idx_venta_pos_linea_venta 
+            ON finanzas2.cont_venta_pos_linea(venta_pos_id)
+        """)
+        
+        await conn.execute("""
+            CREATE INDEX IF NOT EXISTS idx_venta_pos_linea_marca 
+            ON finanzas2.cont_venta_pos_linea(marca)
+        """)
+        
+        await conn.execute("""
+            CREATE INDEX IF NOT EXISTS idx_venta_pos_linea_tipo 
+            ON finanzas2.cont_venta_pos_linea(tipo)
+        """)
 
         # cont_cxc (Cuentas por Cobrar)
         await conn.execute("""
