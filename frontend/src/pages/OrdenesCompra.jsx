@@ -35,6 +35,34 @@ const estadoBadge = (estado) => {
   return badges[estado] || 'badge badge-neutral';
 };
 
+// Helper function to extract error message from backend response
+const getErrorMessage = (error, defaultMessage = 'Error en la operación') => {
+  if (!error.response) return defaultMessage;
+  
+  const detail = error.response.data?.detail;
+  
+  // If detail is a string, return it
+  if (typeof detail === 'string') return detail;
+  
+  // If detail is an array (Pydantic validation errors)
+  if (Array.isArray(detail)) {
+    // Extract messages from all errors
+    const messages = detail.map(err => {
+      if (typeof err === 'string') return err;
+      if (err.msg) return `${err.loc?.join('.') || 'Campo'}: ${err.msg}`;
+      return JSON.stringify(err);
+    });
+    return messages.join('; ');
+  }
+  
+  // If detail is an object
+  if (typeof detail === 'object') {
+    return detail.message || detail.msg || JSON.stringify(detail);
+  }
+  
+  return defaultMessage;
+};
+
 export default function OrdenesCompra() {
   const [ordenes, setOrdenes] = useState([]);
   const [loading, setLoading] = useState(true);
