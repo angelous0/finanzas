@@ -3651,7 +3651,8 @@ async def desconciliar_movimientos(data: dict):
 @api_router.get("/conciliacion/movimientos-banco")
 async def list_movimientos_banco(
     cuenta_financiera_id: Optional[int] = None,
-    procesado: Optional[bool] = None
+    procesado: Optional[bool] = None,
+    conciliado: Optional[bool] = None
 ):
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -3668,6 +3669,11 @@ async def list_movimientos_banco(
         if procesado is not None:
             conditions.append(f"procesado = ${idx}")
             params.append(procesado)
+            idx += 1
+        # Support both procesado and conciliado (they should be the same after migration)
+        if conciliado is not None:
+            conditions.append(f"conciliado = ${idx}")
+            params.append(conciliado)
             idx += 1
         
         query = f"""
