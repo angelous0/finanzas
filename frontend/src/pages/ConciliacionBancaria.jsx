@@ -70,8 +70,12 @@ export const ConciliacionBancaria = () => {
   const loadInitialData = async () => {
     try {
       setLoading(true);
-      const [cuentasRes] = await Promise.all([getCuentasFinancieras()]);
+      const [cuentasRes, categoriasRes] = await Promise.all([
+        getCuentasFinancieras(),
+        getCategorias('gasto')
+      ]);
       setCuentas(cuentasRes.data.filter(c => c.tipo === 'banco'));
+      setCategorias(categoriasRes.data || []);
       
       const today = new Date();
       const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
