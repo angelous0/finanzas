@@ -18,7 +18,7 @@ def get_api_url():
                     return line.split('=')[1].strip()
     except:
         pass
-    return "https://finanzas-fix.preview.emergentagent.com"
+    return "https://quickfix-finanzas.preview.emergentagent.com"
 
 def test_ventas_pos_complete_flow():
     """Test complete VentasPOS payment assignment and auto-confirmation flow"""
