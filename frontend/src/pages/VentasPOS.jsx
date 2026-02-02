@@ -65,9 +65,9 @@ export const VentasPOS = () => {
     return lima.toISOString().split('T')[0];
   };
   
-  // Filtros - Default to yesterday in Lima timezone
+  // Filtros - Default to 30 days ago to yesterday in Lima timezone
   const [filtroEmpresa, setFiltroEmpresa] = useState('');
-  const [fechaDesde, setFechaDesde] = useState(getYesterdayInLima());
+  const [fechaDesde, setFechaDesde] = useState(get30DaysAgoInLima());
   const [fechaHasta, setFechaHasta] = useState(getYesterdayInLima());
   const [search, setSearch] = useState('');
   const [searchInput, setSearchInput] = useState(''); // Input value
