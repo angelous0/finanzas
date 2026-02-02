@@ -860,14 +860,24 @@ export const VentasPOS = () => {
                             <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>Ref: {pago.referencia}</div>
                           )}
                         </div>
-                        <button 
-                          className="btn btn-sm"
-                          onClick={() => handleDeletePago(pago.id)}
-                          style={{ color: '#dc2626', padding: '0.375rem', backgroundColor: '#fef2f2', border: '1px solid #fecaca', borderRadius: '6px' }}
-                          title="Eliminar pago"
-                        >
-                          <Trash2 size={14} />
-                        </button>
+                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                          <button 
+                            className="btn btn-sm"
+                            onClick={() => handleEditPago(pago)}
+                            style={{ color: '#2563eb', padding: '0.375rem', backgroundColor: '#eff6ff', border: '1px solid #bfdbfe', borderRadius: '6px' }}
+                            title="Editar pago"
+                          >
+                            <Edit size={14} />
+                          </button>
+                          <button 
+                            className="btn btn-sm"
+                            onClick={() => handleDeletePago(pago.id)}
+                            style={{ color: '#dc2626', padding: '0.375rem', backgroundColor: '#fef2f2', border: '1px solid #fecaca', borderRadius: '6px' }}
+                            title="Eliminar pago"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
