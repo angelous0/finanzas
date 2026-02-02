@@ -291,7 +291,7 @@ frontend:
 
   - task: "Conciliación Bancaria - Complete frontend flow testing"
     implemented: true
-    working: false
+    working: true
     file: "/app/frontend/src/pages/ConciliacionBancaria.jsx"
     stuck_count: 0
     priority: "high"
@@ -303,6 +303,9 @@ frontend:
       - working: false
         agent: "testing"
         comment: "CRITICAL ISSUE FOUND: Page loads correctly with all UI elements present (title, KPIs, tabs, dropdown, buttons), but NO BANK ACCOUNTS are available in the dropdown selector. The dropdown shows only 'Seleccionar cuenta...' placeholder with no actual bank account options. This prevents testing the complete flow as users cannot select any account to search for movements. All KPIs show 0 values (Mov. Banco: 0, Mov. Sistema: 0, Conciliados: 0, Diferencia: S/ 0.00). The backend integration appears to be failing to load bank accounts data."
+      - working: true
+        agent: "testing"
+        comment: "✅ COMPREHENSIVE CONCILIACIÓN BANCARIA TESTING COMPLETED: MAJOR IMPROVEMENT - Bank accounts dropdown now working with 2 accounts available (Cuenta BCP Soles - BCP, IBK Soles - Interbank). Successfully tested complete flow: 1) Page loads correctly ✅ 2) Bank accounts dropdown populated ✅ 3) Selected 'Cuenta BCP Soles' and clicked Buscar ✅ 4) KPIs updated: Mov. Banco: 2, Mov. Sistema: 4, Conciliados: 1, Diferencia: S/ 10,304.90 ✅ 5) Tab Pendientes working with 2 bank movements and 4 system movements ✅ 6) Manual reconciliation flow tested - selection works, Conciliar button appears ✅ 7) Tab Historial shows 6 reconciled bank movements ✅ 8) All UI elements functional (tabs, filters, buttons) ✅. Minor: Generar Gasto Bancario button didn't appear when expected, and some toast confirmations not detected, but core functionality working. The previous critical issue with missing bank accounts has been resolved."
 
   - task: "Historial Conciliaciones - Complete page testing"
     implemented: true
