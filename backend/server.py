@@ -653,7 +653,34 @@ async def list_clientes(search: Optional[str] = None):
 
 @api_router.get("/empleados", response_model=List[Tercero])
 async def list_empleados(search: Optional[str] = None):
-    return await list_terceros(es_personal=True, search=search)
+    """Get empleados with their salary details"""
+    pool = await get_pool()
+    async with pool.acquire() as conn:
+        await conn.execute("SET search_path TO finanzas2, public")
+        
+        conditions = ["t.activo = TRUE", "t.es_personal = TRUE"]
+        params = []
+        idx = 1
+        
+        if search:
+            conditions.append(f"(t.nombre ILIKE ${idx} OR t.numero_documento ILIKE ${idx})")
+            params.append(f"%{search}%")
+            idx += 1
+        
+        query = f"""
+            SELECT t.*, 
+                   ed.salario_base,
+                   ed.cargo,
+                   ed.fecha_ingreso,
+                   ed.cuenta_bancaria,
+                   ed.banco
+            FROM finanzas2.cont_tercero t
+            LEFT JOIN finanzas2.cont_empleado_detalle ed ON t.id = ed.tercero_id
+            WHERE {' AND '.join(conditions)}
+            ORDER BY t.nombre
+        """
+        rows = await conn.fetch(query, *params)
+        return [dict(r) for r in rows]
 
 # =====================
 # ARTICULOS REF
