@@ -1154,6 +1154,157 @@ export const VentasPOS = () => {
         </div>
       )}
       
+      {/* Modal Ver Líneas de Productos */}
+      {showLineasModal && ventaSeleccionada && (
+        <div className="modal-overlay" onClick={closeLineasModal} style={{ backgroundColor: 'rgba(0, 0, 0, 0.6)', backdropFilter: 'blur(4px)' }}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '1000px', backgroundColor: '#ffffff' }}>
+            <div className="modal-header" style={{ borderBottom: '2px solid #f3f4f6' }}>
+              <div>
+                <h2 className="modal-title" style={{ fontSize: '1.25rem', fontWeight: 600 }}>
+                  📋 Detalles de Productos
+                </h2>
+                <p style={{ fontSize: '0.875rem', color: '#6b7280', marginTop: '0.25rem' }}>
+                  {ventaSeleccionada.name} • {ventaSeleccionada.partner_name} • Total: {formatCurrency(ventaSeleccionada.amount_total)}
+                </p>
+              </div>
+              <button className="modal-close" onClick={closeLineasModal}>×</button>
+            </div>
+
+            <div className="modal-body" style={{ padding: '1.5rem' }}>
+              {loadingLineas ? (
+                <div style={{ textAlign: 'center', padding: '2rem' }}>
+                  <div className="loading loading-spinner loading-lg"></div>
+                  <p style={{ marginTop: '1rem', color: '#6b7280' }}>Cargando productos...</p>
+                </div>
+              ) : lineasProductos.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '3rem', backgroundColor: '#f9fafb', borderRadius: '12px' }}>
+                  <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📦</div>
+                  <p style={{ fontSize: '1rem', color: '#6b7280' }}>No hay líneas de productos para esta venta</p>
+                </div>
+              ) : (
+                <>
+                  {/* Tabla de productos */}
+                  <div style={{ border: '1px solid #e5e7eb', borderRadius: '12px', overflow: 'hidden', marginBottom: '1.5rem' }}>
+                    <table className="table table-zebra" style={{ marginBottom: 0 }}>
+                      <thead style={{ backgroundColor: '#f9fafb' }}>
+                        <tr>
+                          <th>Producto</th>
+                          <th>Código</th>
+                          <th className="text-right">Cant.</th>
+                          <th className="text-right">P. Unit</th>
+                          <th className="text-right">Subtotal</th>
+                          <th>Marca</th>
+                          <th>Tipo</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {lineasProductos.map((linea, index) => (
+                          <tr key={index}>
+                            <td style={{ fontWeight: 500 }}>{linea.product_name}</td>
+                            <td style={{ fontSize: '0.875rem', color: '#6b7280' }}>{linea.product_code || '-'}</td>
+                            <td className="text-right">{linea.qty}</td>
+                            <td className="text-right">{formatCurrency(linea.price_unit)}</td>
+                            <td className="text-right" style={{ fontWeight: 600 }}>{formatCurrency(linea.price_subtotal)}</td>
+                            <td>
+                              {linea.marca ? (
+                                <span style={{ 
+                                  padding: '0.25rem 0.75rem', 
+                                  backgroundColor: '#dbeafe', 
+                                  color: '#1e40af', 
+                                  borderRadius: '9999px', 
+                                  fontSize: '0.75rem'
+                                }}>
+                                  {linea.marca}
+                                </span>
+                              ) : '-'}
+                            </td>
+                            <td>
+                              {linea.tipo ? (
+                                <span style={{ 
+                                  padding: '0.25rem 0.75rem', 
+                                  backgroundColor: '#fef3c7', 
+                                  color: '#92400e', 
+                                  borderRadius: '9999px', 
+                                  fontSize: '0.75rem'
+                                }}>
+                                  {linea.tipo}
+                                </span>
+                              ) : '-'}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                      <tfoot style={{ backgroundColor: '#f9fafb', borderTop: '2px solid #e5e7eb' }}>
+                        <tr>
+                          <td colSpan="4" style={{ fontWeight: 600 }}>TOTAL</td>
+                          <td className="text-right" style={{ fontWeight: 700, fontSize: '1.125rem', color: '#059669' }}>
+                            {formatCurrency(lineasProductos.reduce((sum, l) => sum + parseFloat(l.price_subtotal || 0), 0))}
+                          </td>
+                          <td colSpan="2"></td>
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
+
+                  {/* Resumen por Línea de Negocio */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
+                    {/* Por Marca */}
+                    <div style={{ border: '1px solid #e5e7eb', borderRadius: '12px', padding: '1rem', backgroundColor: '#f9fafb' }}>
+                      <h4 style={{ fontSize: '0.9375rem', fontWeight: 600, marginBottom: '0.75rem', color: '#111827' }}>
+                        📊 Total por Marca
+                      </h4>
+                      {(() => {
+                        const porMarca = {};
+                        lineasProductos.forEach(l => {
+                          const marca = l.marca || 'Sin Marca';
+                          porMarca[marca] = (porMarca[marca] || 0) + parseFloat(l.price_subtotal || 0);
+                        });
+                        return Object.entries(porMarca)
+                          .sort((a, b) => b[1] - a[1])
+                          .map(([marca, total]) => (
+                            <div key={marca} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', borderBottom: '1px solid #e5e7eb' }}>
+                              <span style={{ fontSize: '0.875rem' }}>{marca}</span>
+                              <span style={{ fontWeight: 600, color: '#059669' }}>{formatCurrency(total)}</span>
+                            </div>
+                          ));
+                      })()}
+                    </div>
+
+                    {/* Por Tipo */}
+                    <div style={{ border: '1px solid #e5e7eb', borderRadius: '12px', padding: '1rem', backgroundColor: '#f9fafb' }}>
+                      <h4 style={{ fontSize: '0.9375rem', fontWeight: 600, marginBottom: '0.75rem', color: '#111827' }}>
+                        📊 Total por Tipo (Línea de Negocio)
+                      </h4>
+                      {(() => {
+                        const porTipo = {};
+                        lineasProductos.forEach(l => {
+                          const tipo = l.tipo || 'Sin Tipo';
+                          porTipo[tipo] = (porTipo[tipo] || 0) + parseFloat(l.price_subtotal || 0);
+                        });
+                        return Object.entries(porTipo)
+                          .sort((a, b) => b[1] - a[1])
+                          .map(([tipo, total]) => (
+                            <div key={tipo} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', borderBottom: '1px solid #e5e7eb' }}>
+                              <span style={{ fontSize: '0.875rem' }}>{tipo}</span>
+                              <span style={{ fontWeight: 600, color: '#059669' }}>{formatCurrency(total)}</span>
+                            </div>
+                          ));
+                      })()}
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+
+            <div className="modal-footer" style={{ borderTop: '2px solid #f3f4f6' }}>
+              <button className="btn btn-outline" onClick={closeLineasModal}>
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
       {/* Modal Editar Pago */}
       {showEditPagoModal && pagoEditando && (
         <div className="modal-overlay" onClick={() => setShowEditPagoModal(false)}>
