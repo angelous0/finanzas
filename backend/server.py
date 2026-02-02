@@ -2500,7 +2500,8 @@ async def list_ventas_pos(
     estado: Optional[str] = None,
     company_id: Optional[int] = None,
     fecha_desde: Optional[date] = None,
-    fecha_hasta: Optional[date] = None
+    fecha_hasta: Optional[date] = None,
+    search: Optional[str] = None
 ):
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -2525,6 +2526,13 @@ async def list_ventas_pos(
         if fecha_hasta:
             conditions.append(f"date_order <= ${idx}")
             params.append(datetime.combine(fecha_hasta, datetime.max.time()))
+            idx += 1
+        
+        # Advanced search: num_comp, partner_name, name (order reference)
+        if search:
+            search_pattern = f"%{search}%"
+            conditions.append(f"(num_comp ILIKE ${idx} OR partner_name ILIKE ${idx} OR name ILIKE ${idx})")
+            params.append(search_pattern)
             idx += 1
         
         query = f"""
