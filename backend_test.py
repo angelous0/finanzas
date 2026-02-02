@@ -1164,6 +1164,7 @@ class FinanzasAPITester:
             ("VentasPOS Payment Flow", self.test_ventas_pos_payment_flow),
             ("VentasPOS Desconfirmar Flow", self.test_ventas_pos_desconfirmar_flow),
             ("VentasPOS Duplicate Fix Test", self.test_ventas_pos_duplicate_fix),
+            ("Generar Gasto Bancario", self.test_generar_gasto_bancario),
         ]
         
         for test_name, test_func in tests:
