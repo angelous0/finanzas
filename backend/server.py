@@ -2879,6 +2879,32 @@ async def get_pagos_oficiales_venta_pos(id: int):
         
         return [dict(p) for p in pagos]
 
+@api_router.get("/ventas-pos/{id}/lineas")
+async def get_lineas_venta_pos(id: int):
+    """Get product lines for a POS sale with marca and tipo for business line analysis"""
+    pool = await get_pool()
+    async with pool.acquire() as conn:
+        await conn.execute("SET search_path TO finanzas2, public")
+        
+        lineas = await conn.fetch("""
+            SELECT 
+                id,
+                product_name,
+                product_code,
+                qty,
+                price_unit,
+                price_subtotal,
+                price_subtotal_incl,
+                discount,
+                marca,
+                tipo
+            FROM finanzas2.cont_venta_pos_linea
+            WHERE venta_pos_id = $1
+            ORDER BY id ASC
+        """, id)
+        
+        return [dict(l) for l in lineas]
+
 @api_router.post("/ventas-pos/{id}/pagos")
 async def add_pago_venta_pos(id: int, pago: dict):
     """Add a payment to a POS sale. Auto-confirms if total matches."""
