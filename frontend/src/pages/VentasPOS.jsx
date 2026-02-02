@@ -56,6 +56,14 @@ export const VentasPOS = () => {
     return limaTime.toISOString().split('T')[0]; // Format: YYYY-MM-DD
   };
   
+  // Get today's date in Lima timezone
+  const getTodayInLima = () => {
+    const now = new Date();
+    // Convert to Lima time (UTC-5)
+    const limaTime = new Date(now.getTime() - (5 * 60 * 60 * 1000));
+    return limaTime.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+  };
+  
   // Get 30 days ago in Lima timezone
   const get30DaysAgoInLima = () => {
     const now = new Date();
