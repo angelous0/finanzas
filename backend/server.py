@@ -3728,11 +3728,11 @@ async def conciliar_movimientos(
         await conn.execute("SET search_path TO finanzas2, public")
         
         async with conn.transaction():
-            # Mark bank movements as processed
+            # Mark bank movements as processed AND conciliado
             if banco_ids:
                 await conn.execute("""
                     UPDATE finanzas2.cont_banco_mov_raw 
-                    SET procesado = TRUE 
+                    SET procesado = TRUE, conciliado = TRUE 
                     WHERE id = ANY($1::int[])
                 """, banco_ids)
             
