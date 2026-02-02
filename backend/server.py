@@ -3838,12 +3838,23 @@ async def conciliar_movimientos(
     banco_ids: List[int] = Query(...),
     pago_ids: List[int] = Query(...)
 ):
-    """Mark bank movements and system payments as reconciled"""
+    """Mark bank movements and system payments as reconciled and create historical record"""
     pool = await get_pool()
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
         
         async with conn.transaction():
+            # Get account info from first bank movement
+            cuenta_id = None
+            if banco_ids:
+                mov = await conn.fetchrow("""
+                    SELECT cuenta_financiera_id, fecha 
+                    FROM finanzas2.cont_banco_mov_raw 
+                    WHERE id = $1
+                """, banco_ids[0])
+                if mov:
+                    cuenta_id = mov['cuenta_financiera_id']
+            
             # Mark bank movements as processed AND conciliado
             if banco_ids:
                 await conn.execute("""
@@ -3868,6 +3879,30 @@ async def conciliar_movimientos(
                     SET conciliado = TRUE 
                     WHERE id = ANY($1::int[])
                 """, pago_ids)
+            
+            # Create historical conciliacion record
+            if cuenta_id:
+                from datetime import date
+                today = date.today()
+                
+                # Create conciliacion record
+                conciliacion = await conn.fetchrow("""
+                    INSERT INTO finanzas2.cont_conciliacion 
+                    (cuenta_financiera_id, fecha_inicio, fecha_fin, estado, notas, fecha_conciliacion)
+                    VALUES ($1, $2, $2, 'completado', $3, NOW())
+                    RETURNING id
+                """, cuenta_id, today, 
+                    f"Conciliación: {len(banco_ids)} mov. banco + {len(pago_ids)} mov. sistema")
+                
+                conciliacion_id = conciliacion['id']
+                
+                # Create detail records linking bank movements
+                for banco_id in banco_ids:
+                    await conn.execute("""
+                        INSERT INTO finanzas2.cont_conciliacion_linea 
+                        (conciliacion_id, banco_movimiento_id)
+                        VALUES ($1, $2)
+                    """, conciliacion_id, banco_id)
         
         return {
             "message": f"Conciliados {len(banco_ids)} movimientos del banco y {len(pago_ids)} del sistema",
