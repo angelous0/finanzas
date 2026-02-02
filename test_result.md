@@ -183,6 +183,21 @@ backend:
         agent: "testing"
         comment: "✅ CRITICAL DUPLICATE FIX TEST PASSED: Executed exact user scenario successfully. Multiple test cases confirmed NO duplicates: Test 1 - Sale ID=566: 2 official payments (S/ 246.01) → 2 temporary payments (S/ 246.01) ✅ Test 2 - Sale ID=568: 1 official payment (S/ 981.1) → 1 temporary payment (S/ 981.1) ✅ All payment counts and totals match perfectly. Complete desconfirmar → confirm cycle works correctly. The duplicate fix is functioning as expected and prevents payment duplication during unconfirm operations."
 
+  - task: "Conciliación Bancaria - Generar Gasto Bancario functionality"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Need to test complete Generar Gasto Bancario flow: 1) Verify non-reconciled bank movements exist 2) Verify expense categories exist 3) Call endpoint with multiple banco_ids 4) Verify creation of cont_gasto, cont_gasto_linea, cont_pago, cont_pago_detalle, cont_pago_aplicacion records 5) Verify bank movements marked as conciliado=true 6) Test error cases (empty banco_ids, already reconciled, invalid IDs)"
+      - working: true
+        agent: "testing"
+        comment: "✅ GENERAR GASTO BANCARIO COMPREHENSIVE TEST PASSED: Successfully tested complete functionality with 3 bank movements (IDs: 15, 21, 20) totaling S/ 4035.5. ✅ Created gasto GAS-002027 (ID: 5) ✅ Created pago PAG-E-GAS-002027 (ID: 36) ✅ All database records created correctly in cont_gasto, cont_gasto_linea, cont_pago, cont_pago_detalle, cont_pago_aplicacion ✅ Bank movements marked as conciliado=true ✅ All error cases handled correctly (empty banco_ids, invalid categoria_id, invalid cuenta_financiera_id, already reconciled movements) ✅ Total amount calculation correct (absolute values) ✅ Complete flow working perfectly for production use."
+
 frontend:
   - task: "VentasPOS - Pendientes tab navigation"
     implemented: true
