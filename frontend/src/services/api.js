@@ -178,6 +178,14 @@ export const conciliarMovimientos = (bancoIds, pagoIds) => {
   pagoIds.forEach(id => params.append('pago_ids', id));
   return api.post(`/conciliacion/conciliar?${params.toString()}`);
 };
+export const crearGastoBancario = (bancoIds, categoriaId, cuentaFinancieraId, descripcion) => {
+  const params = new URLSearchParams();
+  bancoIds.forEach(id => params.append('banco_ids', id));
+  params.append('categoria_id', categoriaId);
+  params.append('cuenta_financiera_id', cuentaFinancieraId);
+  if (descripcion) params.append('descripcion', descripcion);
+  return api.post(`/conciliacion/crear-gasto-bancario?${params.toString()}`);
+};
 export const getConciliacionesDetalladas = () => api.get('/conciliacion/historial');
 export const desconciliarMovimientos = (bancoId, pagoId) => 
   api.post('/conciliacion/desconciliar', { banco_id: bancoId, pago_id: pagoId });
