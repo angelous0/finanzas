@@ -2022,9 +2022,9 @@ async def create_gasto(data: GastoCreate):
             pago = await conn.fetchrow("""
                 INSERT INTO finanzas2.cont_pago 
                 (numero, tipo, fecha, cuenta_financiera_id, moneda_id, monto_total, notas)
-                VALUES ($1, 'egreso', $2, $3, $4, $5, $6)
+                VALUES ($1, 'egreso', TO_DATE($2, 'YYYY-MM-DD'), $3, $4, $5, $6)
                 RETURNING id
-            """, pago_numero, data.fecha, data.pagos[0].cuenta_financiera_id, data.moneda_id,
+            """, pago_numero, safe_date_param(data.fecha), data.pagos[0].cuenta_financiera_id, data.moneda_id,
                 total, f"Pago de gasto {numero}")
             
             pago_id = pago['id']
@@ -2177,9 +2177,9 @@ async def create_adelanto(data: AdelantoCreate):
                 pago = await conn.fetchrow("""
                     INSERT INTO finanzas2.cont_pago 
                     (numero, tipo, fecha, cuenta_financiera_id, monto_total, notas)
-                    VALUES ($1, 'egreso', $2, $3, $4, $5)
+                    VALUES ($1, 'egreso', TO_DATE($2, 'YYYY-MM-DD'), $3, $4, $5)
                     RETURNING id
-                """, pago_numero, data.fecha, data.cuenta_financiera_id, data.monto, 
+                """, pago_numero, safe_date_param(data.fecha), data.cuenta_financiera_id, data.monto, 
                     "Adelanto a empleado")
                 pago_id = pago['id']
                 
