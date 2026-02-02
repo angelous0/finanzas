@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Por favor realiza testing completo de la nueva funcionalidad 'Generar Gasto Bancario' en el módulo de Conciliación Bancaria. Test endpoint POST /api/conciliacion/crear-gasto-bancario with multiple bank movements to create expense records in cont_gasto, cont_gasto_linea, cont_pago, cont_pago_detalle, and cont_pago_aplicacion tables."
+user_problem_statement: "Por favor realiza testing COMPLETO del módulo de Conciliación Bancaria y su Historial. Necesito verificar TODO el flujo end-to-end incluyendo: 1) Cargar página inicial y verificar cuentas bancarias 2) Seleccionar cuenta y buscar movimientos 3) Tab Pendientes - conciliación manual 4) Tab Pendientes - Generar Gasto Bancario 5) Tab Historial 6) Tab Movimientos Banco 7) Página Historial Conciliación con KPIs y tabla de detalles. Reportar datos detallados de cada paso."
 
 backend:
   - task: "VentasPOS - Payment insertion backend fix"
