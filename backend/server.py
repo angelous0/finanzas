@@ -1855,10 +1855,10 @@ async def generar_letras(data: GenerarLetrasRequest):
                         INSERT INTO finanzas2.cont_letra 
                         (numero, factura_id, proveedor_id, monto, fecha_emision, fecha_vencimiento, 
                          estado, saldo_pendiente)
-                        VALUES ($1, $2, $3, $4, $5, $6, 'pendiente', $4)
+                        VALUES ($1, $2, $3, $4, TO_DATE($5, 'YYYY-MM-DD'), TO_DATE($6, 'YYYY-MM-DD'), 'pendiente', $4)
                         RETURNING *
                     """, numero, data.factura_id, factura['proveedor_id'], monto_por_letra,
-                        datetime.now().date(), fecha_vencimiento)
+                        safe_date_param(datetime.now().date()), safe_date_param(fecha_vencimiento))
                     letras.append(dict(letra))
             
             # Update factura status to 'canjeado'
