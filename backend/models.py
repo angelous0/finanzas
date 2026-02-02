@@ -224,7 +224,7 @@ class ArticuloRef(ArticuloRefBase):
 # ORDEN DE COMPRA
 # =====================
 class OCLineaBase(BaseModel):
-    articulo_id: Optional[int] = None
+    articulo_id: Optional[str] = None  # Changed to str to support UUID from prod_inventario
     descripcion: Optional[str] = None
     cantidad: float
     precio_unitario: float
