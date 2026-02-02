@@ -680,7 +680,16 @@ async def list_empleados(search: Optional[str] = None):
             ORDER BY t.nombre
         """
         rows = await conn.fetch(query, *params)
-        return [dict(r) for r in rows]
+        
+        # Convert Decimal to float for salario_base
+        result = []
+        for r in rows:
+            emp = dict(r)
+            if emp.get('salario_base') is not None:
+                emp['salario_base'] = float(emp['salario_base'])
+            result.append(emp)
+        
+        return result
 
 # Empleado detalle endpoints
 @api_router.post("/empleados/{tercero_id}/detalle", response_model=EmpleadoDetalle)
