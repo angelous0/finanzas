@@ -3690,47 +3690,60 @@ async def importar_excel_banco(
 
 @api_router.get("/conciliacion/historial")
 async def get_historial_conciliaciones():
-    """Get all reconciled movements with details"""
+    """Get all conciliacion records with details"""
     pool = await get_pool()
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
         
-        # Get all reconciled movements separately and pair them by approximate match
-        banco_rows = await conn.fetch("""
-            SELECT id, fecha, banco, referencia, descripcion, monto, cuenta_financiera_id
-            FROM finanzas2.cont_banco_mov_raw 
-            WHERE procesado = TRUE
-            ORDER BY fecha DESC, id DESC
-        """)
-        
-        sistema_rows = await conn.fetch("""
-            SELECT id, fecha, numero, tipo, notas, referencia, monto_total, cuenta_financiera_id
-            FROM finanzas2.cont_pago 
-            WHERE conciliado = TRUE
-            ORDER BY fecha DESC, id DESC
+        # Get all conciliacion records with account info
+        rows = await conn.fetch("""
+            SELECT 
+                c.id,
+                c.fecha_inicio,
+                c.fecha_fin,
+                c.saldo_inicial,
+                c.saldo_final,
+                c.diferencia,
+                c.estado,
+                c.notas,
+                c.created_at as fecha_conciliacion,
+                cf.nombre as cuenta_nombre,
+                cf.banco as cuenta_banco,
+                (SELECT COUNT(*) FROM finanzas2.cont_conciliacion_linea WHERE conciliacion_id = c.id) as num_movimientos
+            FROM finanzas2.cont_conciliacion c
+            LEFT JOIN finanzas2.cont_cuenta_financiera cf ON c.cuenta_financiera_id = cf.id
+            ORDER BY c.created_at DESC
         """)
         
         result = []
-        # Match by approximate criteria (same date, same amount, same account)
-        for banco in banco_rows:
-            for sistema in sistema_rows:
-                # Check if amounts match (approximately) and dates are close
-                if (banco['cuenta_financiera_id'] == sistema['cuenta_financiera_id'] and
-                    abs((banco['monto'] or 0) - (sistema['monto_total'] or 0) * (-1 if sistema['tipo'] == 'egreso' else 1)) < 0.01):
-                    result.append({
-                        "banco_id": banco['id'],
-                        "sistema_id": sistema['id'],
-                        "fecha_banco": banco['fecha'].isoformat() if banco['fecha'] else None,
-                        "fecha_sistema": sistema['fecha'].isoformat() if sistema['fecha'] else None,
-                        "banco": banco['banco'],
-                        "ref_banco": banco['referencia'],
-                        "descripcion_banco": banco['descripcion'],
-                        "numero_sistema": sistema['numero'],
-                        "tipo_sistema": sistema['tipo'],
-                        "descripcion_sistema": sistema['notas'] or sistema['referencia'] or '-',
-                        "monto": float(banco['monto']) if banco['monto'] else 0.0
-                    })
-                    break  # Found a match, move to next banco
+        for row in rows:
+            # Get detalles
+            detalles = await conn.fetch("""
+                SELECT 
+                    cl.tipo,
+                    cl.monto,
+                    p.numero as pago_numero,
+                    p.tipo as pago_tipo
+                FROM finanzas2.cont_conciliacion_linea cl
+                LEFT JOIN finanzas2.cont_pago p ON cl.pago_id = p.id
+                WHERE cl.conciliacion_id = $1
+            """, row['id'])
+            
+            result.append({
+                "id": row['id'],
+                "fecha_inicio": row['fecha_inicio'].isoformat() if row['fecha_inicio'] else None,
+                "fecha_fin": row['fecha_fin'].isoformat() if row['fecha_fin'] else None,
+                "fecha_conciliacion": row['fecha_conciliacion'].isoformat() if row['fecha_conciliacion'] else None,
+                "cuenta_nombre": row['cuenta_nombre'],
+                "cuenta_banco": row['cuenta_banco'],
+                "saldo_inicial": float(row['saldo_inicial']) if row['saldo_inicial'] else 0.0,
+                "saldo_final": float(row['saldo_final']) if row['saldo_final'] else 0.0,
+                "diferencia": float(row['diferencia']) if row['diferencia'] else 0.0,
+                "estado": row['estado'],
+                "notas": row['notas'],
+                "num_movimientos": row['num_movimientos'],
+                "detalles": [dict(d) for d in detalles]
+            })
         
         return result
 
