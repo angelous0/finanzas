@@ -444,6 +444,33 @@ export const VentasPOS = () => {
       toast.error('Error al eliminar pago');
     }
   };
+  
+  const handleEditPago = (pago) => {
+    setPagoEditando({...pago});
+    setShowEditPagoModal(true);
+  };
+  
+  const handleUpdatePago = async () => {
+    if (!pagoEditando || !pagoEditando.monto || parseFloat(pagoEditando.monto) <= 0) {
+      toast.error('El monto debe ser mayor a 0');
+      return;
+    }
+    
+    try {
+      await updatePagoVentaPOS(ventaSeleccionada.id, pagoEditando.id, pagoEditando);
+      toast.success('Pago actualizado correctamente');
+      
+      setShowEditPagoModal(false);
+      setPagoEditando(null);
+      
+      // Reload pagos
+      const response = await getPagosVentaPOS(ventaSeleccionada.id);
+      setPagos(response.data);
+    } catch (error) {
+      console.error('Error updating pago:', error);
+      toast.error('Error al actualizar pago');
+    }
+  };
 
   // Filter ventas by search
   const filteredVentas = ventas.filter(v => {
