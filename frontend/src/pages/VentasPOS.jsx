@@ -622,9 +622,14 @@ export const VentasPOS = () => {
             ) : filteredVentas.length === 0 ? (
               <div className="empty-state">
                 <ShoppingCart className="empty-state-icon" />
-                <div className="empty-state-title">No hay ventas</div>
+                <div className="empty-state-title">
+                  {search ? 'No se encontraron resultados' : 'No hay ventas'}
+                </div>
                 <div className="empty-state-description">
-                  Sincroniza las ventas desde Odoo para verlas aquí
+                  {search 
+                    ? `No se encontraron ventas para "${search}". Intenta con otro término de búsqueda.`
+                    : 'Sincroniza las ventas desde Odoo para verlas aquí'
+                  }
                 </div>
               </div>
             ) : (
