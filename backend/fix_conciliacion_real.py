@@ -2,21 +2,14 @@
 Fix: Mark only REAL reconciled movements based on historial matching
 """
 import asyncio
-import asyncpg
-import os
-from dotenv import load_dotenv
+import sys
+sys.path.insert(0, '/app/backend')
 
-load_dotenv()
+from database import get_pool
 
 async def fix_conciliacion():
-    # Connect to database
-    conn = await asyncpg.connect(
-        host='localhost',
-        port=5432,
-        user='postgres',
-        password='postgres',
-        database='finanzas'
-    )
+    pool = await get_pool()
+    conn = await pool.acquire()
     
     try:
         await conn.execute("SET search_path TO finanzas2, public")
