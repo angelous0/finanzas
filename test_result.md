@@ -102,7 +102,7 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Test VentasPOS complete payment assignment and auto-confirmation flow with official payment creation - Verify backend flow creates records in cont_pago, cont_pago_detalle, and cont_pago_aplicacion tables"
+user_problem_statement: "Por favor realiza testing completo de la nueva funcionalidad 'Generar Gasto Bancario' en el módulo de Conciliación Bancaria. Test endpoint POST /api/conciliacion/crear-gasto-bancario with multiple bank movements to create expense records in cont_gasto, cont_gasto_linea, cont_pago, cont_pago_detalle, and cont_pago_aplicacion tables."
 
 backend:
   - task: "VentasPOS - Payment insertion backend fix"
