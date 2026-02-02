@@ -292,12 +292,13 @@ export const ConciliacionBancaria = () => {
 
   const pendientesBanco = movimientosBanco.filter(m => !m.conciliado).length;
   const pendientesSistema = movimientosSistema.filter(m => !m.conciliado).length;
-  // Calculate totals for pending items
-  const pendientesBanco = movimientosBanco.filter(m => !m.conciliado);
-  const pendientesSistema = movimientosSistema.filter(m => !m.conciliado);
   
-  const totalBancoPendiente = pendientesBanco.reduce((sum, m) => sum + (m.monto || 0), 0);
-  const totalSistemaPendiente = pendientesSistema.reduce((sum, m) => 
+  // Calculate totals for pending items
+  const movsPendientesBanco = movimientosBanco.filter(m => !m.conciliado);
+  const movsPendientesSistema = movimientosSistema.filter(m => !m.conciliado);
+  
+  const totalBancoPendiente = movsPendientesBanco.reduce((sum, m) => sum + (m.monto || 0), 0);
+  const totalSistemaPendiente = movsPendientesSistema.reduce((sum, m) => 
     sum + (m.tipo === 'ingreso' ? m.monto_total : -m.monto_total), 0);
   
   // Diferencia: Esta es la diferencia absoluta entre pendientes
