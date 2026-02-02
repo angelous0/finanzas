@@ -56,6 +56,15 @@ export const VentasPOS = () => {
     return limaTime.toISOString().split('T')[0]; // Format: YYYY-MM-DD
   };
   
+  // Get 30 days ago in Lima timezone
+  const get30DaysAgoInLima = () => {
+    const now = new Date();
+    const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+    const lima = new Date(utc + (3600000 * -5));
+    lima.setDate(lima.getDate() - 30);
+    return lima.toISOString().split('T')[0];
+  };
+  
   // Filtros - Default to yesterday in Lima timezone
   const [filtroEmpresa, setFiltroEmpresa] = useState('');
   const [fechaDesde, setFechaDesde] = useState(getYesterdayInLima());
