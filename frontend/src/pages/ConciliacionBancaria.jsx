@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
   getCuentasFinancieras, getMovimientosBanco, getPagos,
-  importarExcelBanco, getConciliaciones, conciliarMovimientos, previsualizarExcelBanco
+  importarExcelBanco, getConciliaciones, conciliarMovimientos, previsualizarExcelBanco,
+  crearGastoBancario, getCategorias
 } from '../services/api';
 import { 
   Upload, Search, RefreshCw, Check, X, FileSpreadsheet, 
