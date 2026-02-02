@@ -1022,7 +1022,35 @@ export const ConciliacionBancaria = () => {
         </div>
       )}
 
-      {/* Floating conciliar button */}
+      {/* Floating buttons */}
+      {/* Button for crear gasto bancario (only banco selected, no sistema) */}
+      {selectedBanco.length > 0 && selectedSistema.length === 0 && activeTab === 'pendientes' && (
+        <div style={{ 
+          position: 'fixed', 
+          bottom: '2rem', 
+          left: '50%', 
+          transform: 'translateX(-50%)',
+          zIndex: 100
+        }}>
+          <button 
+            className="btn btn-warning"
+            onClick={handleCrearGastoBancario}
+            style={{ 
+              padding: '1rem 2rem',
+              fontSize: '1rem',
+              boxShadow: '0 8px 24px rgba(234, 88, 12, 0.4)',
+              borderRadius: '30px',
+              background: '#ea580c',
+              color: 'white'
+            }}
+          >
+            <FileSpreadsheet size={20} />
+            Generar Gasto Automático ({selectedBanco.length} movimientos = {formatCurrency(selectedBancoTotal)})
+          </button>
+        </div>
+      )}
+      
+      {/* Conciliar button (banco + sistema selected) */}
       {selectedBanco.length > 0 && selectedSistema.length > 0 && Math.abs(selectedBancoTotal - selectedSistemaTotal) < 0.01 && (
         <div style={{ 
           position: 'fixed', 
