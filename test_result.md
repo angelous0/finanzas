@@ -289,6 +289,30 @@ frontend:
         agent: "testing"
         comment: "✅ VERIFIED: Excel export functionality working. Eye icon buttons present in Confirmadas tab (found 14 potential eye buttons for various actions). Clicking eye button triggers Excel download functionality successfully."
 
+  - task: "Conciliación Bancaria - Complete frontend flow testing"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/ConciliacionBancaria.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Need to test complete Conciliación Bancaria frontend flow: 1) Load initial page and verify bank accounts 2) Select account and search movements 3) Test Pendientes tab - manual reconciliation 4) Test Pendientes tab - Generar Gasto Bancario 5) Test Historial tab 6) Test Movimientos Banco tab with filters 7) Test complete integration with backend APIs"
+
+  - task: "Historial Conciliaciones - Complete page testing"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/HistorialConciliaciones.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Need to test complete Historial Conciliaciones page: 1) Load page and verify KPIs display 2) Verify conciliations table with data 3) Test search and filter functionality 4) Test desconciliar button functionality 5) Verify all data displays correctly"
+
 test_plan:
   current_focus:
     - "Conciliación Bancaria - Generar Gasto Bancario functionality"
