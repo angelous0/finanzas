@@ -2386,9 +2386,9 @@ async def create_planilla(data: PlanillaCreate):
                 INSERT INTO finanzas2.cont_planilla 
                 (periodo, fecha_inicio, fecha_fin, total_bruto, total_adelantos, 
                  total_descuentos, total_neto, estado)
-                VALUES ($1, $2, $3, $4, $5, $6, $7, 'borrador')
+                VALUES ($1, TO_DATE($2, 'YYYY-MM-DD'), TO_DATE($3, 'YYYY-MM-DD'), $4, $5, $6, $7, 'borrador')
                 RETURNING *
-            """, data.periodo, data.fecha_inicio, data.fecha_fin, total_bruto,
+            """, data.periodo, safe_date_param(data.fecha_inicio), safe_date_param(data.fecha_fin), total_bruto,
                 total_adelantos, total_descuentos, total_neto)
             
             planilla_id = row['id']
@@ -2829,9 +2829,9 @@ async def marcar_credito_venta_pos(id: int, fecha_vencimiento: Optional[date] = 
             cxc = await conn.fetchrow("""
                 INSERT INTO finanzas2.cont_cxc 
                 (venta_pos_id, monto_original, saldo_pendiente, fecha_vencimiento, estado)
-                VALUES ($1, $2, $2, $3, 'pendiente')
+                VALUES ($1, $2, $2, TO_DATE($3, 'YYYY-MM-DD'), 'pendiente')
                 RETURNING id
-            """, id, venta['amount_total'], fecha_vencimiento or (datetime.now().date() + timedelta(days=30)))
+            """, id, venta['amount_total'], safe_date_param(fecha_vencimiento or (datetime.now().date() + timedelta(days=30))))
             
             await conn.execute("""
                 UPDATE finanzas2.cont_venta_pos SET estado_local = 'credito', cxc_id = $1, is_credit = TRUE WHERE id = $2
@@ -3799,9 +3799,9 @@ async def create_conciliacion(data: ConciliacionCreate):
         row = await conn.fetchrow("""
             INSERT INTO finanzas2.cont_conciliacion 
             (cuenta_financiera_id, fecha_inicio, fecha_fin, saldo_inicial, saldo_final, notas)
-            VALUES ($1, $2, $3, $4, $5, $6)
+            VALUES ($1, TO_DATE($2, 'YYYY-MM-DD'), TO_DATE($3, 'YYYY-MM-DD'), $4, $5, $6)
             RETURNING *
-        """, data.cuenta_financiera_id, data.fecha_inicio, data.fecha_fin,
+        """, data.cuenta_financiera_id, safe_date_param(data.fecha_inicio), safe_date_param(data.fecha_fin),
             data.saldo_inicial, data.saldo_final, data.notas)
         
         result = dict(row)
