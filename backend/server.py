@@ -682,6 +682,55 @@ async def list_empleados(search: Optional[str] = None):
         rows = await conn.fetch(query, *params)
         return [dict(r) for r in rows]
 
+# Empleado detalle endpoints
+@api_router.post("/empleados/{tercero_id}/detalle", response_model=EmpleadoDetalle)
+async def create_or_update_empleado_detalle(tercero_id: int, data: EmpleadoDetalleCreate):
+    """Create or update empleado detalle (salary, position, etc.)"""
+    pool = await get_pool()
+    async with pool.acquire() as conn:
+        await conn.execute("SET search_path TO finanzas2, public")
+        
+        # Check if empleado exists
+        tercero = await conn.fetchrow("SELECT * FROM finanzas2.cont_tercero WHERE id = $1 AND es_personal = TRUE", tercero_id)
+        if not tercero:
+            raise HTTPException(404, "Empleado no encontrado")
+        
+        # Check if detalle already exists
+        existing = await conn.fetchrow("SELECT * FROM finanzas2.cont_empleado_detalle WHERE tercero_id = $1", tercero_id)
+        
+        if existing:
+            # Update existing
+            row = await conn.fetchrow("""
+                UPDATE finanzas2.cont_empleado_detalle 
+                SET fecha_ingreso = $1, cargo = $2, salario_base = $3, 
+                    cuenta_bancaria = $4, banco = $5, activo = $6
+                WHERE tercero_id = $7
+                RETURNING *
+            """, data.fecha_ingreso, data.cargo, data.salario_base,
+                data.cuenta_bancaria, data.banco, data.activo, tercero_id)
+        else:
+            # Create new
+            row = await conn.fetchrow("""
+                INSERT INTO finanzas2.cont_empleado_detalle 
+                (tercero_id, fecha_ingreso, cargo, salario_base, cuenta_bancaria, banco, activo)
+                VALUES ($1, $2, $3, $4, $5, $6, $7)
+                RETURNING *
+            """, tercero_id, data.fecha_ingreso, data.cargo, data.salario_base,
+                data.cuenta_bancaria, data.banco, data.activo)
+        
+        return dict(row)
+
+@api_router.get("/empleados/{tercero_id}/detalle", response_model=EmpleadoDetalle)
+async def get_empleado_detalle(tercero_id: int):
+    """Get empleado detalle"""
+    pool = await get_pool()
+    async with pool.acquire() as conn:
+        await conn.execute("SET search_path TO finanzas2, public")
+        row = await conn.fetchrow("SELECT * FROM finanzas2.cont_empleado_detalle WHERE tercero_id = $1", tercero_id)
+        if not row:
+            raise HTTPException(404, "Detalle de empleado no encontrado")
+        return dict(row)
+
 # =====================
 # ARTICULOS REF
 # =====================
