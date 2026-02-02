@@ -91,6 +91,15 @@ export const VentasPOS = () => {
   const [showPagosOficialesModal, setShowPagosOficialesModal] = useState(false);
   const [pagosOficiales, setPagosOficiales] = useState([]);
   const [loadingPagosOficiales, setLoadingPagosOficiales] = useState(false);
+  
+  // Modal editar pago
+  const [showEditPagoModal, setShowEditPagoModal] = useState(false);
+  const [pagoEditando, setPagoEditando] = useState(null);
+  
+  // Modal ver líneas de productos
+  const [showLineasModal, setShowLineasModal] = useState(false);
+  const [lineasProductos, setLineasProductos] = useState([]);
+  const [loadingLineas, setLoadingLineas] = useState(false);
 
   useEffect(() => {
     loadVentas();
