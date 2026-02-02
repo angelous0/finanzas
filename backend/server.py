@@ -651,7 +651,7 @@ async def list_proveedores(search: Optional[str] = None):
 async def list_clientes(search: Optional[str] = None):
     return await list_terceros(es_cliente=True, search=search)
 
-@api_router.get("/empleados", response_model=List[Tercero])
+@api_router.get("/empleados")
 async def list_empleados(search: Optional[str] = None):
     """Get empleados with their salary details"""
     pool = await get_pool()
