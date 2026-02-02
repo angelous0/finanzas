@@ -1193,10 +1193,10 @@ async def create_factura_proveedor(data: FacturaProveedorCreate):
                 (numero, proveedor_id, beneficiario_nombre, moneda_id, fecha_factura, fecha_vencimiento,
                  terminos_dias, tipo_documento, estado, subtotal, igv, total, saldo_pendiente, 
                  impuestos_incluidos, notas)
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'pendiente', $9, $10, $11, $11, $12, $13)
+                VALUES ($1, $2, $3, $4, TO_DATE($5, 'YYYY-MM-DD'), TO_DATE($6, 'YYYY-MM-DD'), $7, $8, 'pendiente', $9, $10, $11, $11, $12, $13)
                 RETURNING id
             """, numero, data.proveedor_id, data.beneficiario_nombre, data.moneda_id,
-                data.fecha_factura, fecha_vencimiento, data.terminos_dias, data.tipo_documento,
+                safe_date_param(data.fecha_factura), safe_date_param(fecha_vencimiento), data.terminos_dias, data.tipo_documento,
                 subtotal, igv, total, data.impuestos_incluidos, data.notas)
             
             factura_id = row['id']
@@ -1837,10 +1837,10 @@ async def generar_letras(data: GenerarLetrasRequest):
                         INSERT INTO finanzas2.cont_letra 
                         (numero, factura_id, proveedor_id, monto, fecha_emision, fecha_vencimiento, 
                          estado, saldo_pendiente)
-                        VALUES ($1, $2, $3, $4, $5, $6, 'pendiente', $4)
+                        VALUES ($1, $2, $3, $4, TO_DATE($5, 'YYYY-MM-DD'), TO_DATE($6, 'YYYY-MM-DD'), 'pendiente', $4)
                         RETURNING *
                     """, numero, data.factura_id, factura['proveedor_id'], letra_data.monto,
-                        datetime.now().date(), letra_data.fecha_vencimiento)
+                        safe_date_param(datetime.now().date()), safe_date_param(letra_data.fecha_vencimiento))
                     letras.append(dict(letra))
             else:
                 # Use automatic calculation
