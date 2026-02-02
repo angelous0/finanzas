@@ -141,7 +141,8 @@ async def fix_conciliacion():
         import traceback
         traceback.print_exc()
     finally:
-        await conn.close()
+        await pool.release(conn)
+        await pool.close()
 
 if __name__ == "__main__":
     asyncio.run(fix_conciliacion())
