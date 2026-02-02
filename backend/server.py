@@ -1006,10 +1006,10 @@ async def generar_factura_desde_oc(id: int):
                 (numero, proveedor_id, moneda_id, fecha_factura, fecha_vencimiento, 
                  terminos_dias, tipo_documento, estado, subtotal, igv, total, saldo_pendiente, 
                  notas, oc_origen_id)
-                VALUES ($1, $2, $3, $4, $5, $6, 'factura', 'pendiente', $7, $8, $9, $9, $10, $11)
+                VALUES ($1, $2, $3, TO_DATE($4, 'YYYY-MM-DD'), TO_DATE($5, 'YYYY-MM-DD'), $6, 'factura', 'pendiente', $7, $8, $9, $9, $10, $11)
                 RETURNING *
-            """, numero, oc['proveedor_id'], oc['moneda_id'], datetime.now().date(),
-                datetime.now().date() + timedelta(days=30), 30,
+            """, numero, oc['proveedor_id'], oc['moneda_id'], safe_date_param(datetime.now().date()),
+                safe_date_param(datetime.now().date() + timedelta(days=30)), 30,
                 oc['subtotal'], oc['igv'], oc['total'], oc['notas'], id)
             
             factura_id = factura['id']
@@ -2001,9 +2001,9 @@ async def create_gasto(data: GastoCreate):
                 INSERT INTO finanzas2.cont_gasto 
                 (numero, fecha, proveedor_id, beneficiario_nombre, moneda_id, subtotal, igv, total,
                  tipo_documento, numero_documento, notas)
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+                VALUES ($1, TO_DATE($2, 'YYYY-MM-DD'), $3, $4, $5, $6, $7, $8, $9, $10, $11)
                 RETURNING id
-            """, numero, data.fecha, data.proveedor_id, data.beneficiario_nombre, data.moneda_id,
+            """, numero, safe_date_param(data.fecha), data.proveedor_id, data.beneficiario_nombre, data.moneda_id,
                 subtotal, igv, total, data.tipo_documento, data.numero_documento, data.notas)
             
             gasto_id = gasto['id']
