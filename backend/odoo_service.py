@@ -206,8 +206,12 @@ class OdooService:
                             )
                             
                             if template:
-                                line['marca'] = template[0].get('marca', '')
-                                line['tipo'] = template[0].get('tipo', '')
+                                # Handle marca and tipo - they come as [id, name] tuples from Odoo
+                                marca_raw = template[0].get('marca', '')
+                                tipo_raw = template[0].get('tipo', '')
+                                
+                                line['marca'] = marca_raw[1] if isinstance(marca_raw, list) and len(marca_raw) > 1 else (marca_raw if marca_raw else '')
+                                line['tipo'] = tipo_raw[1] if isinstance(tipo_raw, list) and len(tipo_raw) > 1 else (tipo_raw if tipo_raw else '')
             
             logger.info(f"Retrieved {len(lines)} order lines for order {order_id}")
             return lines
