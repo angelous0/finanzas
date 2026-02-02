@@ -155,7 +155,7 @@ export default function OrdenesCompra() {
       }
     } catch (error) {
       console.error('Error loading data:', error);
-      toast.error('Error al cargar datos');
+      toast.error(getErrorMessage(error, 'Error al cargar datos'));
     } finally {
       setLoading(false);
     }
@@ -303,7 +303,7 @@ export default function OrdenesCompra() {
       setNewProveedorData({ nombre: '', ruc: '', direccion: '', telefono: '', email: '' });
     } catch (error) {
       console.error('Error creating proveedor:', error);
-      toast.error(error.response?.data?.detail || 'Error al crear proveedor');
+      toast.error(getErrorMessage(error, 'Error al crear proveedor'));
     } finally {
       setCreatingProveedor(false);
     }
@@ -343,7 +343,7 @@ export default function OrdenesCompra() {
       loadData();
     } catch (error) {
       console.error('Error creating OC:', error);
-      toast.error(error.response?.data?.detail || 'Error al crear orden');
+      toast.error(getErrorMessage(error, 'Error al crear orden de compra'));
     }
   };
 
@@ -356,7 +356,7 @@ export default function OrdenesCompra() {
       loadData();
     } catch (error) {
       console.error('Error generating factura:', error);
-      toast.error(error.response?.data?.detail || 'Error al generar factura');
+      toast.error(getErrorMessage(error, 'Error al generar factura'));
     }
   };
 
@@ -368,7 +368,7 @@ export default function OrdenesCompra() {
       toast.success('Orden eliminada');
       loadData();
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Error al eliminar');
+      toast.error(getErrorMessage(error, 'Error al eliminar orden de compra'));
     }
   };
 
