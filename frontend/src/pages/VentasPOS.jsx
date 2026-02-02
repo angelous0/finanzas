@@ -61,6 +61,16 @@ export const VentasPOS = () => {
   const [fechaDesde, setFechaDesde] = useState(getYesterdayInLima());
   const [fechaHasta, setFechaHasta] = useState(getYesterdayInLima());
   const [search, setSearch] = useState('');
+  const [searchInput, setSearchInput] = useState(''); // Input value
+  
+  // Debounce search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearch(searchInput);
+    }, 300);
+    
+    return () => clearTimeout(timer);
+  }, [searchInput]);
   
   // Modal pagos (para asignar pagos a pendientes)
   const [showPagosModal, setShowPagosModal] = useState(false);
