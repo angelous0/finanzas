@@ -3009,6 +3009,30 @@ async def add_pago_venta_pos(id: int, pago: dict):
                 "auto_confirmed": False
             }
 
+@api_router.put("/ventas-pos/{venta_id}/pagos/{pago_id}")
+async def update_pago_venta_pos(venta_id: int, pago_id: int, pago: dict):
+    """Update a payment assigned to a POS sale"""
+    pool = await get_pool()
+    async with pool.acquire() as conn:
+        await conn.execute("SET search_path TO finanzas2, public")
+        
+        # Update the payment
+        await conn.execute("""
+            UPDATE finanzas2.cont_venta_pos_pago 
+            SET forma_pago = $1,
+                cuenta_financiera_id = $2,
+                monto = $3,
+                referencia = $4,
+                fecha_pago = $5,
+                observaciones = $6
+            WHERE id = $7 AND venta_pos_id = $8
+        """, pago['forma_pago'], pago.get('cuenta_financiera_id'), 
+            pago['monto'], pago.get('referencia'), 
+            pago.get('fecha_pago'), pago.get('observaciones'),
+            pago_id, venta_id)
+        
+        return {"message": "Pago actualizado correctamente"}
+
 @api_router.delete("/ventas-pos/{venta_id}/pagos/{pago_id}")
 async def delete_pago_venta_pos(venta_id: int, pago_id: int):
     """Delete a payment from a POS sale"""
