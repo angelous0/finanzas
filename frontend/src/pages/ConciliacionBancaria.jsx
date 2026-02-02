@@ -97,17 +97,20 @@ export const ConciliacionBancaria = () => {
     
     try {
       setLoading(true);
-      const [bancoPendientesRes, bancoConciliadosRes, sistemaRes, concilRes] = await Promise.all([
+      const [bancoPendientesRes, bancoConciliadosRes, sistemaPendientesRes, sistemaConciliadosRes, concilRes] = await Promise.all([
         getMovimientosBanco({ cuenta_financiera_id: cuentaSeleccionada, conciliado: false }),
         getMovimientosBanco({ cuenta_financiera_id: cuentaSeleccionada, conciliado: true }),
-        getPagos({ cuenta_financiera_id: cuentaSeleccionada, fecha_desde: fechaDesde, fecha_hasta: fechaHasta, conciliado: false }), // FILTRAR SOLO NO CONCILIADOS
+        getPagos({ cuenta_financiera_id: cuentaSeleccionada, fecha_desde: fechaDesde, fecha_hasta: fechaHasta, conciliado: false }),
+        getPagos({ cuenta_financiera_id: cuentaSeleccionada, fecha_desde: fechaDesde, fecha_hasta: fechaHasta, conciliado: true }),
         getConciliaciones(cuentaSeleccionada)
       ]);
       
-      // Combine pending and reconciled bank movements
+      // Combine pending and reconciled movements for both bank and system
       const allBancoMovements = [...(bancoPendientesRes.data || []), ...(bancoConciliadosRes.data || [])];
+      const allSistemaMovements = [...(sistemaPendientesRes.data || []), ...(sistemaConciliadosRes.data || [])];
+      
       setMovimientosBanco(allBancoMovements);
-      setMovimientosSistema(sistemaRes.data || []);
+      setMovimientosSistema(allSistemaMovements);
       setConciliaciones(concilRes.data || []);
       setSelectedBanco([]);
       setSelectedSistema([]);
