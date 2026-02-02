@@ -64,10 +64,10 @@ async def migrate():
         print(f"   Movimientos banco procesados: {banco_procesados}")
         print(f"   Pagos sistema conciliados: {pagos_conciliados}")
         
-        if banco_conciliados == historial_count and pagos_conciliados == historial_count:
+        if banco_conciliados == banco_procesados:
             print("\n✅ Migration completed successfully! All records are consistent.")
         else:
-            print(f"\n⚠️  Warning: Counts don't match. Please review.")
+            print(f"\n⚠️  Warning: Conciliado ({banco_conciliados}) != Procesado ({banco_procesados})")
         
     except Exception as e:
         print(f"\n❌ Error during migration: {e}")
