@@ -139,3 +139,79 @@ class OdooService:
         except Exception as e:
             logger.error(f"Error retrieving order details: {e}")
             return None
+    
+    def get_order_lines(self, order_id: int) -> List[Dict[str, Any]]:
+        """
+        Get POS order lines with product details including marca and tipo
+        Returns lines with: product, qty, price_unit, price_subtotal, marca, tipo
+        """
+        if not self.uid or not self.models:
+            logger.error("Not authenticated with Odoo")
+            return []
+        
+        try:
+            # Get order lines
+            lines = self.models.execute_kw(
+                self.db,
+                self.uid,
+                self.password,
+                'pos.order.line',
+                'search_read',
+                [[('order_id', '=', order_id)]],
+                {
+                    'fields': [
+                        'id',
+                        'product_id',
+                        'qty',
+                        'price_unit',
+                        'price_subtotal',
+                        'price_subtotal_incl',
+                        'discount',
+                    ]
+                }
+            )
+            
+            # Enrich lines with product details (marca, tipo from product.template)
+            for line in lines:
+                if line.get('product_id'):
+                    product_id = line['product_id'][0] if isinstance(line['product_id'], list) else line['product_id']
+                    
+                    # Get product.product to get template_id
+                    product = self.models.execute_kw(
+                        self.db,
+                        self.uid,
+                        self.password,
+                        'product.product',
+                        'read',
+                        [[product_id]],
+                        {'fields': ['product_tmpl_id', 'default_code']}
+                    )
+                    
+                    if product:
+                        line['product_code'] = product[0].get('default_code', '')
+                        template_id = product[0].get('product_tmpl_id')
+                        
+                        if template_id:
+                            tmpl_id = template_id[0] if isinstance(template_id, list) else template_id
+                            
+                            # Get product.template with marca and tipo
+                            template = self.models.execute_kw(
+                                self.db,
+                                self.uid,
+                                self.password,
+                                'product.template',
+                                'read',
+                                [[tmpl_id]],
+                                {'fields': ['marca', 'tipo']}
+                            )
+                            
+                            if template:
+                                line['marca'] = template[0].get('marca', '')
+                                line['tipo'] = template[0].get('tipo', '')
+            
+            logger.info(f"Retrieved {len(lines)} order lines for order {order_id}")
+            return lines
+            
+        except Exception as e:
+            logger.error(f"Error retrieving order lines: {e}")
+            return []
