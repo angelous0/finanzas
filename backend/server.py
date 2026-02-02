@@ -4035,6 +4035,27 @@ async def crear_gasto_desde_movimientos_bancarios(
                 SET conciliado = TRUE 
                 WHERE id = $1
             """, pago_id)
+            
+            # Create historical conciliacion record
+            from datetime import date
+            today = date.today()
+            
+            conciliacion = await conn.fetchrow("""
+                INSERT INTO finanzas2.cont_conciliacion 
+                (cuenta_financiera_id, fecha_inicio, fecha_fin, saldo_final, estado, notas)
+                VALUES ($1, $2, $2, $3, 'completado', $4)
+                RETURNING id
+            """, cuenta_financiera_id, today, total,
+                f"Gasto bancario automático: {descripcion} ({len(banco_ids)} movimientos)")
+            
+            conciliacion_id = conciliacion['id']
+            
+            # Create detail record for the pago
+            await conn.execute("""
+                INSERT INTO finanzas2.cont_conciliacion_linea 
+                (conciliacion_id, pago_id, tipo, documento_id, monto, conciliado)
+                VALUES ($1, $2, 'gasto', $3, $4, TRUE)
+            """, conciliacion_id, pago_id, gasto_id, total)
         
         return {
             "message": f"Gasto creado exitosamente con {len(banco_ids)} movimientos bancarios",
