@@ -3634,7 +3634,7 @@ async def desconciliar_movimientos(data: dict):
         # Reset bank movement
         await conn.execute("""
             UPDATE finanzas2.cont_banco_mov_raw 
-            SET procesado = FALSE 
+            SET procesado = FALSE, conciliado = FALSE 
             WHERE id = $1
         """, banco_id)
         
