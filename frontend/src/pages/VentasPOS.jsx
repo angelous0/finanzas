@@ -513,14 +513,66 @@ export const VentasPOS = () => {
 
         {/* Filtros */}
         <div className="filters-bar">
-          <input
-            type="text"
-            className="form-input filter-input"
-            placeholder="Buscar..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            style={{ minWidth: '250px' }}
-          />
+          <div style={{ position: 'relative', minWidth: '300px' }}>
+            <Search 
+              size={18} 
+              style={{ 
+                position: 'absolute', 
+                left: '12px', 
+                top: '50%', 
+                transform: 'translateY(-50%)', 
+                color: '#9ca3af',
+                pointerEvents: 'none'
+              }} 
+            />
+            <input
+              type="text"
+              className="form-input filter-input"
+              placeholder="🔍 Buscar por comprobante, cliente u orden..."
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              style={{ 
+                paddingLeft: '40px',
+                paddingRight: searchInput ? '40px' : '12px',
+                minWidth: '300px'
+              }}
+            />
+            {searchInput && (
+              <button
+                onClick={() => setSearchInput('')}
+                style={{
+                  position: 'absolute',
+                  right: '8px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '4px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#9ca3af',
+                  borderRadius: '4px'
+                }}
+                title="Limpiar búsqueda"
+              >
+                <X size={16} />
+              </button>
+            )}
+            {loading && search && (
+              <span style={{
+                position: 'absolute',
+                right: searchInput ? '36px' : '12px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                fontSize: '0.75rem',
+                color: '#6b7280'
+              }}>
+                Buscando...
+              </span>
+            )}
+          </div>
           <select 
             className="form-input form-select filter-input"
             value={filtroEmpresa}
