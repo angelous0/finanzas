@@ -235,7 +235,7 @@ export const ConciliacionBancaria = () => {
     }
   };
 
-  const pendientesBanco = movimientosBanco.filter(m => !m.procesado).length;
+  const pendientesBanco = movimientosBanco.filter(m => !m.conciliado).length;
   const pendientesSistema = movimientosSistema.filter(m => !m.conciliado).length;
   const totalBancoPendiente = movimientosBanco.reduce((sum, m) => sum + (m.monto || 0), 0);
   const totalSistemaPendiente = movimientosSistema.reduce((sum, m) => 
@@ -497,7 +497,7 @@ export const ConciliacionBancaria = () => {
                 transition: 'all 0.2s'
               }}
             >
-              Pendientes ({movimientosBanco.filter(m => !m.procesado).length})
+              Pendientes ({movimientosBanco.filter(m => !m.conciliado).length})
             </button>
             <button
               onClick={() => setFiltroBanco('conciliados')}
@@ -513,7 +513,7 @@ export const ConciliacionBancaria = () => {
                 transition: 'all 0.2s'
               }}
             >
-              Conciliados ({movimientosBanco.filter(m => m.procesado).length})
+              Conciliados ({movimientosBanco.filter(m => m.conciliado).length})
             </button>
           </div>
         )}
@@ -599,7 +599,7 @@ export const ConciliacionBancaria = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {movimientosBanco.filter(m => !m.procesado).map(mov => (
+                      {movimientosBanco.filter(m => !m.conciliado).map(mov => (
                         <tr 
                           key={mov.id}
                           className={selectedBanco.includes(mov.id) ? 'selected' : ''}
@@ -812,7 +812,7 @@ export const ConciliacionBancaria = () => {
                 </thead>
                 <tbody>
                   {movimientosBanco
-                    .filter(m => filtroBanco === 'pendientes' ? !m.procesado : m.procesado)
+                    .filter(m => filtroBanco === 'pendientes' ? !m.conciliado : m.conciliado)
                     .map(mov => (
                     <tr key={mov.id}>
                       <td>{formatDate(mov.fecha)}</td>
@@ -830,8 +830,8 @@ export const ConciliacionBancaria = () => {
                       </td>
                       <td className="text-right currency-display">{mov.saldo ? formatCurrency(mov.saldo) : '-'}</td>
                       <td className="text-center">
-                        <span className={`badge ${mov.procesado ? 'badge-success' : 'badge-warning'}`}>
-                          {mov.procesado ? 'Conciliado' : 'Pendiente'}
+                        <span className={`badge ${mov.conciliado ? 'badge-success' : 'badge-warning'}`}>
+                          {mov.conciliado ? 'Conciliado' : 'Pendiente'}
                         </span>
                       </td>
                     </tr>
@@ -859,11 +859,11 @@ export const ConciliacionBancaria = () => {
               }}>
                 <CheckCircle size={20} color="white" />
                 <h3 style={{ margin: 0, color: 'white', fontSize: '1rem', fontWeight: 600 }}>
-                  Movimientos del Banco Conciliados ({movimientosBanco.filter(m => m.procesado).length})
+                  Movimientos del Banco Conciliados ({movimientosBanco.filter(m => m.conciliado).length})
                 </h3>
               </div>
               
-              {movimientosBanco.filter(m => m.procesado).length === 0 ? (
+              {movimientosBanco.filter(m => m.conciliado).length === 0 ? (
                 <div className="empty-state">
                   <CheckCircle className="empty-state-icon" />
                   <div className="empty-state-title">No hay movimientos bancarios conciliados</div>
@@ -880,7 +880,7 @@ export const ConciliacionBancaria = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {movimientosBanco.filter(m => m.procesado).map(mov => (
+                    {movimientosBanco.filter(m => m.conciliado).map(mov => (
                       <tr key={mov.id}>
                         <td>{formatDate(mov.fecha)}</td>
                         <td>{mov.banco_excel || mov.banco || '-'}</td>
