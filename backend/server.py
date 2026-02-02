@@ -3875,6 +3875,128 @@ async def conciliar_movimientos(
             "sistema_conciliados": len(pago_ids)
         }
 
+@api_router.post("/conciliacion/crear-gasto-bancario")
+async def crear_gasto_desde_movimientos_bancarios(
+    banco_ids: List[int] = Query(...),
+    categoria_id: int = Query(...),
+    descripcion: Optional[str] = Query("Gastos bancarios agrupados"),
+    cuenta_financiera_id: int = Query(...)
+):
+    """
+    Create a gasto (expense) from multiple bank movements.
+    Useful for grouping bank charges like ITF, commissions, etc.
+    """
+    pool = await get_pool()
+    async with pool.acquire() as conn:
+        await conn.execute("SET search_path TO finanzas2, public")
+        
+        async with conn.transaction():
+            # Get the bank movements to sum
+            movimientos = await conn.fetch("""
+                SELECT * FROM finanzas2.cont_banco_mov_raw 
+                WHERE id = ANY($1::int[])
+            """, banco_ids)
+            
+            if not movimientos:
+                raise HTTPException(404, "No se encontraron movimientos bancarios")
+            
+            # Check if any are already reconciled
+            already_conciliados = [m for m in movimientos if m['conciliado']]
+            if already_conciliados:
+                raise HTTPException(400, f"{len(already_conciliados)} movimientos ya están conciliados")
+            
+            # Calculate total (absolute value for negative amounts)
+            total = sum(abs(float(m['monto'])) for m in movimientos)
+            
+            # Get next gasto number
+            last_gasto = await conn.fetchrow("""
+                SELECT numero FROM finanzas2.cont_gasto 
+                ORDER BY id DESC LIMIT 1
+            """)
+            
+            if last_gasto and last_gasto['numero']:
+                try:
+                    last_num = int(last_gasto['numero'].split('-')[1])
+                    numero = f"GAS-{last_num + 1:06d}"
+                except:
+                    numero = f"GAS-{len(movimientos):06d}"
+            else:
+                numero = "GAS-000001"
+            
+            # Create the gasto
+            gasto = await conn.fetchrow("""
+                INSERT INTO finanzas2.cont_gasto 
+                (numero, fecha, beneficiario_nombre, moneda_id, subtotal, igv, total,
+                 tipo_documento, numero_documento, notas)
+                VALUES ($1, CURRENT_DATE, $2, 1, $3, 0, $3, 'gasto_bancario', $4, $5)
+                RETURNING id
+            """, numero, 'Banco', total, numero, descripcion)
+            
+            gasto_id = gasto['id']
+            
+            # Insert gasto line
+            await conn.execute("""
+                INSERT INTO finanzas2.cont_gasto_linea 
+                (gasto_id, categoria_id, descripcion, importe, igv_aplica)
+                VALUES ($1, $2, $3, $4, FALSE)
+            """, gasto_id, categoria_id, f"{descripcion} ({len(movimientos)} movimientos)", total)
+            
+            # Create pago (automatic payment)
+            pago_numero = f"PAG-E-{numero}"
+            pago = await conn.fetchrow("""
+                INSERT INTO finanzas2.cont_pago 
+                (numero, tipo, fecha, cuenta_financiera_id, moneda_id, monto_total, notas)
+                VALUES ($1, 'egreso', CURRENT_DATE, $2, 1, $3, $4)
+                RETURNING id
+            """, pago_numero, cuenta_financiera_id, total, f"Pago automático de {descripcion}")
+            
+            pago_id = pago['id']
+            
+            # Insert pago detalle
+            await conn.execute("""
+                INSERT INTO finanzas2.cont_pago_detalle 
+                (pago_id, cuenta_financiera_id, medio_pago, monto)
+                VALUES ($1, $2, 'cargo_bancario', $3)
+            """, pago_id, cuenta_financiera_id, total)
+            
+            # Link pago to gasto
+            await conn.execute("""
+                INSERT INTO finanzas2.cont_pago_aplicacion 
+                (pago_id, tipo_documento, documento_id, monto_aplicado)
+                VALUES ($1, 'gasto', $2, $3)
+            """, pago_id, gasto_id, total)
+            
+            # Mark bank movements as reconciled
+            await conn.execute("""
+                UPDATE finanzas2.cont_banco_mov_raw 
+                SET procesado = TRUE, conciliado = TRUE 
+                WHERE id = ANY($1::int[])
+            """, banco_ids)
+            
+            # Mark pago as reconciled
+            try:
+                await conn.execute("""
+                    ALTER TABLE finanzas2.cont_pago 
+                    ADD COLUMN IF NOT EXISTS conciliado BOOLEAN DEFAULT FALSE
+                """)
+            except:
+                pass
+            
+            await conn.execute("""
+                UPDATE finanzas2.cont_pago 
+                SET conciliado = TRUE 
+                WHERE id = $1
+            """, pago_id)
+        
+        return {
+            "message": f"Gasto creado exitosamente con {len(banco_ids)} movimientos bancarios",
+            "gasto_id": gasto_id,
+            "gasto_numero": numero,
+            "pago_id": pago_id,
+            "total": total,
+            "movimientos_conciliados": len(banco_ids)
+        }
+
 @api_router.post("/conciliaciones", response_model=Conciliacion)
 async def create_conciliacion(data: ConciliacionCreate):
     pool = await get_pool()
