@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { 
   getVentasPOS, syncVentasPOS, confirmarVentaPOS, desconfirmarVentaPOS,
   marcarCreditoVentaPOS, descartarVentaPOS,
-  getPagosVentaPOS, getPagosOficialesVentaPOS, addPagoVentaPOS, deletePagoVentaPOS,
-  getCuentasFinancieras
+  getPagosVentaPOS, getPagosOficialesVentaPOS, addPagoVentaPOS, updatePagoVentaPOS, deletePagoVentaPOS,
+  getCuentasFinancieras, getLineasVentaPOS
 } from '../services/api';
 import { RefreshCw, Check, CreditCard, X, Filter, ShoppingCart, Download, Plus, Trash2, Eye, RotateCcw, Search, Edit } from 'lucide-react';
 import { toast } from 'sonner';
