@@ -1153,6 +1153,99 @@ export const VentasPOS = () => {
           </div>
         </div>
       )}
+      
+      {/* Modal Editar Pago */}
+      {showEditPagoModal && pagoEditando && (
+        <div className="modal-overlay" onClick={() => setShowEditPagoModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
+            <div className="modal-header">
+              <h2 className="modal-title">✏️ Editar Pago</h2>
+              <button className="modal-close" onClick={() => setShowEditPagoModal(false)}>×</button>
+            </div>
+            
+            <div className="modal-body">
+              <div style={{ marginBottom: '1rem' }}>
+                <label className="form-label">Cuenta / Caja</label>
+                <select 
+                  className="form-select"
+                  value={pagoEditando.cuenta_financiera_id || ''}
+                  onChange={(e) => setPagoEditando({...pagoEditando, cuenta_financiera_id: parseInt(e.target.value)})}
+                >
+                  <option value="">Seleccione una cuenta...</option>
+                  {cuentasFinancieras.map((c) => (
+                    <option key={c.id} value={c.id}>{c.nombre}</option>
+                  ))}
+                </select>
+              </div>
+              
+              <div style={{ marginBottom: '1rem' }}>
+                <label className="form-label">Forma de Pago</label>
+                <select 
+                  className="form-select"
+                  value={pagoEditando.forma_pago || 'Efectivo'}
+                  onChange={(e) => setPagoEditando({...pagoEditando, forma_pago: e.target.value})}
+                >
+                  <option value="Efectivo">Efectivo</option>
+                  <option value="Transferencia">Transferencia</option>
+                  <option value="Tarjeta">Tarjeta</option>
+                  <option value="Yape">Yape</option>
+                  <option value="Plin">Plin</option>
+                </select>
+              </div>
+              
+              <div style={{ marginBottom: '1rem' }}>
+                <label className="form-label">Monto</label>
+                <input 
+                  type="number" 
+                  className="form-input"
+                  step="0.01"
+                  value={pagoEditando.monto || ''}
+                  onChange={(e) => setPagoEditando({...pagoEditando, monto: parseFloat(e.target.value)})}
+                />
+              </div>
+              
+              <div style={{ marginBottom: '1rem' }}>
+                <label className="form-label">Referencia</label>
+                <input 
+                  type="text" 
+                  className="form-input"
+                  value={pagoEditando.referencia || ''}
+                  onChange={(e) => setPagoEditando({...pagoEditando, referencia: e.target.value})}
+                />
+              </div>
+              
+              <div style={{ marginBottom: '1rem' }}>
+                <label className="form-label">Fecha</label>
+                <input 
+                  type="date" 
+                  className="form-input"
+                  value={pagoEditando.fecha_pago || ''}
+                  onChange={(e) => setPagoEditando({...pagoEditando, fecha_pago: e.target.value})}
+                />
+              </div>
+              
+              <div style={{ marginBottom: '1rem' }}>
+                <label className="form-label">Observaciones</label>
+                <textarea 
+                  className="form-input"
+                  rows="2"
+                  value={pagoEditando.observaciones || ''}
+                  onChange={(e) => setPagoEditando({...pagoEditando, observaciones: e.target.value})}
+                />
+              </div>
+            </div>
+            
+            <div className="modal-footer">
+              <button className="btn btn-outline" onClick={() => setShowEditPagoModal(false)}>
+                Cancelar
+              </button>
+              <button className="btn btn-primary" onClick={handleUpdatePago}>
+                Guardar Cambios
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
