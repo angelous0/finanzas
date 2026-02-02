@@ -84,7 +84,7 @@ export const VentasPOS = () => {
 
   useEffect(() => {
     loadVentas();
-  }, [activeTab, filtroEmpresa, fechaDesde, fechaHasta]);
+  }, [activeTab, filtroEmpresa, fechaDesde, fechaHasta, search]);
 
   const loadVentas = async () => {
     try {
@@ -93,7 +93,8 @@ export const VentasPOS = () => {
         estado: activeTab !== 'todas' ? activeTab : undefined,
         company_id: filtroEmpresa || undefined,
         fecha_desde: fechaDesde || undefined,
-        fecha_hasta: fechaHasta || undefined
+        fecha_hasta: fechaHasta || undefined,
+        search: search || undefined
       };
       const response = await getVentasPOS(params);
       setVentas(response.data);
