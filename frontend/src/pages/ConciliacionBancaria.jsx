@@ -54,6 +54,14 @@ export const ConciliacionBancaria = () => {
   const [activeTab, setActiveTab] = useState('pendientes');
   const [expandedBanco, setExpandedBanco] = useState(true);
   const [expandedSistema, setExpandedSistema] = useState(true);
+  
+  // Modal de gasto bancario
+  const [showGastoBancarioModal, setShowGastoBancarioModal] = useState(false);
+  const [categorias, setCategorias] = useState([]);
+  const [gastoData, setGastoData] = useState({
+    categoria_id: '',
+    descripcion: 'Gastos bancarios'
+  });
 
   useEffect(() => {
     loadInitialData();
