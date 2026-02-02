@@ -40,44 +40,29 @@ async def migrate():
         """)
         print("✅ Index created successfully")
         
-        print("\n🔧 Step 3: Updating historical records (marking as conciliado)...")
-        # Mark banco movements that are in conciliacion_linea as conciliado
+        print("\n🔧 Step 3: Setting conciliado based on procesado flag...")
+        # The column 'conciliado' will mirror 'procesado' for banco movements
         result = await conn.execute("""
-            UPDATE finanzas2.cont_banco_mov_raw mb
-            SET conciliado = TRUE
-            WHERE EXISTS (
-                SELECT 1 FROM finanzas2.cont_conciliacion_linea cl
-                WHERE cl.banco_id = mb.id
-            )
+            UPDATE finanzas2.cont_banco_mov_raw
+            SET conciliado = procesado
         """)
-        print(f"✅ Updated {result.split()[-1]} banco movements to conciliado=TRUE")
-        
-        # Mark pagos that are in conciliacion_linea as conciliado
-        result = await conn.execute("""
-            UPDATE finanzas2.cont_pago p
-            SET conciliado = TRUE
-            WHERE EXISTS (
-                SELECT 1 FROM finanzas2.cont_conciliacion_linea cl
-                WHERE cl.sistema_id = p.id
-            )
-        """)
-        print(f"✅ Updated {result.split()[-1]} pagos to conciliado=TRUE")
+        print(f"✅ Updated banco movements: conciliado now matches procesado")
         
         print("\n🔧 Step 4: Verifying results...")
         # Count conciliados
         banco_conciliados = await conn.fetchval("""
             SELECT COUNT(*) FROM finanzas2.cont_banco_mov_raw WHERE conciliado = TRUE
         """)
+        banco_procesados = await conn.fetchval("""
+            SELECT COUNT(*) FROM finanzas2.cont_banco_mov_raw WHERE procesado = TRUE
+        """)
         pagos_conciliados = await conn.fetchval("""
             SELECT COUNT(*) FROM finanzas2.cont_pago WHERE conciliado = TRUE
         """)
-        historial_count = await conn.fetchval("""
-            SELECT COUNT(*) FROM finanzas2.cont_conciliacion_linea
-        """)
         
         print(f"   Movimientos banco conciliados: {banco_conciliados}")
+        print(f"   Movimientos banco procesados: {banco_procesados}")
         print(f"   Pagos sistema conciliados: {pagos_conciliados}")
-        print(f"   Registros en historial: {historial_count}")
         
         if banco_conciliados == historial_count and pagos_conciliados == historial_count:
             print("\n✅ Migration completed successfully! All records are consistent.")
