@@ -26,24 +26,24 @@ async def migrate():
     try:
         await conn.execute("SET search_path TO finanzas2, public")
         
-        print("🔧 Step 1: Adding 'conciliado' column to cont_movimiento_banco...")
+        print("🔧 Step 1: Adding 'conciliado' column to cont_banco_mov_raw...")
         await conn.execute("""
-            ALTER TABLE finanzas2.cont_movimiento_banco 
+            ALTER TABLE finanzas2.cont_banco_mov_raw 
             ADD COLUMN IF NOT EXISTS conciliado BOOLEAN DEFAULT FALSE
         """)
         print("✅ Column added successfully")
         
         print("\n🔧 Step 2: Creating index on conciliado column...")
         await conn.execute("""
-            CREATE INDEX IF NOT EXISTS idx_movimiento_banco_conciliado 
-            ON finanzas2.cont_movimiento_banco(conciliado)
+            CREATE INDEX IF NOT EXISTS idx_banco_mov_raw_conciliado 
+            ON finanzas2.cont_banco_mov_raw(conciliado)
         """)
         print("✅ Index created successfully")
         
         print("\n🔧 Step 3: Updating historical records (marking as conciliado)...")
         # Mark banco movements that are in conciliacion_linea as conciliado
         result = await conn.execute("""
-            UPDATE finanzas2.cont_movimiento_banco mb
+            UPDATE finanzas2.cont_banco_mov_raw mb
             SET conciliado = TRUE
             WHERE EXISTS (
                 SELECT 1 FROM finanzas2.cont_conciliacion_linea cl
@@ -66,7 +66,7 @@ async def migrate():
         print("\n🔧 Step 4: Verifying results...")
         # Count conciliados
         banco_conciliados = await conn.fetchval("""
-            SELECT COUNT(*) FROM finanzas2.cont_movimiento_banco WHERE conciliado = TRUE
+            SELECT COUNT(*) FROM finanzas2.cont_banco_mov_raw WHERE conciliado = TRUE
         """)
         pagos_conciliados = await conn.fetchval("""
             SELECT COUNT(*) FROM finanzas2.cont_pago WHERE conciliado = TRUE
