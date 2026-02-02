@@ -3885,24 +3885,37 @@ async def conciliar_movimientos(
                 from datetime import date
                 today = date.today()
                 
+                # Get total amount
+                total_banco = 0
+                if banco_ids:
+                    result = await conn.fetchrow("""
+                        SELECT SUM(monto) as total FROM finanzas2.cont_banco_mov_raw 
+                        WHERE id = ANY($1::int[])
+                    """, banco_ids)
+                    total_banco = float(result['total']) if result['total'] else 0
+                
                 # Create conciliacion record
                 conciliacion = await conn.fetchrow("""
                     INSERT INTO finanzas2.cont_conciliacion 
-                    (cuenta_financiera_id, fecha_inicio, fecha_fin, estado, notas, fecha_conciliacion)
-                    VALUES ($1, $2, $2, 'completado', $3, NOW())
+                    (cuenta_financiera_id, fecha_inicio, fecha_fin, saldo_final, estado, notas)
+                    VALUES ($1, $2, $2, $3, 'completado', $4)
                     RETURNING id
-                """, cuenta_id, today, 
+                """, cuenta_id, today, total_banco,
                     f"Conciliación: {len(banco_ids)} mov. banco + {len(pago_ids)} mov. sistema")
                 
                 conciliacion_id = conciliacion['id']
                 
-                # Create detail records linking bank movements
-                for banco_id in banco_ids:
+                # Create detail records for payments
+                for pago_id in pago_ids:
+                    pago_info = await conn.fetchrow("""
+                        SELECT monto_total FROM finanzas2.cont_pago WHERE id = $1
+                    """, pago_id)
+                    
                     await conn.execute("""
                         INSERT INTO finanzas2.cont_conciliacion_linea 
-                        (conciliacion_id, banco_movimiento_id)
-                        VALUES ($1, $2)
-                    """, conciliacion_id, banco_id)
+                        (conciliacion_id, pago_id, tipo, monto, conciliado)
+                        VALUES ($1, $2, 'pago', $3, TRUE)
+                    """, conciliacion_id, pago_id, pago_info['monto_total'] if pago_info else 0)
         
         return {
             "message": f"Conciliados {len(banco_ids)} movimientos del banco y {len(pago_ids)} del sistema",
