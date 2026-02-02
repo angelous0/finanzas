@@ -1503,9 +1503,9 @@ async def create_pago(data: PagoCreate):
             pago = await conn.fetchrow("""
                 INSERT INTO finanzas2.cont_pago 
                 (numero, tipo, fecha, cuenta_financiera_id, moneda_id, monto_total, referencia, notas)
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+                VALUES ($1, $2, TO_DATE($3, 'YYYY-MM-DD'), $4, $5, $6, $7, $8)
                 RETURNING *
-            """, numero, data.tipo, data.fecha, data.cuenta_financiera_id, data.moneda_id,
+            """, numero, data.tipo, safe_date_param(data.fecha), data.cuenta_financiera_id, data.moneda_id,
                 data.monto_total, data.referencia, data.notas)
             
             pago_id = pago['id']
@@ -1679,8 +1679,8 @@ async def update_pago(id: int, data: dict):
         param_count = 1
         
         if 'fecha' in data:
-            update_fields.append(f"fecha = ${param_count}")
-            values.append(data['fecha'])
+            update_fields.append(f"fecha = TO_DATE(${param_count}, 'YYYY-MM-DD')")
+            values.append(safe_date_param(data['fecha']))
             param_count += 1
         
         if 'referencia' in data:
