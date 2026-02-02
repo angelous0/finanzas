@@ -206,6 +206,48 @@ export const ConciliacionBancaria = () => {
       setLoading(false);
     }
   };
+  
+  const handleCrearGastoBancario = () => {
+    if (selectedBanco.length === 0) {
+      toast.error('Seleccione al menos un movimiento bancario');
+      return;
+    }
+    
+    // Reset form
+    setGastoData({
+      categoria_id: categorias.length > 0 ? categorias[0].id : '',
+      descripcion: 'Gastos bancarios (ITF, comisiones)'
+    });
+    
+    setShowGastoBancarioModal(true);
+  };
+  
+  const handleConfirmarGastoBancario = async () => {
+    if (!gastoData.categoria_id) {
+      toast.error('Seleccione una categoría');
+      return;
+    }
+    
+    try {
+      setLoading(true);
+      const result = await crearGastoBancario(
+        selectedBanco,
+        gastoData.categoria_id,
+        cuentaSeleccionada,
+        gastoData.descripcion
+      );
+      
+      toast.success(`Gasto creado: ${result.data.gasto_numero} (${result.data.movimientos_conciliados} movimientos)`);
+      setShowGastoBancarioModal(false);
+      setSelectedBanco([]);
+      await loadMovimientos();
+    } catch (error) {
+      console.error('Error al crear gasto:', error);
+      toast.error(error.response?.data?.detail || 'Error al crear gasto');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleConciliarAuto = async () => {
     if (movimientosBanco.length === 0 || movimientosSistema.length === 0) {
