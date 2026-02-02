@@ -292,10 +292,17 @@ export const ConciliacionBancaria = () => {
 
   const pendientesBanco = movimientosBanco.filter(m => !m.conciliado).length;
   const pendientesSistema = movimientosSistema.filter(m => !m.conciliado).length;
-  const totalBancoPendiente = movimientosBanco.reduce((sum, m) => sum + (m.monto || 0), 0);
-  const totalSistemaPendiente = movimientosSistema.reduce((sum, m) => 
+  // Calculate totals for pending items
+  const pendientesBanco = movimientosBanco.filter(m => !m.conciliado);
+  const pendientesSistema = movimientosSistema.filter(m => !m.conciliado);
+  
+  const totalBancoPendiente = pendientesBanco.reduce((sum, m) => sum + (m.monto || 0), 0);
+  const totalSistemaPendiente = pendientesSistema.reduce((sum, m) => 
     sum + (m.tipo === 'ingreso' ? m.monto_total : -m.monto_total), 0);
-  const diferencia = totalBancoPendiente - totalSistemaPendiente;
+  
+  // Diferencia: Esta es la diferencia absoluta entre pendientes
+  // Si está cerca de 0, significa que todo cuadra
+  const diferencia = Math.abs(totalBancoPendiente) - Math.abs(totalSistemaPendiente);
 
   const selectedBancoTotal = selectedBanco.reduce((sum, id) => {
     const mov = movimientosBanco.find(m => m.id === id);
