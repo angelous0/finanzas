@@ -1251,6 +1251,98 @@ export const ConciliacionBancaria = () => {
           </div>
         </div>
       )}
+      
+      {/* Modal Gasto Bancario */}
+      {showGastoBancarioModal && (
+        <div className="modal-overlay" onClick={() => setShowGastoBancarioModal(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '500px' }}>
+            <div className="modal-header">
+              <h2 className="modal-title">Generar Gasto Bancario</h2>
+              <button className="modal-close" onClick={() => setShowGastoBancarioModal(false)}>
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="modal-body">
+              <div style={{ 
+                background: '#f1f5f9', 
+                padding: '1rem', 
+                borderRadius: '8px', 
+                marginBottom: '1.5rem',
+                border: '1px solid #e2e8f0'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                  <span style={{ color: '#64748b', fontSize: '0.875rem' }}>Movimientos seleccionados:</span>
+                  <span style={{ fontWeight: 600, color: '#1e293b' }}>{selectedBanco.length}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: '#64748b', fontSize: '0.875rem' }}>Total:</span>
+                  <span style={{ fontWeight: 600, color: '#ea580c', fontSize: '1.125rem' }}>
+                    {formatCurrency(selectedBancoTotal)}
+                  </span>
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Categoría de Gasto *</label>
+                <select 
+                  className="form-input"
+                  value={gastoData.categoria_id}
+                  onChange={(e) => setGastoData({ ...gastoData, categoria_id: e.target.value })}
+                >
+                  <option value="">Seleccione...</option>
+                  {categorias.map(cat => (
+                    <option key={cat.id} value={cat.id}>{cat.nombre}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Descripción</label>
+                <textarea 
+                  className="form-input"
+                  value={gastoData.descripcion}
+                  onChange={(e) => setGastoData({ ...gastoData, descripcion: e.target.value })}
+                  rows={3}
+                  placeholder="Ej: Impuestos ITF, comisiones bancarias, etc."
+                />
+              </div>
+
+              <div style={{ 
+                background: '#fef3c7', 
+                padding: '0.75rem 1rem', 
+                borderRadius: '6px',
+                border: '1px solid #fbbf24',
+                fontSize: '0.875rem',
+                color: '#92400e'
+              }}>
+                <strong>Nota:</strong> Se creará automáticamente un gasto agrupando todos los movimientos seleccionados y se marcarán como conciliados.
+              </div>
+            </div>
+
+            <div className="modal-footer">
+              <button 
+                className="btn btn-secondary" 
+                onClick={() => setShowGastoBancarioModal(false)}
+              >
+                Cancelar
+              </button>
+              <button 
+                className="btn btn-primary"
+                onClick={handleConfirmarGastoBancario}
+                disabled={!gastoData.categoria_id}
+                style={{ 
+                  background: '#ea580c',
+                  opacity: !gastoData.categoria_id ? 0.5 : 1 
+                }}
+              >
+                <Check size={18} />
+                Generar Gasto
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
