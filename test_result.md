@@ -315,7 +315,8 @@ frontend:
 
 test_plan:
   current_focus:
-    - "Conciliación Bancaria - Generar Gasto Bancario functionality"
+    - "Conciliación Bancaria - Complete frontend flow testing"
+    - "Historial Conciliaciones - Complete page testing"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
