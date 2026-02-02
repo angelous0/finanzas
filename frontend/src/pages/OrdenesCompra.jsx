@@ -328,7 +328,7 @@ export default function OrdenesCompra() {
         proveedor_id: parseInt(formData.proveedor_id),
         moneda_id: parseInt(formData.moneda_id),
         lineas: lineas.filter(l => l.cantidad > 0).map(l => ({
-          articulo_id: l.articulo_id || null,
+          articulo_id: l.articulo_id ? parseInt(l.articulo_id) : null,
           descripcion: l.descripcion || null,
           cantidad: parseFloat(l.cantidad),
           precio_unitario: parseFloat(l.precio_unitario),
