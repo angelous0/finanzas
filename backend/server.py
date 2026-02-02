@@ -44,6 +44,37 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# Utility function for safe date handling in PostgreSQL queries
+def safe_date_param(fecha_value):
+    """
+    Convert date to string format for PostgreSQL TO_DATE function.
+    Handles date objects, datetime objects, and strings.
+    Returns a string in 'YYYY-MM-DD' format.
+    """
+    if fecha_value is None:
+        return None
+    
+    if isinstance(fecha_value, str):
+        # If already a string, try to parse and re-format to ensure consistency
+        try:
+            if 'T' in fecha_value:  # ISO datetime format
+                dt = datetime.fromisoformat(fecha_value.replace('Z', '+00:00'))
+                return dt.strftime('%Y-%m-%d')
+            else:
+                # Assume it's already in YYYY-MM-DD format
+                return fecha_value
+        except:
+            return fecha_value
+    
+    if isinstance(fecha_value, datetime):
+        return fecha_value.strftime('%Y-%m-%d')
+    
+    if isinstance(fecha_value, date):
+        return fecha_value.strftime('%Y-%m-%d')
+    
+    # If it's something else, convert to string and hope for the best
+    return str(fecha_value)
+
 app = FastAPI(title="Finanzas 4.0 API", version="1.0.0")
 
 api_router = APIRouter(prefix="/api")
