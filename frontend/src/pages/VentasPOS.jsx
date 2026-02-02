@@ -471,6 +471,29 @@ export const VentasPOS = () => {
       toast.error('Error al actualizar pago');
     }
   };
+  
+  // Ver líneas de productos
+  const verLineasProductos = async (venta) => {
+    setVentaSeleccionada(venta);
+    setShowLineasModal(true);
+    setLoadingLineas(true);
+    
+    try {
+      const response = await getLineasVentaPOS(venta.id);
+      setLineasProductos(response.data);
+    } catch (error) {
+      console.error('Error loading product lines:', error);
+      toast.error('Error al cargar líneas de productos');
+    } finally {
+      setLoadingLineas(false);
+    }
+  };
+  
+  const closeLineasModal = () => {
+    setShowLineasModal(false);
+    setVentaSeleccionada(null);
+    setLineasProductos([]);
+  };
 
   // Filter ventas by search
   const filteredVentas = ventas.filter(v => {
