@@ -72,7 +72,7 @@ export const ConciliacionBancaria = () => {
       setLoading(true);
       const [cuentasRes, categoriasRes] = await Promise.all([
         getCuentasFinancieras(),
-        getCategorias('gasto')
+        getCategorias('egreso')
       ]);
       setCuentas(cuentasRes.data.filter(c => c.tipo === 'banco'));
       setCategorias(categoriasRes.data || []);
