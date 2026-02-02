@@ -291,7 +291,7 @@ frontend:
 
 test_plan:
   current_focus:
-    - "VentasPOS - Duplicate payment fix validation"
+    - "Conciliación Bancaria - Generar Gasto Bancario functionality"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
