@@ -14,7 +14,7 @@ Create a QuickBooks-like system for treasury, control, and minimal accounting ca
 - **Empresa Proyecto Moda**: URL: `https://ambission.app-gestion.net`, DB: `ambission`, User: `proyectomoda@ambission.com`, Pass: `proyectomoda123`
 
 ## Tech Stack
-- **Backend**: FastAPI + PostgreSQL (asyncpg) + SQLAlchemy
+- **Backend**: FastAPI + PostgreSQL (asyncpg)
 - **Frontend**: React + TailwindCSS + Shadcn/UI
 - **UI Components**: `/app/frontend/src/components/ui/`
 
@@ -22,160 +22,81 @@ Create a QuickBooks-like system for treasury, control, and minimal accounting ca
 
 ## Modules & Status
 
-### 1. Base Catalogs ✅ COMPLETE
-- `cont_empresa` - CRUD complete with edit
-- `cont_moneda` - Working
-- `cont_tipo_cambio` - Working
-- `cont_categoria` - CRUD complete
-- `cont_centro_costo` - CRUD complete
-- `cont_linea_negocio` - CRUD complete
-- `cont_cuenta_financiera` - Working
-- `cont_tercero` - CRUD complete (proveedores)
+### 1. Base Catalogs - COMPLETE
+### 2. Supplier Invoice (Factura Proveedor) - COMPLETE
+### 3. Accounts Payable (CxP) - COMPLETE
+### 4. Centralized Payments - COMPLETE
+### 5. Purchase Orders (OC) - COMPLETE
+### 6. Bills of Exchange (Letras) - COMPLETE
+### 7. Expenses (Gastos) - COMPLETE
+### 8. Payroll (Planilla/Adelantos) - COMPLETE
+- Employee management with salary details
+- Payroll generation with pre-filled salaries
+- Adelantos (advances) with payment tracking
+- Company filter (empresa_id) for both modules
 
-### UI Components Created (2026-01-30):
-- `SearchableSelect.jsx` - Searchable dropdown for forms with create new option
-- `TableSearchSelect.jsx` - Compact searchable dropdown for table cells
+### 9. POS Sales (Ventas POS) - COMPLETE
+- Odoo integration via XML-RPC
+- Sales sync, confirmation, payment tracking
 
-### 2. Supplier Invoice (Factura Proveedor) ✅ COMPLETE
-**Completed (2026-01-30):**
-- UI modal matching user's screenshot
-- Hide "beneficiario" field when proveedor selected
-- "Detalles del artículo" section with:
-  - ARTÍCULO dropdown from `public.prod_inventario`
-  - MODELO/CORTE dropdown from `public.prod_registros` + `prod_modelos`
-  - Auto-fill UND and PRECIO from inventory
-  - IMPORTE auto-calculation
-  - IGV checkbox
-  - Add/duplicate/remove article actions
-- CxP auto-created when saving invoice ✅
+### 10. Bank Reconciliation - COMPLETE
+- Excel import of bank movements
+- Manual and automatic reconciliation
+- Generate grouped bank expenses
+- Historical records
 
-### 3. Accounts Payable (CxP) ✅ COMPLETE
-- CxP auto-created when invoice is saved
-- CxP saldo updates when payments are applied
-- CxP estado syncs with invoice (pendiente → parcial → pagado)
-
-### 4. Centralized Payments ✅ COMPLETE
-- Partial payments supported
-- Multi-method payments (transferencia, efectivo, cheque, tarjeta)
-- Auto-updates invoice saldo and estado
-- Auto-updates CxP saldo and estado
-- **Validation: Cannot pay more than pending balance** ✅
-- Tested: 500 invoice → 300 partial → 200 final = pagado
-
-### 5. Purchase Orders (OC) ✅ COMPLETE
-- Full CRUD for purchase orders
-- Convert OC to Factura Proveedor ✅
-- Auto-create CxP when generating factura ✅
-- Estado tracking: borrador → facturada ✅
-- UI: Modal with summary panel, article search ✅
-
-### 6. Bills of Exchange (Letras) ✅ COMPLETE
-- `cont_letra` table exists
-- Generate from invoices ✅
-- Custom amounts/dates before creation ✅
-- Change invoice status to "CANJEADO" ✅
-- Undo canje (reverse) ✅
-- View letras linked to invoice ✅
-
-### 7. Expenses (Gastos) ✅ COMPLETE
-- `cont_gasto` table exists
-- Force immediate payment on creation ✅
-- Multiple payment methods supported ✅
-- Validation: payments must equal total ✅
-- Line items with categories, business lines, cost centers ✅
-
-### 8. Payroll 🔴 NOT IMPLEMENTED
-- `cont_adelanto_empleado`, `cont_planilla` tables exist
-- Employee management pending
-- Payroll calculation pending
-
-### 9. POS Sales (Ventas POS) 🔴 NOT IMPLEMENTED
-- Odoo integration pending
-- `odoo_service.py` has placeholder code
-
-### 10. Budgets 🔴 NOT IMPLEMENTED
-- `cont_presupuesto` table exists
-- Budget vs actual reporting pending
-
-### 11. Bank Reconciliation 🔴 NOT IMPLEMENTED
-- Excel import pending
-- Reconciliation logic pending
-
-### 12. Reports 🔴 NOT IMPLEMENTED
-- Cash Flow report pending
-- Income Statement pending
-- Balance Sheet pending
+### 11. Budgets - NOT IMPLEMENTED
+### 12. Reports - NOT IMPLEMENTED
 
 ---
 
-## UI/UX Improvements (2026-01-30)
-- **Filtros avanzados**: N° documento, proveedor, fecha desde/hasta, estado
-- **Badges mejorados**: Estilos con gradientes y bordes para cada estado (pendiente, parcial, pagado, canjeado, anulada)
-- **Sidebar responsive**: Hamburger menu en móvil, toggle collapse/expand en desktop
-- **Tablas responsive**: Filas no crecen en pantallas pequeñas
-- **Letras editables**: Permite modificar montos y fechas antes de crear letras
+## Recent Fixes (2026-02-05)
 
-## UI/UX Improvements - OC Module (2026-01-30) ✅ COMPLETE
-- **Modal Fullscreen**: El modal de crear/editar OC ahora es pantalla completa (z-index 9999)
-- **Badge Artículo Seleccionado**: Badge verde con checkmark que muestra el artículo seleccionado
-- **Búsqueda de Artículos**: Campo de búsqueda con ícono + dropdown filtrable
-- **Crear Proveedor al Vuelo**: Opción "+ Crear nuevo proveedor" en el selector que abre mini-modal
-- **Fuente Monoespaciada**: Todos los valores de moneda usan JetBrains Mono (clase .currency-display)
-- **Header Mejorado**: Botón "Guardar" posicionado a la derecha
-- **Resumen Visual**: Panel lateral con totales y contador de artículos
+### IGV Calculation Fix in OrdenesCompra - COMPLETE
+- Added `igv_incluido` flag to OCCreate model
+- Backend now correctly handles both IGV-included and IGV-excluded prices
+- When igv_incluido=true: base = precio/1.18, igv = precio - base
+- When igv_incluido=false: base = precio, igv = base * 0.18
+- Result is consistent: same input produces same stored values regardless of toggle
+- **Files**: `models.py` (OCCreate), `server.py` (create_orden_compra), `OrdenesCompra.jsx` (handleSubmit)
 
-## UI/UX Improvements - OC Module v2 (2026-01-30) ✅ COMPLETE
-- **Selector de Artículos con Búsqueda Integrada**: Input tipo combobox con ícono de búsqueda y dropdown integrado
-- **Detalle de Artículos Ancho Completo**: La tabla de artículos ahora ocupa todo el ancho de la página
-- **Resumen Compacto**: Panel de resumen ahora es horizontal y más compacto con fondo verde elegante
-- **Descargar PDF**: Nuevo botón "PDF" en el modal de vista para generar documento descargable
-- **Layout Mejorado**: Formulario más compacto con 4 columnas en la primera fila
+### Company Filter for Adelantos/Planilla - COMPLETE
+- Backend `/api/adelantos` now accepts `empresa_id` parameter
+- Backend `/api/planillas` now accepts `empresa_id` parameter
+- Frontend Adelantos.jsx and Planilla.jsx use `useEmpresa()` context
+- Data refreshes automatically when switching companies
+- **Files**: `server.py`, `Adelantos.jsx`, `Planilla.jsx`, `api.js`
 
-## Bug Fixes & Enhancements (2026-01-30) ✅ COMPLETE
-- **Facturas Proveedor - Edición implementada**: La función handleEdit ahora carga los datos de la factura en el formulario y permite actualizarla
-- **Facturas Proveedor - PDF**: Botón de descarga PDF agregado en la lista de acciones y modal de vista
-- **Gastos - Eliminar**: Botón eliminar agregado en la lista con confirmación
-- **Gastos - PDF**: Botón de descarga PDF agregado en el modal de vista
-- **Selectores de tabla mejorados**: Corregido el z-index y overflow para que los dropdowns de Categoría, Línea Negocio, Centro Costo no se recorten
-- **Backend - Endpoint deleteGasto**: Nuevo endpoint DELETE /api/gastos/{id} implementado
-
-## Key Files
-- `/app/backend/server.py` - All API endpoints (monolithic, needs refactoring)
-- `/app/backend/models.py` - SQLAlchemy models
-- `/app/backend/database.py` - DB connection
-- `/app/frontend/src/pages/FacturasProveedor.jsx` - Supplier invoice page
-- `/app/frontend/src/services/api.js` - API client functions
-
-## API Endpoints Added (2026-01-30)
-- `GET /api/inventario` - List items from `public.prod_inventario`
-- `GET /api/modelos-cortes` - List modelos/cortes from `public.prod_registros`
-- `GET /api/modelos` - List models from `public.prod_modelos`
-- `POST /api/letras/generar` - Generate letras (supports custom letras_personalizadas)
-- `POST /api/letras/anular-canje/{factura_id}` - Reverse canje
-- `GET /api/facturas-proveedor/{id}/pagos` - Get payments for invoice
-- `GET /api/facturas-proveedor/{id}/letras` - Get letras for invoice
+### Venta B003-17918 - NOT FOUND
+- Searched through 1066 sales, sale does not exist in current data
+- Likely cleaned up or never synced
 
 ---
 
 ## Priority Backlog
 
-### P0 (Critical) - ✅ COMPLETED
-1. ~~Implement CxP auto-creation on invoice save~~ ✅
-2. ~~Implement payment application logic~~ ✅
-3. ~~Payment validation (cannot exceed balance)~~ ✅
-4. ~~Bills of Exchange (Letras) module~~ ✅
+### P0 (Critical) - All Complete
 
 ### P1 (High)
-1. Odoo integration for POS sales
-2. OC to Invoice conversion
-3. Refactor server.py into multiple routers
-4. Refactor FacturasProveedor.jsx (1800+ lines)
+1. Visual dashboard/reports for Ventas POS
+2. Print/email PDF receipt for sales
+3. Refactor server.py into modular routers
 
 ### P2 (Medium)
-5. Expenses module with immediate payment
-6. Payroll module
-7. Budgets vs Actual
+4. Alerts/notifications for pending sales
+5. Budgets module (cont_presupuesto)
+6. Financial Reports (Cash Flow, Income Statement)
 
 ### P3 (Low)
-8. Bank Reconciliation (Excel import)
-9. Financial Reports (Cash Flow, Income Statement, Balance Sheet)
+7. Refactor large frontend components (VentasPOS.jsx, ConciliacionBancaria.jsx, OrdenesCompra.jsx)
+8. Balance Sheet report
+
+## Key Files
+- `/app/backend/server.py` - All API endpoints (monolithic)
+- `/app/backend/models.py` - Pydantic models
+- `/app/backend/database.py` - DB connection
+- `/app/frontend/src/pages/OrdenesCompra.jsx`
+- `/app/frontend/src/pages/Adelantos.jsx`
+- `/app/frontend/src/pages/Planilla.jsx`
+- `/app/frontend/src/services/api.js`
+- `/app/frontend/src/context/EmpresaContext.jsx`
