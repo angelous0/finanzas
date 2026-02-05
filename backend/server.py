@@ -995,7 +995,10 @@ async def create_orden_compra(data: OCCreate):
             
             # Insert lines
             for linea in data.lineas:
-                linea_subtotal = linea.cantidad * linea.precio_unitario
+                if data.igv_incluido and linea.igv_aplica:
+                    linea_subtotal = linea.cantidad * linea.precio_unitario / 1.18
+                else:
+                    linea_subtotal = linea.cantidad * linea.precio_unitario
                 
                 # Handle articulo_id: if it's a UUID (from prod_inventario), set to None
                 # and store the UUID in notas field temporarily
