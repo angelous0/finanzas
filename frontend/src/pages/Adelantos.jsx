@@ -34,6 +34,7 @@ const getEstadoBadge = (estado) => {
 };
 
 export const Adelantos = () => {
+  const { empresaActual } = useEmpresa();
   const [adelantos, setAdelantos] = useState([]);
   const [empleados, setEmpleados] = useState([]);
   const [cuentas, setCuentas] = useState([]);
