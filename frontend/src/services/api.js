@@ -114,7 +114,7 @@ export const pagarAdelanto = (id, cuentaFinancieraId, medioPago = 'efectivo') =>
   api.post(`/adelantos/${id}/pagar?cuenta_financiera_id=${cuentaFinancieraId}&medio_pago=${medioPago}`);
 
 // Planillas
-export const getPlanillas = () => api.get('/planillas');
+export const getPlanillas = (params) => api.get('/planillas', { params });
 export const getPlanilla = (id) => api.get(`/planillas/${id}`);
 export const createPlanilla = (data) => api.post('/planillas', data);
 export const deletePlanilla = (id) => api.delete(`/planillas/${id}`);
