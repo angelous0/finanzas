@@ -2459,14 +2459,23 @@ async def delete_adelanto(id: int):
 # PLANILLA
 # =====================
 @api_router.get("/planillas", response_model=List[Planilla])
-async def list_planillas():
+async def list_planillas(empresa_id: Optional[int] = None):
     pool = await get_pool()
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
         
-        rows = await conn.fetch("""
-            SELECT * FROM finanzas2.cont_planilla ORDER BY periodo DESC
-        """)
+        if empresa_id is not None:
+            rows = await conn.fetch("""
+                SELECT DISTINCT p.* FROM finanzas2.cont_planilla p
+                JOIN finanzas2.cont_planilla_detalle pd ON pd.planilla_id = p.id
+                JOIN finanzas2.cont_tercero t ON pd.empleado_id = t.id
+                WHERE t.empresa_id = $1
+                ORDER BY p.periodo DESC
+            """, empresa_id)
+        else:
+            rows = await conn.fetch("""
+                SELECT * FROM finanzas2.cont_planilla ORDER BY periodo DESC
+            """)
         
         result = []
         for row in rows:
