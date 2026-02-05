@@ -26,6 +26,7 @@ const getEstadoBadge = (estado) => {
 };
 
 export const Planilla = () => {
+  const { empresaActual } = useEmpresa();
   const [planillas, setPlanillas] = useState([]);
   const [empleados, setEmpleados] = useState([]);
   const [adelantosPendientes, setAdelantosPendientes] = useState([]);
