@@ -6,6 +6,7 @@ import {
 import { Plus, FileText, Eye, X, DollarSign, Download, Calendar, Users, Wallet, CreditCard, Edit2, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import SearchableSelect from '../components/SearchableSelect';
+import { useEmpresa } from '../context/EmpresaContext';
 
 const formatCurrency = (value, symbol = 'S/') => {
   return `${symbol} ${Number(value || 0).toLocaleString('es-PE', { minimumFractionDigits: 2 })}`;
