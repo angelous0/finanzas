@@ -51,13 +51,15 @@ export const Planilla = () => {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [empresaActual]);
 
   const loadData = async () => {
     try {
       setLoading(true);
+      const params = {};
+      if (empresaActual?.id) params.empresa_id = empresaActual.id;
       const [planillasRes, empleadosRes, cuentasRes, adelantosRes] = await Promise.all([
-        getPlanillas(),
+        getPlanillas(params),
         getEmpleados(),
         getCuentasFinancieras(),
         getAdelantos({ descontado: false })
