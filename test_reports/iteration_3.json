@@ -1,0 +1,91 @@
+{
+  "summary": "Completed testing of Iteration 3 fixes: IGV calculation in OrdenesCompra, empresa_id filter for Adelantos/Planillas. All 10 backend tests passed. Frontend UI tests verified pages load correctly and IGV toggle is visible and functional.",
+  
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  
+  "passed_tests": [
+    "TEST 1: API Health Check - API is healthy and connected to database",
+    "TEST 2: OrdenesCompra IGV incluido=true - price 118 → subtotal=100, igv=18, total=118",
+    "TEST 3: OrdenesCompra IGV incluido=false - price 100 → subtotal=100, igv=18, total=118",
+    "TEST 4: /api/adelantos without empresa_id returns all results",
+    "TEST 5: /api/adelantos?empresa_id=1 returns filtered results",
+    "TEST 6: /api/adelantos?empresa_id=999 returns empty list for non-existent empresa",
+    "TEST 7: /api/planillas without empresa_id returns all results",
+    "TEST 8: /api/planillas?empresa_id=1 returns filtered results",
+    "TEST 9: /api/planillas?empresa_id=999 returns empty list for non-existent empresa",
+    "TEST 10: OrdenesCompra page loads with data"
+  ],
+  
+  "features_verified": {
+    "igv_calculation_igv_incluido_true": {
+      "description": "When igv_incluido=true, backend divides precio_unitario by 1.18 to extract base price",
+      "test_case": "price=118 → subtotal=100, igv=18, total=118",
+      "status": "WORKING"
+    },
+    "igv_calculation_igv_incluido_false": {
+      "description": "When igv_incluido=false, backend adds 18% IGV on top",
+      "test_case": "price=100 → subtotal=100, igv=18, total=118",
+      "status": "WORKING"
+    },
+    "adelantos_empresa_filter": {
+      "description": "Adelantos endpoint accepts empresa_id filter and joins with cont_tercero on empleado_id",
+      "status": "WORKING"
+    },
+    "planillas_empresa_filter": {
+      "description": "Planillas endpoint accepts empresa_id filter and joins through planilla_detalle → empleado → tercero",
+      "status": "WORKING"
+    },
+    "igv_toggle_ui": {
+      "description": "IGV incluido toggle visible in Nueva Orden de Compra modal",
+      "default_state": "ON (checked)",
+      "status": "WORKING"
+    },
+    "empresa_context": {
+      "description": "EmpresaContext provides empresaActual to pages via useEmpresa() hook",
+      "visible_in": "Top-right corner showing 'Empresa de Prueba SAC'",
+      "status": "WORKING"
+    }
+  },
+  
+  "test_report_links": [
+    "/app/backend/tests/test_fixes_iter3.py",
+    "/app/test_reports/pytest/pytest_results_iter3.xml"
+  ],
+  
+  "action_items": [],
+  
+  "critical_code_review_comments": [],
+  
+  "updated_files": [
+    "/app/backend/tests/test_fixes_iter3.py"
+  ],
+  
+  "success_rate": {
+    "backend": "100% (10/10 tests passed)",
+    "frontend": "100% (all pages load correctly, IGV toggle visible)"
+  },
+  
+  "seed_data_creation": "Test OCs created and cleaned up during pytest execution",
+  
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  
+  "context_for_next_testing_agent": "Iteration 3 fixes fully verified: (1) IGV 18% calculation in OrdenesCompra now correctly handles igv_incluido toggle - when true, divides by 1.18 to extract base; when false, adds 18% on top. (2) Adelantos and Planillas endpoints now accept empresa_id filter parameter and correctly join with tercero table to filter by company. (3) Frontend pages (OrdenesCompra, Adelantos, Planilla) all load correctly with EmpresaContext providing the selected company.",
+  
+  "notes": [
+    "IGV = Impuesto General a las Ventas (Peru VAT at 18%)",
+    "When igv_incluido=true: subtotal = precio / 1.18, igv = precio - subtotal",
+    "When igv_incluido=false: subtotal = precio, igv = precio * 0.18",
+    "Adelantos filter joins on: cont_adelanto_empleado.empleado_id -> cont_tercero.id WHERE cont_tercero.empresa_id = ?",
+    "Planillas filter uses subquery joining: planilla -> planilla_detalle -> tercero WHERE tercero.empresa_id = ?"
+  ]
+}
