@@ -5,6 +5,7 @@ import {
 } from '../services/api';
 import { Plus, FileText, Trash2, Eye, X, DollarSign, Download, Check, Calendar, Users, Edit2, CreditCard } from 'lucide-react';
 import { toast } from 'sonner';
+import { useEmpresa } from '../context/EmpresaContext';
 
 const formatCurrency = (value, symbol = 'S/') => {
   return `${symbol} ${Number(value || 0).toLocaleString('es-PE', { minimumFractionDigits: 2 })}`;
