@@ -247,6 +247,7 @@ class OCBase(BaseModel):
 
 class OCCreate(OCBase):
     lineas: List[OCLineaCreate] = []
+    igv_incluido: bool = False
 
 class OCUpdate(BaseModel):
     fecha: Optional[date] = None
