@@ -66,13 +66,15 @@ export const Adelantos = () => {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [empresaActual]);
 
   const loadData = async () => {
     try {
       setLoading(true);
+      const params = {};
+      if (empresaActual?.id) params.empresa_id = empresaActual.id;
       const [adelantosRes, empleadosRes, cuentasRes] = await Promise.all([
-        getAdelantos(),
+        getAdelantos(params),
         getEmpleados(),
         getCuentasFinancieras()
       ]);
