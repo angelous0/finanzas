@@ -2237,7 +2237,8 @@ async def delete_gasto(id: int):
 async def list_adelantos(
     empleado_id: Optional[int] = None,
     pagado: Optional[bool] = None,
-    descontado: Optional[bool] = None
+    descontado: Optional[bool] = None,
+    empresa_id: Optional[int] = None
 ):
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -2258,6 +2259,10 @@ async def list_adelantos(
         if descontado is not None:
             conditions.append(f"a.descontado = ${idx}")
             params.append(descontado)
+            idx += 1
+        if empresa_id is not None:
+            conditions.append(f"t.empresa_id = ${idx}")
+            params.append(empresa_id)
             idx += 1
         
         query = f"""
