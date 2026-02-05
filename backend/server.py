@@ -971,10 +971,17 @@ async def create_orden_compra(data: OCCreate):
             subtotal = 0
             igv = 0
             for linea in data.lineas:
-                linea_subtotal = linea.cantidad * linea.precio_unitario
-                subtotal += linea_subtotal
-                if linea.igv_aplica:
-                    igv += linea_subtotal * 0.18
+                if data.igv_incluido and linea.igv_aplica:
+                    # Price includes IGV: extract base and tax
+                    base = linea.cantidad * linea.precio_unitario / 1.18
+                    linea_igv = linea.cantidad * linea.precio_unitario - base
+                    subtotal += base
+                    igv += linea_igv
+                else:
+                    linea_subtotal = linea.cantidad * linea.precio_unitario
+                    subtotal += linea_subtotal
+                    if linea.igv_aplica:
+                        igv += linea_subtotal * 0.18
             total = subtotal + igv
             
             row = await conn.fetchrow("""
