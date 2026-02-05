@@ -327,6 +327,7 @@ export default function OrdenesCompra() {
         ...formData,
         proveedor_id: parseInt(formData.proveedor_id),
         moneda_id: parseInt(formData.moneda_id),
+        igv_incluido: igvIncluido,
         lineas: lineas.filter(l => l.cantidad > 0).map(l => ({
           articulo_id: l.articulo_id || null,
           descripcion: l.descripcion || null,
