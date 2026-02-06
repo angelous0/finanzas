@@ -506,16 +506,17 @@ class TestExhaustiveFinancialFlows:
         print(f"✓ Adelanto María created (unpaid): id={data['id']}, monto={data['monto']}, pagado={data['pagado']}")
         
     def test_flow5_03_pay_adelanto_maria(self):
-        """FLOW 5.3: Pay the second adelanto using POST /adelantos/{id}/pagar"""
+        """FLOW 5.3: Pay the second adelanto using POST /adelantos/{id}/pagar with query params"""
         adelanto_id = TestExhaustiveFinancialFlows.adelanto_maria_id
         assert adelanto_id is not None, "Adelanto María not created"
         
-        payload = {
+        # Note: This endpoint uses query parameters, not JSON body
+        params = {
             "cuenta_financiera_id": CUENTA_CAJA_ID,
             "medio_pago": "efectivo"
         }
         
-        response = requests.post(f"{BASE_URL}/api/adelantos/{adelanto_id}/pagar", json=payload)
+        response = requests.post(f"{BASE_URL}/api/adelantos/{adelanto_id}/pagar", params=params)
         print(f"Pay Adelanto María Response Status: {response.status_code}")
         print(f"Pay Adelanto María Response Body: {response.json()}")
         
