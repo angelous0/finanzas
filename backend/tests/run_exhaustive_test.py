@@ -232,7 +232,8 @@ def run_tests():
         resp = requests.post(f"{BASE_URL}/api/letras/generar", json=payload, timeout=30)
         assert resp.status_code == 200, f"Status {resp.status_code}: {resp.text}"
         data = resp.json()
-        letras = data.get('letras', [])
+        # Response is a List[Letra], not a dict
+        letras = data if isinstance(data, list) else data.get('letras', [])
         assert len(letras) == 3, f"Expected 3 letras, got {len(letras)}"
         results["created_ids"]["letras_flow3"] = [l['id'] for l in letras]
         for letra in letras:
