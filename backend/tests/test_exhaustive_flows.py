@@ -589,16 +589,16 @@ class TestExhaustiveFinancialFlows:
         print(f"✓ Planilla created: periodo={data['periodo']}, total_bruto={data['total_bruto']}, total_neto={data['total_neto']}")
         
     def test_flow6_02_pay_planilla(self):
-        """FLOW 6.2: Pay the planilla using POST /planillas/{id}/pagar"""
+        """FLOW 6.2: Pay the planilla using POST /planillas/{id}/pagar with query params"""
         planilla_id = TestExhaustiveFinancialFlows.planilla_id
         assert planilla_id is not None, "Planilla not created"
         
-        payload = {
-            "cuenta_financiera_id": CUENTA_BCP_ID,
-            "medio_pago": "transferencia"
+        # Note: This endpoint uses query parameters, not JSON body
+        params = {
+            "cuenta_financiera_id": CUENTA_BCP_ID
         }
         
-        response = requests.post(f"{BASE_URL}/api/planillas/{planilla_id}/pagar", json=payload)
+        response = requests.post(f"{BASE_URL}/api/planillas/{planilla_id}/pagar", params=params)
         print(f"Pay Planilla Response Status: {response.status_code}")
         print(f"Pay Planilla Response Body: {response.json()}")
         
@@ -606,7 +606,8 @@ class TestExhaustiveFinancialFlows:
         
         data = response.json()
         
-        assert data['estado'] == 'pagado', f"Expected estado=pagado, got {data['estado']}"
+        # Note: Backend uses 'pagada' not 'pagado'
+        assert data['estado'] == 'pagada', f"Expected estado=pagada, got {data['estado']}"
         assert data['pago_id'] is not None, "pago_id should be assigned"
         
         print(f"✓ Planilla paid: estado={data['estado']}, pago_id={data['pago_id']}")
