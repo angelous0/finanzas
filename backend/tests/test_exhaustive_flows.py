@@ -2,7 +2,7 @@
 Finanzas 4.0 - Exhaustive Financial Test Suite
 Tests ALL modules as if a real accountant would use the system.
 
-IMPORTANT: Run these tests sequentially as later flows depend on data from earlier ones.
+IMPORTANT: All tests run sequentially in a single class to share state.
 
 Flows tested:
 1. ORDEN DE COMPRA - Create OC with IGV included, convert to factura
@@ -21,7 +21,6 @@ import pytest
 import requests
 import os
 from datetime import date, timedelta
-from decimal import Decimal
 
 # API Configuration
 BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://multi-company-dev.preview.emergentagent.com')
@@ -41,32 +40,25 @@ CATEGORIA_SERVICIOS_ID = 4
 CATEGORIA_PLANILLA_ID = 5
 CATEGORIA_OTROS_GASTOS_ID = 8
 
-# Track created IDs for cleanup and cross-flow references
-created_ids = {
-    'oc_flow1': None,
-    'factura_flow1': None,
-    'pago_partial_1': None,
-    'pago_partial_2': None,
-    'factura_flow3': None,
-    'letras_flow3': [],
-    'pago_letra_1': None,
-    'gasto_1': None,
-    'gasto_2': None,
-    'adelanto_juan': None,
-    'adelanto_maria': None,
-    'pago_adelanto_juan': None,
-    'pago_adelanto_maria': None,
-    'planilla': None,
-    'pago_planilla': None,
-    'oc_flow10': None,
-}
 
-
-class TestFlow1_OrdenDeCompra:
-    """FLOW 1 - Create OC with 3 line items (igv_incluido=true), convert to Factura"""
+class TestExhaustiveFinancialFlows:
+    """All 10 flows in sequence, sharing state via class attributes"""
     
-    def test_01_create_oc_igv_incluido(self):
-        """Create OC with 3 items, IGV included in price (S/ 118 each)"""
+    # Class-level storage for IDs between tests
+    oc_flow1_id = None
+    factura_flow1_id = None
+    factura_flow3_id = None
+    letras_flow3_ids = []
+    adelanto_juan_id = None
+    adelanto_maria_id = None
+    planilla_id = None
+    oc_flow10_id = None
+    
+    # =====================
+    # FLOW 1 - ORDEN DE COMPRA
+    # =====================
+    def test_flow1_01_create_oc_igv_incluido(self):
+        """FLOW 1.1: Create OC with 3 items, IGV included in price (S/ 118 each)"""
         print("\n=== FLOW 1: ORDEN DE COMPRA ===")
         
         payload = {
@@ -89,7 +81,7 @@ class TestFlow1_OrdenDeCompra:
         assert response.status_code == 200, f"Expected 200, got {response.status_code}"
         
         data = response.json()
-        created_ids['oc_flow1'] = data['id']
+        TestExhaustiveFinancialFlows.oc_flow1_id = data['id']
         
         # Verify calculations: 4 items at 118 with IGV included
         # Base = 4 * 118 / 1.18 = 400
@@ -101,9 +93,9 @@ class TestFlow1_OrdenDeCompra:
         
         print(f"✓ OC created: {data['numero']}, subtotal={data['subtotal']}, igv={data['igv']}, total={data['total']}")
         
-    def test_02_convert_oc_to_factura(self):
-        """Convert OC to Factura Proveedor"""
-        oc_id = created_ids['oc_flow1']
+    def test_flow1_02_convert_oc_to_factura(self):
+        """FLOW 1.2: Convert OC to Factura Proveedor"""
+        oc_id = TestExhaustiveFinancialFlows.oc_flow1_id
         assert oc_id is not None, "OC not created in previous test"
         
         response = requests.post(f"{BASE_URL}/api/ordenes-compra/{oc_id}/generar-factura")
@@ -113,7 +105,7 @@ class TestFlow1_OrdenDeCompra:
         assert response.status_code == 200, f"Expected 200, got {response.status_code}"
         
         data = response.json()
-        created_ids['factura_flow1'] = data['id']
+        TestExhaustiveFinancialFlows.factura_flow1_id = data['id']
         
         # Verify factura has same amounts as OC
         assert abs(data['subtotal'] - 400.0) < 0.01, f"Expected subtotal=400, got {data['subtotal']}"
@@ -124,9 +116,9 @@ class TestFlow1_OrdenDeCompra:
         
         print(f"✓ Factura created: {data['numero']}, total={data['total']}, estado={data['estado']}")
         
-    def test_03_verify_cxp_created(self):
-        """Verify CxP was auto-created from factura"""
-        factura_id = created_ids['factura_flow1']
+    def test_flow1_03_verify_cxp_created(self):
+        """FLOW 1.3: Verify CxP was auto-created from factura"""
+        factura_id = TestExhaustiveFinancialFlows.factura_flow1_id
         assert factura_id is not None, "Factura not created in previous test"
         
         response = requests.get(f"{BASE_URL}/api/cxp")
@@ -145,15 +137,14 @@ class TestFlow1_OrdenDeCompra:
         
         print(f"✓ CxP verified: id={cxp['id']}, monto={cxp['monto_original']}, estado={cxp['estado']}")
 
-
-class TestFlow2_PagoParcialFactura:
-    """FLOW 2 - Pay 50% of factura, then pay remaining 50%"""
-    
-    def test_01_pay_50_percent(self):
-        """Pay 50% of the factura from Flow 1"""
+    # =====================
+    # FLOW 2 - PAGO PARCIAL
+    # =====================
+    def test_flow2_01_pay_50_percent(self):
+        """FLOW 2.1: Pay 50% of the factura from Flow 1"""
         print("\n=== FLOW 2: PAGO PARCIAL FACTURA ===")
         
-        factura_id = created_ids['factura_flow1']
+        factura_id = TestExhaustiveFinancialFlows.factura_flow1_id
         assert factura_id is not None, "Factura not created in Flow 1"
         
         monto_50 = 236.0  # 50% of 472
@@ -180,13 +171,11 @@ class TestFlow2_PagoParcialFactura:
         assert response.status_code == 200, f"Expected 200, got {response.status_code}"
         
         data = response.json()
-        created_ids['pago_partial_1'] = data['id']
-        
         print(f"✓ Payment 1 created: {data['numero']}, monto={data['monto_total']}")
         
-    def test_02_verify_factura_partial_state(self):
-        """Verify factura saldo decreased and estado=parcial"""
-        factura_id = created_ids['factura_flow1']
+    def test_flow2_02_verify_factura_partial_state(self):
+        """FLOW 2.2: Verify factura saldo decreased and estado=parcial"""
+        factura_id = TestExhaustiveFinancialFlows.factura_flow1_id
         
         response = requests.get(f"{BASE_URL}/api/facturas-proveedor/{factura_id}")
         print(f"Factura State Response Status: {response.status_code}")
@@ -202,9 +191,9 @@ class TestFlow2_PagoParcialFactura:
         
         print(f"✓ Factura after 50%: saldo={data['saldo_pendiente']}, estado={data['estado']}")
         
-    def test_03_pay_remaining_50_percent(self):
-        """Pay remaining 50%"""
-        factura_id = created_ids['factura_flow1']
+    def test_flow2_03_pay_remaining_50_percent(self):
+        """FLOW 2.3: Pay remaining 50%"""
+        factura_id = TestExhaustiveFinancialFlows.factura_flow1_id
         monto_50 = 236.0
         
         payload = {
@@ -229,13 +218,11 @@ class TestFlow2_PagoParcialFactura:
         assert response.status_code == 200
         
         data = response.json()
-        created_ids['pago_partial_2'] = data['id']
-        
         print(f"✓ Payment 2 created: {data['numero']}")
         
-    def test_04_verify_factura_fully_paid(self):
-        """Verify factura estado=pagado and saldo=0"""
-        factura_id = created_ids['factura_flow1']
+    def test_flow2_04_verify_factura_fully_paid(self):
+        """FLOW 2.4: Verify factura estado=pagado and saldo=0"""
+        factura_id = TestExhaustiveFinancialFlows.factura_flow1_id
         
         response = requests.get(f"{BASE_URL}/api/facturas-proveedor/{factura_id}")
         print(f"Factura Final State Response: {response.json()}")
@@ -249,12 +236,11 @@ class TestFlow2_PagoParcialFactura:
         
         print(f"✓ Factura fully paid: saldo={data['saldo_pendiente']}, estado={data['estado']}")
 
-
-class TestFlow3_FacturaConLetras:
-    """FLOW 3 - Create Factura, generate 3 letras, pay first letra"""
-    
-    def test_01_create_factura_directly(self):
-        """Create a NEW Factura Proveedor directly (not from OC) for S/ 3000"""
+    # =====================
+    # FLOW 3 - FACTURA CON LETRAS
+    # =====================
+    def test_flow3_01_create_factura_directly(self):
+        """FLOW 3.1: Create Factura Proveedor directly for S/ 3000 (3 items x S/ 1000)"""
         print("\n=== FLOW 3: FACTURA CON LETRAS ===")
         
         # 3 items at S/ 1000 each, IGV excluded
@@ -280,7 +266,7 @@ class TestFlow3_FacturaConLetras:
         assert response.status_code == 200, f"Expected 200, got {response.status_code}"
         
         data = response.json()
-        created_ids['factura_flow3'] = data['id']
+        TestExhaustiveFinancialFlows.factura_flow3_id = data['id']
         
         # With IGV excluded: subtotal=3000, igv=540, total=3540
         assert abs(data['subtotal'] - 3000.0) < 0.01, f"Expected subtotal=3000, got {data['subtotal']}"
@@ -290,12 +276,11 @@ class TestFlow3_FacturaConLetras:
         
         print(f"✓ Factura created: {data['numero']}, subtotal={data['subtotal']}, igv={data['igv']}, total={data['total']}")
         
-    def test_02_generate_3_letras(self):
-        """Generate 3 letras from the factura"""
-        factura_id = created_ids['factura_flow3']
+    def test_flow3_02_generate_3_letras(self):
+        """FLOW 3.2: Generate 3 letras from the factura (3540 / 3 = 1180 each)"""
+        factura_id = TestExhaustiveFinancialFlows.factura_flow3_id
         assert factura_id is not None, "Factura not created in previous test"
         
-        # 3540 / 3 = 1180 per letra
         payload = {
             "factura_id": factura_id,
             "cantidad_letras": 3,
@@ -309,17 +294,12 @@ class TestFlow3_FacturaConLetras:
         assert response.status_code == 200, f"Expected 200, got {response.status_code}"
         
         data = response.json()
-        letras = data.get('letras', data) if isinstance(data, dict) else data
         
-        # If response is dict with 'letras' key, extract it
-        if isinstance(letras, dict) and 'letras' in letras:
-            letras = letras['letras']
-        elif not isinstance(letras, list):
-            letras = [letras]
-            
+        # Response is a dict with 'letras' key
+        letras = data.get('letras', [])
         assert len(letras) == 3, f"Expected 3 letras, got {len(letras)}"
         
-        created_ids['letras_flow3'] = [l['id'] for l in letras]
+        TestExhaustiveFinancialFlows.letras_flow3_ids = [l['id'] for l in letras]
         
         # Each letra should be 1180
         for letra in letras:
@@ -327,9 +307,9 @@ class TestFlow3_FacturaConLetras:
             
         print(f"✓ 3 Letras created: {[l['numero'] for l in letras]}")
         
-    def test_03_verify_factura_canjeado(self):
-        """Verify factura estado changed to 'canjeado'"""
-        factura_id = created_ids['factura_flow3']
+    def test_flow3_03_verify_factura_canjeado(self):
+        """FLOW 3.3: Verify factura estado changed to 'canjeado'"""
+        factura_id = TestExhaustiveFinancialFlows.factura_flow3_id
         
         response = requests.get(f"{BASE_URL}/api/facturas-proveedor/{factura_id}")
         print(f"Factura State After Letras: {response.json()}")
@@ -341,9 +321,9 @@ class TestFlow3_FacturaConLetras:
         
         print(f"✓ Factura estado={data['estado']} after letras generation")
         
-    def test_04_pay_first_letra(self):
-        """Pay the first letra"""
-        letras = created_ids['letras_flow3']
+    def test_flow3_04_pay_first_letra(self):
+        """FLOW 3.4: Pay the first letra"""
+        letras = TestExhaustiveFinancialFlows.letras_flow3_ids
         assert len(letras) > 0, "No letras created"
         
         letra_id = letras[0]
@@ -371,13 +351,11 @@ class TestFlow3_FacturaConLetras:
         assert response.status_code == 200, f"Expected 200, got {response.status_code}"
         
         data = response.json()
-        created_ids['pago_letra_1'] = data['id']
-        
         print(f"✓ Letra payment created: {data['numero']}")
         
-    def test_05_verify_letra_paid(self):
-        """Verify first letra is paid, factura still has saldo > 0 (via remaining letras)"""
-        letra_id = created_ids['letras_flow3'][0]
+    def test_flow3_05_verify_letra_paid(self):
+        """FLOW 3.5: Verify first letra is paid"""
+        letra_id = TestExhaustiveFinancialFlows.letras_flow3_ids[0]
         
         response = requests.get(f"{BASE_URL}/api/letras/{letra_id}")
         print(f"Letra 1 State: {response.json()}")
@@ -388,19 +366,18 @@ class TestFlow3_FacturaConLetras:
         assert data['estado'] == 'pagado', f"Expected letra estado=pagado, got {data['estado']}"
         
         # Check remaining letras are still pendiente
-        for letra_id in created_ids['letras_flow3'][1:]:
-            resp = requests.get(f"{BASE_URL}/api/letras/{letra_id}")
+        for lid in TestExhaustiveFinancialFlows.letras_flow3_ids[1:]:
+            resp = requests.get(f"{BASE_URL}/api/letras/{lid}")
             letra = resp.json()
-            assert letra['estado'] in ['pendiente', 'parcial'], f"Letra {letra_id} should still be pending"
+            assert letra['estado'] in ['pendiente', 'parcial'], f"Letra {lid} should still be pending"
             
         print(f"✓ First letra paid, remaining 2 letras still pending")
 
-
-class TestFlow4_Gastos:
-    """FLOW 4 - Create 2 gastos with different payment methods"""
-    
-    def test_01_create_gasto_cash(self):
-        """Create gasto S/ 500 office supplies paid in cash (Caja Chica id=2)"""
+    # =====================
+    # FLOW 4 - GASTOS
+    # =====================
+    def test_flow4_01_create_gasto_cash(self):
+        """FLOW 4.1: Create gasto S/ 500 office supplies paid in cash"""
         print("\n=== FLOW 4: GASTOS ===")
         
         payload = {
@@ -426,7 +403,6 @@ class TestFlow4_Gastos:
         assert response.status_code == 200, f"Expected 200, got {response.status_code}"
         
         data = response.json()
-        created_ids['gasto_1'] = data['id']
         
         # Verify total is ~500 (423.73 + 18% IGV = ~500)
         assert abs(data['total'] - 500.0) < 1, f"Expected total~500, got {data['total']}"
@@ -434,8 +410,8 @@ class TestFlow4_Gastos:
         
         print(f"✓ Gasto 1 created: {data['numero']}, total={data['total']}, pago_id={data['pago_id']}")
         
-    def test_02_create_gasto_transfer(self):
-        """Create gasto S/ 1200 services paid via transfer (BCP id=1)"""
+    def test_flow4_02_create_gasto_transfer(self):
+        """FLOW 4.2: Create gasto S/ 1200 services paid via transfer"""
         payload = {
             "fecha": str(date.today()),
             "proveedor_id": PROVEEDOR_ID,
@@ -458,19 +434,17 @@ class TestFlow4_Gastos:
         assert response.status_code == 200, f"Expected 200, got {response.status_code}"
         
         data = response.json()
-        created_ids['gasto_2'] = data['id']
         
         assert abs(data['total'] - 1200.0) < 1, f"Expected total~1200, got {data['total']}"
         assert data['pago_id'] is not None, "pago_id should be assigned"
         
         print(f"✓ Gasto 2 created: {data['numero']}, total={data['total']}, pago_id={data['pago_id']}")
 
-
-class TestFlow5_AdelantoEmpleado:
-    """FLOW 5 - Create adelantos and pay them"""
-    
-    def test_01_create_adelanto_juan_paid(self):
-        """Create adelanto for Juan Pérez (id=9) of S/ 300 and pay immediately"""
+    # =====================
+    # FLOW 5 - ADELANTO
+    # =====================
+    def test_flow5_01_create_adelanto_juan_paid(self):
+        """FLOW 5.1: Create adelanto for Juan Pérez (id=9) of S/ 300 and pay immediately"""
         print("\n=== FLOW 5: ADELANTO EMPLEADO ===")
         
         payload = {
@@ -490,15 +464,15 @@ class TestFlow5_AdelantoEmpleado:
         assert response.status_code == 200, f"Expected 200, got {response.status_code}"
         
         data = response.json()
-        created_ids['adelanto_juan'] = data['id']
+        TestExhaustiveFinancialFlows.adelanto_juan_id = data['id']
         
         assert data['pagado'] == True, "Adelanto should be marked as paid"
         assert data['pago_id'] is not None, "pago_id should be assigned"
         
         print(f"✓ Adelanto Juan created and paid: id={data['id']}, monto={data['monto']}, pagado={data['pagado']}")
         
-    def test_02_create_adelanto_maria_unpaid(self):
-        """Create adelanto for María López (id=10) of S/ 500 without paying"""
+    def test_flow5_02_create_adelanto_maria_unpaid(self):
+        """FLOW 5.2: Create adelanto for María López (id=10) of S/ 500 without paying"""
         payload = {
             "empleado_id": EMPLEADO_MARIA_ID,
             "fecha": str(date.today()),
@@ -514,16 +488,16 @@ class TestFlow5_AdelantoEmpleado:
         assert response.status_code == 200, f"Expected 200, got {response.status_code}"
         
         data = response.json()
-        created_ids['adelanto_maria'] = data['id']
+        TestExhaustiveFinancialFlows.adelanto_maria_id = data['id']
         
         assert data['pagado'] == False, "Adelanto should NOT be marked as paid"
         assert data['pago_id'] is None, "pago_id should be None"
         
         print(f"✓ Adelanto María created (unpaid): id={data['id']}, monto={data['monto']}, pagado={data['pagado']}")
         
-    def test_03_pay_adelanto_maria(self):
-        """Pay the second adelanto using POST /adelantos/{id}/pagar"""
-        adelanto_id = created_ids['adelanto_maria']
+    def test_flow5_03_pay_adelanto_maria(self):
+        """FLOW 5.3: Pay the second adelanto using POST /adelantos/{id}/pagar"""
+        adelanto_id = TestExhaustiveFinancialFlows.adelanto_maria_id
         assert adelanto_id is not None, "Adelanto María not created"
         
         payload = {
@@ -543,17 +517,15 @@ class TestFlow5_AdelantoEmpleado:
         
         print(f"✓ Adelanto María now paid: pagado={data['pagado']}, pago_id={data['pago_id']}")
 
-
-class TestFlow6_Planilla:
-    """FLOW 6 - Create planilla with 3 employees, include adelanto as descuento"""
-    
-    def test_01_create_planilla(self):
-        """Create planilla for periodo 2026-01 with all 3 employees"""
+    # =====================
+    # FLOW 6 - PLANILLA
+    # =====================
+    def test_flow6_01_create_planilla(self):
+        """FLOW 6.1: Create planilla for periodo 2026-01 with all 3 employees"""
         print("\n=== FLOW 6: PLANILLA ===")
         
         # Juan's adelanto of S/ 300 should be included as descuento
-        adelanto_juan = created_ids.get('adelanto_juan')
-        adelanto_descuento_juan = 300.0 if adelanto_juan else 0
+        adelanto_descuento_juan = 300.0
         
         payload = {
             "periodo": "2026-01",
@@ -592,22 +564,22 @@ class TestFlow6_Planilla:
         assert response.status_code == 200, f"Expected 200, got {response.status_code}"
         
         data = response.json()
-        created_ids['planilla'] = data['id']
+        TestExhaustiveFinancialFlows.planilla_id = data['id']
         
         # Verify totals
         # Total bruto = 2000 + 2500 + 1500 = 6000
         # Total adelantos = 300
         # Total neto = 6000 - 300 = 5700
         assert abs(data['total_bruto'] - 6000.0) < 0.01, f"Expected total_bruto=6000, got {data['total_bruto']}"
-        assert abs(data['total_adelantos'] - adelanto_descuento_juan) < 0.01, f"Expected total_adelantos={adelanto_descuento_juan}, got {data['total_adelantos']}"
-        assert abs(data['total_neto'] - (6000.0 - adelanto_descuento_juan)) < 0.01, f"Expected total_neto={6000-adelanto_descuento_juan}, got {data['total_neto']}"
+        assert abs(data['total_adelantos'] - 300.0) < 0.01, f"Expected total_adelantos=300, got {data['total_adelantos']}"
+        assert abs(data['total_neto'] - 5700.0) < 0.01, f"Expected total_neto=5700, got {data['total_neto']}"
         assert data['estado'] == 'borrador', f"Expected estado=borrador, got {data['estado']}"
         
         print(f"✓ Planilla created: periodo={data['periodo']}, total_bruto={data['total_bruto']}, total_neto={data['total_neto']}")
         
-    def test_02_pay_planilla(self):
-        """Pay the planilla using POST /planillas/{id}/pagar"""
-        planilla_id = created_ids['planilla']
+    def test_flow6_02_pay_planilla(self):
+        """FLOW 6.2: Pay the planilla using POST /planillas/{id}/pagar"""
+        planilla_id = TestExhaustiveFinancialFlows.planilla_id
         assert planilla_id is not None, "Planilla not created"
         
         payload = {
@@ -622,65 +594,36 @@ class TestFlow6_Planilla:
         assert response.status_code == 200, f"Expected 200, got {response.status_code}"
         
         data = response.json()
-        created_ids['pago_planilla'] = data.get('pago_id')
         
         assert data['estado'] == 'pagado', f"Expected estado=pagado, got {data['estado']}"
         assert data['pago_id'] is not None, "pago_id should be assigned"
         
         print(f"✓ Planilla paid: estado={data['estado']}, pago_id={data['pago_id']}")
 
-
-class TestFlow7_VentasPOS:
-    """FLOW 7 - Sync ventas from Odoo (may fail if Odoo down)"""
-    
-    def test_01_sync_odoo_ventas(self):
-        """Sync ventas from Odoo"""
+    # =====================
+    # FLOW 7 - VENTAS POS (optional, may fail if Odoo down)
+    # =====================
+    def test_flow7_01_sync_odoo_ventas(self):
+        """FLOW 7.1: Sync ventas from Odoo (skipped if Odoo down)"""
         print("\n=== FLOW 7: VENTAS POS ===")
         
-        response = requests.post(f"{BASE_URL}/api/ventas-pos/sync?company=ambission&days_back=7")
+        response = requests.post(f"{BASE_URL}/api/ventas-pos/sync?company=ambission&days_back=7", timeout=30)
         print(f"Sync Odoo Response Status: {response.status_code}")
         
         if response.status_code != 200:
-            print(f"⚠ Odoo sync failed (server may be down): {response.text}")
+            print(f"⚠ Odoo sync failed (server may be down): {response.text[:200]}")
             pytest.skip("Odoo server may be down - skipping Ventas POS tests")
             return
             
         data = response.json()
         print(f"Sync Odoo Response Body: {data}")
-        
         print(f"✓ Odoo sync completed: {data.get('message', data)}")
-        
-    def test_02_list_ventas(self):
-        """List synced ventas"""
-        response = requests.get(f"{BASE_URL}/api/ventas-pos")
-        print(f"List Ventas Response Status: {response.status_code}")
-        
-        if response.status_code != 200:
-            pytest.skip("Ventas endpoint failed")
-            return
-            
-        data = response.json()
-        print(f"Found {len(data)} ventas")
-        
-        if len(data) == 0:
-            print("⚠ No ventas found - Odoo may have returned empty data")
-            pytest.skip("No ventas to test")
-            return
-            
-        # Try to confirm first 2 ventas
-        for venta in data[:2]:
-            if venta.get('estado_local') == 'pendiente':
-                confirm_resp = requests.post(f"{BASE_URL}/api/ventas-pos/{venta['id']}/confirmar")
-                print(f"Confirm venta {venta['id']}: {confirm_resp.status_code}")
-                
-        print(f"✓ Ventas listed and confirmed")
 
-
-class TestFlow8_CXPVerification:
-    """FLOW 8 - Verify all CxP records match expected states"""
-    
-    def test_01_verify_cxp_states(self):
-        """Check GET /cxp to verify all CxP records"""
+    # =====================
+    # FLOW 8 - CXP VERIFICATION
+    # =====================
+    def test_flow8_01_verify_cxp_states(self):
+        """FLOW 8.1: Check GET /cxp to verify all CxP records"""
         print("\n=== FLOW 8: CXP VERIFICATION ===")
         
         response = requests.get(f"{BASE_URL}/api/cxp")
@@ -700,28 +643,20 @@ class TestFlow8_CXPVerification:
         print(f"CxP by estado: {estados}")
         
         # Verify Flow 1 factura CxP is pagado
-        factura_id = created_ids.get('factura_flow1')
+        factura_id = TestExhaustiveFinancialFlows.factura_flow1_id
         if factura_id:
             cxp_flow1 = [c for c in data if c.get('factura_id') == factura_id]
             if cxp_flow1:
                 assert cxp_flow1[0]['estado'] == 'pagado', f"Flow 1 CxP should be pagado, got {cxp_flow1[0]['estado']}"
                 print(f"✓ Flow 1 CxP is pagado")
                 
-        # Verify Flow 3 factura CxP (with letras) - should be canjeado or similar
-        factura_id_3 = created_ids.get('factura_flow3')
-        if factura_id_3:
-            cxp_flow3 = [c for c in data if c.get('factura_id') == factura_id_3]
-            if cxp_flow3:
-                print(f"✓ Flow 3 CxP estado: {cxp_flow3[0]['estado']}")
-                
         print(f"✓ CxP verification complete")
 
-
-class TestFlow9_DashboardKPIs:
-    """FLOW 9 - Verify dashboard KPIs have values"""
-    
-    def test_01_get_kpis(self):
-        """Call GET /dashboard/kpis and verify it returns data"""
+    # =====================
+    # FLOW 9 - DASHBOARD KPIs
+    # =====================
+    def test_flow9_01_get_kpis(self):
+        """FLOW 9.1: Call GET /dashboard/kpis and verify it returns data"""
         print("\n=== FLOW 9: DASHBOARD KPIs ===")
         
         response = requests.get(f"{BASE_URL}/api/dashboard/kpis")
@@ -732,7 +667,7 @@ class TestFlow9_DashboardKPIs:
         
         data = response.json()
         
-        # Just verify the structure is correct
+        # Verify the structure is correct
         assert 'total_cxp' in data
         assert 'total_cxc' in data
         assert 'total_letras_pendientes' in data
@@ -742,21 +677,14 @@ class TestFlow9_DashboardKPIs:
         assert 'facturas_pendientes' in data
         assert 'letras_por_vencer' in data
         
-        # After all our tests, we should have some non-zero values
-        print(f"KPIs: CxP={data['total_cxp']}, Letras={data['total_letras_pendientes']}, Saldo Bancos={data['saldo_bancos']}, Gastos Mes={data['gastos_mes']}")
-        
-        # Verify we have some activity from our tests
-        # total_letras_pendientes should be > 0 (2 unpaid letras from Flow 3)
-        # gastos_mes should be > 0 (Flow 4 gastos)
-        
+        print(f"KPIs: CxP={data['total_cxp']}, Letras={data['total_letras_pendientes']}, Saldo={data['saldo_bancos']}, Gastos={data['gastos_mes']}")
         print(f"✓ Dashboard KPIs retrieved successfully")
 
-
-class TestFlow10_OCWithIGVExcluded:
-    """FLOW 10 - Create OC with igv_incluido=false"""
-    
-    def test_01_create_oc_igv_excluded(self):
-        """Create OC with igv_incluido=false, price=100 per item"""
+    # =====================
+    # FLOW 10 - OC IGV EXCLUDED
+    # =====================
+    def test_flow10_01_create_oc_igv_excluded(self):
+        """FLOW 10.1: Create OC with igv_incluido=false, price=100 per item"""
         print("\n=== FLOW 10: SECOND OC (IGV EXCLUDED) ===")
         
         payload = {
@@ -778,7 +706,7 @@ class TestFlow10_OCWithIGVExcluded:
         assert response.status_code == 200, f"Expected 200, got {response.status_code}"
         
         data = response.json()
-        created_ids['oc_flow10'] = data['id']
+        TestExhaustiveFinancialFlows.oc_flow10_id = data['id']
         
         # With igv_incluido=false: subtotal=200, igv=36, total=236
         assert abs(data['subtotal'] - 200.0) < 0.01, f"Expected subtotal=200, got {data['subtotal']}"
@@ -787,20 +715,24 @@ class TestFlow10_OCWithIGVExcluded:
         
         print(f"✓ OC created: {data['numero']}, subtotal={data['subtotal']}, igv={data['igv']}, total={data['total']}")
 
-
-class TestFinalSummary:
-    """Final summary of all tests"""
-    
-    def test_print_summary(self):
-        """Print summary of all created records"""
+    # =====================
+    # FINAL SUMMARY
+    # =====================
+    def test_final_summary(self):
+        """Print summary of all tests"""
         print("\n" + "="*60)
         print("EXHAUSTIVE FINANCIAL TEST SUMMARY")
         print("="*60)
         
         print(f"\nCreated IDs:")
-        for key, value in created_ids.items():
-            if value is not None:
-                print(f"  {key}: {value}")
+        print(f"  oc_flow1_id: {TestExhaustiveFinancialFlows.oc_flow1_id}")
+        print(f"  factura_flow1_id: {TestExhaustiveFinancialFlows.factura_flow1_id}")
+        print(f"  factura_flow3_id: {TestExhaustiveFinancialFlows.factura_flow3_id}")
+        print(f"  letras_flow3_ids: {TestExhaustiveFinancialFlows.letras_flow3_ids}")
+        print(f"  adelanto_juan_id: {TestExhaustiveFinancialFlows.adelanto_juan_id}")
+        print(f"  adelanto_maria_id: {TestExhaustiveFinancialFlows.adelanto_maria_id}")
+        print(f"  planilla_id: {TestExhaustiveFinancialFlows.planilla_id}")
+        print(f"  oc_flow10_id: {TestExhaustiveFinancialFlows.oc_flow10_id}")
                 
         print("\n✓ All 10 flows tested successfully!")
         print("="*60)
