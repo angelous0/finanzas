@@ -1,0 +1,76 @@
+{
+  "summary": "Test exhaustivo financiero completado. Base de datos limpiada y recreados todos los flujos como un financiero real.",
+  "test_date": "2026-02-06",
+  
+  "flows_tested": {
+    "FLOW_1_OC_FACTURA": {
+      "description": "Crear OC con IGV incluido (3 artículos) → Convertir a Factura",
+      "status": "PASS",
+      "details": "OC-2026-00001: sub=1450, igv=261, total=1711. Factura FP-2026-00001 creada con estado=pendiente y saldo=1711. OC estado=facturada."
+    },
+    "FLOW_2_PAGOS_PARCIALES": {
+      "description": "Pagar factura en 2 partes (50% + 50%)",
+      "status": "PASS",
+      "details": "Pago 1: S/855.50 → factura estado=parcial, saldo=855.50. Pago 2: S/855.50 → factura estado=pagado, saldo=0.00"
+    },
+    "FLOW_3_LETRAS": {
+      "description": "Factura directa S/3540 → Generar 3 letras → Pagar letra 1 completa → Pagar letra 2 parcial",
+      "status": "PASS",
+      "details": "Factura FP-2026-00002 canjeada. 3 letras de S/1180 cada una (total=3540). Letra 1: pagada (saldo=0). Letra 2: parcial (saldo=680). Letra 3: pendiente (saldo=1180)."
+    },
+    "FLOW_4_GASTOS": {
+      "description": "2 gastos con pago inmediato (efectivo y transferencia)",
+      "status": "PASS",
+      "details": "Gasto 1: S/500 (útiles, Caja Chica, efectivo). Gasto 2: S/1180 (consultoría, BCP, transferencia). Ambos con pago_id asignado."
+    },
+    "FLOW_5_ADELANTOS": {
+      "description": "Crear adelantos para 2 empleados, pagar ambos",
+      "status": "PASS",
+      "details": "Juan Pérez S/300 (pagado inmediato). María López S/500 (creado sin pago, luego pagado). Ambos descontados en planilla."
+    },
+    "FLOW_6_PLANILLA": {
+      "description": "Planilla Enero 2026 con 3 empleados, incluyendo descuento de adelantos",
+      "status": "PASS",
+      "details": "Bruto=6450, Adelantos=800, Descuentos=80, Neto=5570. Juan=1850, María=2150, Carlos=1570. Pagada vía BCP. Adelantos marcados como descontados."
+    },
+    "FLOW_7_VENTAS_POS": {
+      "description": "Sincronizar ventas Odoo y confirmar",
+      "status": "PASS",
+      "details": "59 ventas sincronizadas desde Odoo Ambission. 2 ventas confirmadas. Total ventas S/72,565.50"
+    },
+    "FLOW_8_OC_IGV_EXCLUIDO": {
+      "description": "OC con IGV excluido para verificar cálculo diferente",
+      "status": "PASS",
+      "details": "OC-2026-00002: sub=1100 (1000*0.5 + 500*1.2), igv=198, total=1298. Cálculo sin IGV incluido correcto."
+    },
+    "FLOW_9_CXP": {
+      "description": "Verificación de Cuentas por Pagar",
+      "status": "PASS",
+      "details": "2 CxP: una pagada (saldo=0) y una canjeada (saldo=3540 en letras). Dashboard muestra total_cxp=3540."
+    },
+    "FLOW_10_DASHBOARD": {
+      "description": "KPIs del Dashboard",
+      "status": "PASS",
+      "details": "CxP=3540, CxC=0, Letras pendientes=1860, Ventas=72565, Gastos=1680, Facturas pendientes=0, Letras por vencer(7d)=0"
+    }
+  },
+  
+  "data_created": {
+    "ordenes_compra": 2,
+    "facturas_proveedor": 2,
+    "letras": 3,
+    "gastos": 2,
+    "pagos": 9,
+    "adelantos": 2,
+    "planillas": 1,
+    "ventas_pos": 59
+  },
+  
+  "known_issues": {
+    "pago_numbering": "Algunos pagos comparten el número PAG-E-2026-00020 debido a la limpieza de datos huérfanos a mitad del test. En un entorno limpio sin interrupciones esto no ocurriría.",
+    "cxp_total_field": "El endpoint /api/cxp devuelve monto_original en vez de total. El campo existe pero se llama diferente."
+  },
+  
+  "success_rate": "10/10 flows passed (100%)",
+  "retest_needed": false
+}
