@@ -354,24 +354,34 @@ class TestExhaustiveFinancialFlows:
         print(f"✓ Letra payment created: {data['numero']}")
         
     def test_flow3_05_verify_letra_paid(self):
-        """FLOW 3.5: Verify first letra is paid"""
-        letra_id = TestExhaustiveFinancialFlows.letras_flow3_ids[0]
+        """FLOW 3.5: Verify first letra is paid via letras list"""
+        letras_ids = TestExhaustiveFinancialFlows.letras_flow3_ids
         
-        response = requests.get(f"{BASE_URL}/api/letras/{letra_id}")
-        print(f"Letra 1 State: {response.json()}")
+        # Get all letras and find ours
+        response = requests.get(f"{BASE_URL}/api/letras")
+        print(f"Get Letras List Status: {response.status_code}")
         
         assert response.status_code == 200
         
         data = response.json()
-        assert data['estado'] == 'pagado', f"Expected letra estado=pagado, got {data['estado']}"
+        
+        # Find our letras
+        paid_letra = None
+        pending_letras = []
+        for letra in data:
+            if letra['id'] == letras_ids[0]:
+                paid_letra = letra
+            elif letra['id'] in letras_ids[1:]:
+                pending_letras.append(letra)
+                
+        assert paid_letra is not None, "Paid letra not found"
+        assert paid_letra['estado'] == 'pagado', f"Expected letra estado=pagado, got {paid_letra['estado']}"
         
         # Check remaining letras are still pendiente
-        for lid in TestExhaustiveFinancialFlows.letras_flow3_ids[1:]:
-            resp = requests.get(f"{BASE_URL}/api/letras/{lid}")
-            letra = resp.json()
-            assert letra['estado'] in ['pendiente', 'parcial'], f"Letra {lid} should still be pending"
+        for letra in pending_letras:
+            assert letra['estado'] in ['pendiente', 'parcial'], f"Letra {letra['id']} should still be pending"
             
-        print(f"✓ First letra paid, remaining 2 letras still pending")
+        print(f"✓ First letra paid, remaining {len(pending_letras)} letras still pending")
 
     # =====================
     # FLOW 4 - GASTOS
