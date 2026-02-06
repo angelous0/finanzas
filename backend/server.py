@@ -2159,6 +2159,11 @@ async def create_gasto(data: GastoCreate):
                 VALUES ($1, 'gasto', $2, $3)
             """, pago_id, gasto_id, total)
             
+            # Update gasto with pago_id
+            await conn.execute("""
+                UPDATE finanzas2.cont_gasto SET pago_id = $1 WHERE id = $2
+            """, pago_id, gasto_id)
+            
             # Get full gasto data within transaction
             row = await conn.fetchrow("""
                 SELECT g.*, t.nombre as proveedor_nombre, m.codigo as moneda_codigo
