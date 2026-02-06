@@ -16,87 +16,72 @@ Create a QuickBooks-like system for treasury, control, and minimal accounting ca
 ## Tech Stack
 - **Backend**: FastAPI + PostgreSQL (asyncpg)
 - **Frontend**: React + TailwindCSS + Shadcn/UI
-- **UI Components**: `/app/frontend/src/components/ui/`
 
 ---
 
 ## Modules & Status
 
-### 1. Base Catalogs - COMPLETE
-### 2. Supplier Invoice (Factura Proveedor) - COMPLETE
-### 3. Accounts Payable (CxP) - COMPLETE
-### 4. Centralized Payments - COMPLETE
-### 5. Purchase Orders (OC) - COMPLETE
-### 6. Bills of Exchange (Letras) - COMPLETE
-### 7. Expenses (Gastos) - COMPLETE
-### 8. Payroll (Planilla/Adelantos) - COMPLETE
-- Employee management with salary details
-- Payroll generation with pre-filled salaries
-- Adelantos (advances) with payment tracking
-- Company filter (empresa_id) for both modules
+### Complete Modules
+1. **Base Catalogs** - Empresas, Monedas, Categorías, Centros Costo, Líneas Negocio, Cuentas Financieras, Terceros
+2. **Órdenes de Compra** - CRUD + conversión a factura + cálculo IGV incluido/excluido
+3. **Facturas Proveedor** - CRUD + líneas + CxP automática
+4. **Pagos Centralizados** - Pagos parciales, múltiples métodos, aplicaciones a facturas/letras
+5. **Letras de Cambio** - Generación desde factura, pagos parciales, estados
+6. **Gastos** - Con pago inmediato obligatorio, múltiples métodos de pago
+7. **Adelantos Empleado** - Creación, pago, descuento en planilla
+8. **Planilla** - Generación con detalles por empleado, pago masivo
+9. **Ventas POS** - Sincronización Odoo, confirmación, pagos
+10. **Conciliación Bancaria** - Importación Excel, conciliación manual/automática
+11. **CxP / CxC** - Tracking automático de cuentas por pagar/cobrar
 
-### 9. POS Sales (Ventas POS) - COMPLETE
-- Odoo integration via XML-RPC
-- Sales sync, confirmation, payment tracking
-
-### 10. Bank Reconciliation - COMPLETE
-- Excel import of bank movements
-- Manual and automatic reconciliation
-- Generate grouped bank expenses
-- Historical records
-
-### 11. Budgets - NOT IMPLEMENTED
-### 12. Reports - NOT IMPLEMENTED
+### Pending Modules
+- Presupuestos (cont_presupuesto)
+- Reportes financieros (Flujo de caja, Estado de resultados, Balance)
 
 ---
 
-## Recent Fixes (2026-02-05)
+## Recent Work (2026-02-06)
 
-### IGV Calculation Fix in OrdenesCompra - COMPLETE
+### Exhaustive Financial Test - COMPLETE
+- Database cleaned and all transactional data recreated from scratch
+- 10/10 flows tested successfully:
+  - OC → Factura → Pagos parciales → Pagada
+  - Factura → 3 Letras → Pago completo + parcial
+  - Gastos con pago inmediato (efectivo + transferencia)
+  - Adelantos con pago inmediato y posterior
+  - Planilla con descuento de adelantos + pago masivo
+  - Ventas POS sync Odoo + confirmación
+  - OC con IGV incluido vs excluido
+  - Dashboard KPIs verificados
+
+### IGV Calculation Fix (2026-02-05)
 - Added `igv_incluido` flag to OCCreate model
-- Backend now correctly handles both IGV-included and IGV-excluded prices
-- When igv_incluido=true: base = precio/1.18, igv = precio - base
-- When igv_incluido=false: base = precio, igv = base * 0.18
-- Result is consistent: same input produces same stored values regardless of toggle
-- **Files**: `models.py` (OCCreate), `server.py` (create_orden_compra), `OrdenesCompra.jsx` (handleSubmit)
+- Backend correctly handles both modes
 
-### Company Filter for Adelantos/Planilla - COMPLETE
-- Backend `/api/adelantos` now accepts `empresa_id` parameter
-- Backend `/api/planillas` now accepts `empresa_id` parameter
-- Frontend Adelantos.jsx and Planilla.jsx use `useEmpresa()` context
-- Data refreshes automatically when switching companies
-- **Files**: `server.py`, `Adelantos.jsx`, `Planilla.jsx`, `api.js`
-
-### Venta B003-17918 - NOT FOUND
-- Searched through 1066 sales, sale does not exist in current data
-- Likely cleaned up or never synced
+### Company Filter (2026-02-05)
+- Adelantos and Planilla endpoints accept `empresa_id`
 
 ---
 
 ## Priority Backlog
 
-### P0 (Critical) - All Complete
-
 ### P1 (High)
-1. Visual dashboard/reports for Ventas POS
-2. Print/email PDF receipt for sales
-3. Refactor server.py into modular routers
+- Visual dashboard/reports for Ventas POS
+- Print/email PDF receipt for sales
+- Refactor server.py into modular routers
 
 ### P2 (Medium)
-4. Alerts/notifications for pending sales
-5. Budgets module (cont_presupuesto)
-6. Financial Reports (Cash Flow, Income Statement)
+- Alerts/notifications for pending sales
+- Budgets module
+- Financial Reports
 
 ### P3 (Low)
-7. Refactor large frontend components (VentasPOS.jsx, ConciliacionBancaria.jsx, OrdenesCompra.jsx)
-8. Balance Sheet report
+- Refactor large frontend components
+- Balance Sheet report
 
 ## Key Files
-- `/app/backend/server.py` - All API endpoints (monolithic)
+- `/app/backend/server.py` - All API endpoints
 - `/app/backend/models.py` - Pydantic models
-- `/app/backend/database.py` - DB connection
-- `/app/frontend/src/pages/OrdenesCompra.jsx`
-- `/app/frontend/src/pages/Adelantos.jsx`
-- `/app/frontend/src/pages/Planilla.jsx`
-- `/app/frontend/src/services/api.js`
-- `/app/frontend/src/context/EmpresaContext.jsx`
+- `/app/frontend/src/pages/` - All page components
+- `/app/frontend/src/services/api.js` - API client
+- `/app/test_reports/iteration_4.json` - Latest test results
