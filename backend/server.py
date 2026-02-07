@@ -778,11 +778,11 @@ async def list_articulos(search: Optional[str] = None):
         return [dict(r) for r in rows]
 
 # =====================
-# INVENTARIO (public.prod_inventario)
+# INVENTARIO (produccion.prod_inventario)
 # =====================
 @api_router.get("/inventario")
 async def list_inventario(search: Optional[str] = None):
-    """Get items from public.prod_inventario"""
+    """Get items from produccion.prod_inventario"""
     pool = await get_pool()
     async with pool.acquire() as conn:
         try:
@@ -792,7 +792,7 @@ async def list_inventario(search: Optional[str] = None):
                        COALESCE(precio_ref, 0) as precio_ref,
                        COALESCE(costo_compra, 0) as costo_compra,
                        modelo, marca
-                FROM public.prod_inventario
+                FROM produccion.prod_inventario
                 WHERE activo = TRUE
                 AND ($1::text IS NULL OR nombre ILIKE $1 OR codigo ILIKE $1 OR descripcion ILIKE $1)
                 ORDER BY nombre
@@ -804,11 +804,11 @@ async def list_inventario(search: Optional[str] = None):
             return []
 
 # =====================
-# MODELOS/CORTES (public.prod_registros + prod_modelos)
+# MODELOS/CORTES (produccion.prod_registros + prod_modelos)
 # =====================
 @api_router.get("/modelos-cortes")
 async def list_modelos_cortes(search: Optional[str] = None):
-    """Get modelos/cortes from public.prod_registros joining with prod_modelos"""
+    """Get modelos/cortes from produccion.prod_registros joining with prod_modelos"""
     pool = await get_pool()
     async with pool.acquire() as conn:
         try:
@@ -817,8 +817,8 @@ async def list_modelos_cortes(search: Optional[str] = None):
                 SELECT r.id, r.n_corte, r.modelo_id, r.estado,
                        m.nombre as modelo_nombre,
                        CONCAT(m.nombre, ' - Corte ', r.n_corte) as display_name
-                FROM public.prod_registros r
-                LEFT JOIN public.prod_modelos m ON r.modelo_id = m.id
+                FROM produccion.prod_registros r
+                LEFT JOIN produccion.prod_modelos m ON r.modelo_id = m.id
                 WHERE ($1::text IS NULL OR m.nombre ILIKE $1 OR r.n_corte ILIKE $1)
                 ORDER BY r.fecha_creacion DESC
                 LIMIT 200
@@ -830,14 +830,14 @@ async def list_modelos_cortes(search: Optional[str] = None):
 
 @api_router.get("/modelos")
 async def list_modelos(search: Optional[str] = None):
-    """Get modelos from public.prod_modelos"""
+    """Get modelos from produccion.prod_modelos"""
     pool = await get_pool()
     async with pool.acquire() as conn:
         try:
             search_param = f"%{search}%" if search else None
             rows = await conn.fetch("""
                 SELECT id, nombre
-                FROM public.prod_modelos
+                FROM produccion.prod_modelos
                 WHERE ($1::text IS NULL OR nombre ILIKE $1)
                 ORDER BY nombre
                 LIMIT 100
