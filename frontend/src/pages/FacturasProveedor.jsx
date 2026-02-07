@@ -2209,7 +2209,7 @@ export const FacturasProveedor = () => {
                         {formatCurrency(letrasDeFactura.reduce((sum, l) => sum + parseFloat(l.monto || 0), 0))}
                       </td>
                       <td className="text-right" style={{ fontFamily: "'JetBrains Mono', monospace", color: '#EF4444' }}>
-                        {formatCurrency(letrasDeFactura.reduce((sum, l) => sum + parseFloat(l.saldo_pendiente || l.monto || 0), 0))}
+                        {formatCurrency(letrasDeFactura.reduce((sum, l) => sum + parseFloat(l.saldo_pendiente ?? l.monto ?? 0), 0))}
                       </td>
                       <td></td>
                     </tr>
