@@ -749,17 +749,17 @@ async def list_articulos(search: Optional[str] = None):
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
         
-        # First try to get from public.prod_inventario if exists
+        # First try to get from produccion.prod_inventario if exists
         try:
             inv_rows = await conn.fetch("""
                 SELECT id, id as prod_inventario_id, 
                        COALESCE(codigo, '') as codigo,
                        COALESCE(nombre, descripcion, 'Sin nombre') as nombre,
                        descripcion,
-                       COALESCE(precio_venta, 0) as precio_referencia,
+                       COALESCE(precio_ref, 0) as precio_referencia,
                        TRUE as activo,
                        NOW() as created_at
-                FROM public.prod_inventario
+                FROM produccion.prod_inventario
                 WHERE ($1::text IS NULL OR nombre ILIKE $1 OR codigo ILIKE $1)
                 LIMIT 100
             """, f"%{search}%" if search else None)
