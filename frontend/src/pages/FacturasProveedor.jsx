@@ -2151,7 +2151,7 @@ export const FacturasProveedor = () => {
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span style={{ color: '#92400e' }}>Monto Canjeado:</span>
                   <span style={{ fontWeight: 600, fontFamily: "'JetBrains Mono', monospace", color: '#92400e' }}>
-                    {formatCurrency(facturaParaVerLetras.saldo_pendiente)}
+                    {formatCurrency(facturaParaVerLetras.total)}
                   </span>
                 </div>
               </div>
