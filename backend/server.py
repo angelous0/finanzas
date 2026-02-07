@@ -1698,12 +1698,13 @@ async def create_pago(data: PagoCreate):
                             SELECT COALESCE(SUM(saldo_pendiente), 0) 
                             FROM finanzas2.cont_letra WHERE factura_id = $1
                         """, letra['factura_id'])
+                        nuevo_saldo = float(total_letras_pendiente)
+                        nuevo_estado = 'pagado' if nuevo_saldo <= 0 else 'parcial'
                         await conn.execute("""
                             UPDATE finanzas2.cont_cxp 
-                            SET saldo_pendiente = $2,
-                                estado = CASE WHEN $2 <= 0 THEN 'pagado' ELSE 'parcial' END
+                            SET saldo_pendiente = $2, estado = $3
                             WHERE factura_id = $1
-                        """, letra['factura_id'], float(total_letras_pendiente))
+                        """, letra['factura_id'], nuevo_saldo, nuevo_estado)
             
             # Get full pago with relations within the same transaction
             row = await conn.fetchrow("""
