@@ -1705,6 +1705,12 @@ async def create_pago(data: PagoCreate):
                             SET saldo_pendiente = $2, estado = $3
                             WHERE factura_id = $1
                         """, letra['factura_id'], nuevo_saldo, nuevo_estado)
+                        # Also update factura saldo_pendiente for consistent display
+                        await conn.execute("""
+                            UPDATE finanzas2.cont_factura_proveedor 
+                            SET saldo_pendiente = $2
+                            WHERE id = $1
+                        """, letra['factura_id'], nuevo_saldo)
             
             # Get full pago with relations within the same transaction
             row = await conn.fetchrow("""
