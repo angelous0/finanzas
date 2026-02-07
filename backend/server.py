@@ -1681,7 +1681,7 @@ async def create_pago(data: PagoCreate):
                     """, aplicacion.monto_aplicado, aplicacion.documento_id)
                     
                     letra = await conn.fetchrow("""
-                        SELECT monto, saldo_pendiente FROM finanzas2.cont_letra WHERE id = $1
+                        SELECT monto, saldo_pendiente, factura_id FROM finanzas2.cont_letra WHERE id = $1
                     """, aplicacion.documento_id)
                     if letra['saldo_pendiente'] <= 0:
                         await conn.execute("""
@@ -1691,6 +1691,19 @@ async def create_pago(data: PagoCreate):
                         await conn.execute("""
                             UPDATE finanzas2.cont_letra SET estado = 'parcial' WHERE id = $1
                         """, aplicacion.documento_id)
+                    
+                    # Update parent factura CxP saldo based on remaining letras
+                    if letra['factura_id']:
+                        total_letras_pendiente = await conn.fetchval("""
+                            SELECT COALESCE(SUM(saldo_pendiente), 0) 
+                            FROM finanzas2.cont_letra WHERE factura_id = $1
+                        """, letra['factura_id'])
+                        await conn.execute("""
+                            UPDATE finanzas2.cont_cxp 
+                            SET saldo_pendiente = $2,
+                                estado = CASE WHEN $2 <= 0 THEN 'pagado' ELSE 'parcial' END
+                            WHERE factura_id = $1
+                        """, letra['factura_id'], float(total_letras_pendiente))
             
             # Get full pago with relations within the same transaction
             row = await conn.fetchrow("""
