@@ -2192,7 +2192,7 @@ export const FacturasProveedor = () => {
                           color: parseFloat(letra.saldo_pendiente) > 0 ? '#EF4444' : '#22C55E',
                           fontWeight: 500
                         }}>
-                          {formatCurrency(letra.saldo_pendiente || letra.monto, letra.moneda_simbolo)}
+                          {formatCurrency(parseFloat(letra.saldo_pendiente ?? letra.monto), letra.moneda_simbolo)}
                         </td>
                         <td>
                           <span className={estadoBadge(letra.estado)}>
