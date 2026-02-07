@@ -206,7 +206,7 @@ class EmpleadoDetalle(EmpleadoDetalleBase):
 # ARTICULO REF
 # =====================
 class ArticuloRefBase(BaseModel):
-    prod_inventario_id: Optional[int] = None
+    prod_inventario_id: Optional[str] = None
     codigo: Optional[str] = None
     nombre: str
     descripcion: Optional[str] = None
@@ -217,7 +217,7 @@ class ArticuloRefCreate(ArticuloRefBase):
     pass
 
 class ArticuloRef(ArticuloRefBase):
-    id: int
+    id: Union[int, str]
     created_at: Optional[datetime] = None
 
 # =====================
