@@ -2775,12 +2775,15 @@ async def create_planilla(data: PlanillaCreate, empresa_id: int = Depends(get_em
             planilla_dict['detalles'] = detalles_list
             return planilla_dict
 
-async def get_planilla(id: int) -> dict:
+async def get_planilla(id: int, empresa_id: int = None) -> dict:
     pool = await get_pool()
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
         
-        row = await conn.fetchrow("SELECT * FROM finanzas2.cont_planilla WHERE id = $1 AND empresa_id = $2", id, empresa_id)
+        if empresa_id:
+            row = await conn.fetchrow("SELECT * FROM finanzas2.cont_planilla WHERE id = $1 AND empresa_id = $2", id, empresa_id)
+        else:
+            row = await conn.fetchrow("SELECT * FROM finanzas2.cont_planilla WHERE id = $1", id)
         if not row:
             raise HTTPException(404, "Planilla not found")
         
