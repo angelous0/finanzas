@@ -129,7 +129,14 @@ export const Empleados = () => {
       direccion: empleado.direccion || '',
       telefono: empleado.telefono || '',
       email: empleado.email || '',
-      es_personal: true
+      es_personal: true,
+      cargo: empleado.cargo || '',
+      salario_base: empleado.salario_base || '',
+      cuenta_bancaria: empleado.cuenta_bancaria || '',
+      banco: empleado.banco || '',
+      centro_costo_id: empleado.centro_costo_id || '',
+      linea_negocio_id: empleado.linea_negocio_id || '',
+      fecha_ingreso: empleado.fecha_ingreso ? empleado.fecha_ingreso.split('T')[0] : ''
     });
     setEditingId(empleado.id);
     setShowModal(true);
