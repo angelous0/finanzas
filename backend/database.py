@@ -46,67 +46,36 @@ async def close_db():
         logger.info("PostgreSQL connection pool closed")
 
 async def create_schema():
-    """Create the finanzas2 schema and all tables"""
+    """Create the finanzas2 schema and all tables.
+    
+    Convention:
+    - All transactional and per-empresa config tables carry empresa_id NOT NULL FK.
+    - Global tables (cont_empresa, cont_moneda, cont_tipo_cambio) do NOT have empresa_id.
+    """
     global pool
     if not pool:
         return
     
     async with pool.acquire() as conn:
-        # Create schema
         await conn.execute("CREATE SCHEMA IF NOT EXISTS finanzas2")
         await conn.execute("SET search_path TO finanzas2, public")
         
-        # Create ENUMs
-        await conn.execute("""
-            DO $$ BEGIN
-                CREATE TYPE finanzas2.tipo_tercero AS ENUM ('cliente', 'proveedor', 'personal');
-            EXCEPTION WHEN duplicate_object THEN null;
-            END $$;
-        """)
-        
-        await conn.execute("""
-            DO $$ BEGIN
-                CREATE TYPE finanzas2.tipo_categoria AS ENUM ('ingreso', 'egreso');
-            EXCEPTION WHEN duplicate_object THEN null;
-            END $$;
-        """)
-        
-        await conn.execute("""
-            DO $$ BEGIN
-                CREATE TYPE finanzas2.estado_oc AS ENUM ('borrador', 'enviada', 'recibida', 'facturada', 'cancelada');
-            EXCEPTION WHEN duplicate_object THEN null;
-            END $$;
-        """)
-        
-        await conn.execute("""
-            DO $$ BEGIN
-                CREATE TYPE finanzas2.estado_factura AS ENUM ('pendiente', 'parcial', 'pagado', 'canjeado', 'anulada');
-            EXCEPTION WHEN duplicate_object THEN null;
-            END $$;
-        """)
-        
-        await conn.execute("""
-            DO $$ BEGIN
-                CREATE TYPE finanzas2.estado_letra AS ENUM ('pendiente', 'parcial', 'pagada', 'vencida', 'protestada', 'anulada');
-            EXCEPTION WHEN duplicate_object THEN null;
-            END $$;
-        """)
-        
-        await conn.execute("""
-            DO $$ BEGIN
-                CREATE TYPE finanzas2.tipo_pago AS ENUM ('ingreso', 'egreso');
-            EXCEPTION WHEN duplicate_object THEN null;
-            END $$;
-        """)
-        
-        await conn.execute("""
-            DO $$ BEGIN
-                CREATE TYPE finanzas2.estado_presupuesto AS ENUM ('borrador', 'aprobado', 'cerrado');
-            EXCEPTION WHEN duplicate_object THEN null;
-            END $$;
-        """)
+        # ── ENUMs ──
+        for enum_sql in [
+            "CREATE TYPE finanzas2.tipo_tercero AS ENUM ('cliente', 'proveedor', 'personal')",
+            "CREATE TYPE finanzas2.tipo_categoria AS ENUM ('ingreso', 'egreso')",
+            "CREATE TYPE finanzas2.estado_oc AS ENUM ('borrador', 'enviada', 'recibida', 'facturada', 'cancelada')",
+            "CREATE TYPE finanzas2.estado_factura AS ENUM ('pendiente', 'parcial', 'pagado', 'canjeado', 'anulada')",
+            "CREATE TYPE finanzas2.estado_letra AS ENUM ('pendiente', 'parcial', 'pagada', 'vencida', 'protestada', 'anulada')",
+            "CREATE TYPE finanzas2.tipo_pago AS ENUM ('ingreso', 'egreso')",
+            "CREATE TYPE finanzas2.estado_presupuesto AS ENUM ('borrador', 'aprobado', 'cerrado')",
+        ]:
+            await conn.execute(f"DO $$ BEGIN {enum_sql}; EXCEPTION WHEN duplicate_object THEN null; END $$;")
 
-        # cont_empresa
+        # ══════════════════════════════════════
+        # GLOBAL TABLES (no empresa_id)
+        # ══════════════════════════════════════
+
         await conn.execute("""
             CREATE TABLE IF NOT EXISTS finanzas2.cont_empresa (
                 id SERIAL PRIMARY KEY,
@@ -122,7 +91,6 @@ async def create_schema():
             )
         """)
 
-        # cont_moneda
         await conn.execute("""
             CREATE TABLE IF NOT EXISTS finanzas2.cont_moneda (
                 id SERIAL PRIMARY KEY,
@@ -135,7 +103,6 @@ async def create_schema():
             )
         """)
 
-        # cont_tipo_cambio
         await conn.execute("""
             CREATE TABLE IF NOT EXISTS finanzas2.cont_tipo_cambio (
                 id SERIAL PRIMARY KEY,
@@ -148,10 +115,14 @@ async def create_schema():
             )
         """)
 
-        # cont_categoria (jerárquica)
+        # ══════════════════════════════════════
+        # PER-EMPRESA CONFIG TABLES
+        # ══════════════════════════════════════
+
         await conn.execute("""
             CREATE TABLE IF NOT EXISTS finanzas2.cont_categoria (
                 id SERIAL PRIMARY KEY,
+                empresa_id INTEGER NOT NULL REFERENCES finanzas2.cont_empresa(id),
                 codigo VARCHAR(20),
                 nombre VARCHAR(100) NOT NULL,
                 tipo finanzas2.tipo_categoria NOT NULL,
@@ -163,10 +134,10 @@ async def create_schema():
             )
         """)
 
-        # cont_centro_costo
         await conn.execute("""
             CREATE TABLE IF NOT EXISTS finanzas2.cont_centro_costo (
                 id SERIAL PRIMARY KEY,
+                empresa_id INTEGER NOT NULL REFERENCES finanzas2.cont_empresa(id),
                 codigo VARCHAR(20),
                 nombre VARCHAR(100) NOT NULL,
                 descripcion TEXT,
@@ -175,10 +146,10 @@ async def create_schema():
             )
         """)
 
-        # cont_linea_negocio
         await conn.execute("""
             CREATE TABLE IF NOT EXISTS finanzas2.cont_linea_negocio (
                 id SERIAL PRIMARY KEY,
+                empresa_id INTEGER NOT NULL REFERENCES finanzas2.cont_empresa(id),
                 codigo VARCHAR(20),
                 nombre VARCHAR(100) NOT NULL,
                 descripcion TEXT,
@@ -187,12 +158,12 @@ async def create_schema():
             )
         """)
 
-        # cont_cuenta_financiera (banco/caja)
         await conn.execute("""
             CREATE TABLE IF NOT EXISTS finanzas2.cont_cuenta_financiera (
                 id SERIAL PRIMARY KEY,
+                empresa_id INTEGER NOT NULL REFERENCES finanzas2.cont_empresa(id),
                 nombre VARCHAR(100) NOT NULL,
-                tipo VARCHAR(20) NOT NULL, -- banco, caja
+                tipo VARCHAR(20) NOT NULL,
                 banco VARCHAR(100),
                 numero_cuenta VARCHAR(50),
                 cci VARCHAR(30),
@@ -204,11 +175,11 @@ async def create_schema():
             )
         """)
 
-        # cont_tercero (unificado)
         await conn.execute("""
             CREATE TABLE IF NOT EXISTS finanzas2.cont_tercero (
                 id SERIAL PRIMARY KEY,
-                tipo_documento VARCHAR(20), -- DNI, RUC, CE, etc
+                empresa_id INTEGER NOT NULL REFERENCES finanzas2.cont_empresa(id),
+                tipo_documento VARCHAR(20),
                 numero_documento VARCHAR(20),
                 nombre VARCHAR(200) NOT NULL,
                 nombre_comercial VARCHAR(200),
@@ -227,10 +198,10 @@ async def create_schema():
             )
         """)
 
-        # cont_empleado_detalle (extensión para personal)
         await conn.execute("""
             CREATE TABLE IF NOT EXISTS finanzas2.cont_empleado_detalle (
                 id SERIAL PRIMARY KEY,
+                empresa_id INTEGER NOT NULL REFERENCES finanzas2.cont_empresa(id),
                 tercero_id INTEGER REFERENCES finanzas2.cont_tercero(id) UNIQUE,
                 fecha_ingreso DATE,
                 cargo VARCHAR(100),
@@ -242,10 +213,10 @@ async def create_schema():
             )
         """)
 
-        # cont_articulo_ref (referencia a public.prod_inventario)
         await conn.execute("""
             CREATE TABLE IF NOT EXISTS finanzas2.cont_articulo_ref (
                 id SERIAL PRIMARY KEY,
+                empresa_id INTEGER NOT NULL REFERENCES finanzas2.cont_empresa(id),
                 prod_inventario_id INTEGER,
                 codigo VARCHAR(50),
                 nombre VARCHAR(200),
@@ -256,11 +227,15 @@ async def create_schema():
             )
         """)
 
-        # cont_oc (Órdenes de Compra)
+        # ══════════════════════════════════════
+        # TRANSACTIONAL TABLES
+        # ══════════════════════════════════════
+
         await conn.execute("""
             CREATE TABLE IF NOT EXISTS finanzas2.cont_oc (
                 id SERIAL PRIMARY KEY,
-                numero VARCHAR(20) NOT NULL UNIQUE,
+                empresa_id INTEGER NOT NULL REFERENCES finanzas2.cont_empresa(id),
+                numero VARCHAR(20) NOT NULL,
                 fecha DATE NOT NULL,
                 proveedor_id INTEGER REFERENCES finanzas2.cont_tercero(id),
                 moneda_id INTEGER REFERENCES finanzas2.cont_moneda(id),
@@ -271,14 +246,15 @@ async def create_schema():
                 notas TEXT,
                 factura_generada_id INTEGER,
                 created_at TIMESTAMP DEFAULT NOW(),
-                updated_at TIMESTAMP DEFAULT NOW()
+                updated_at TIMESTAMP DEFAULT NOW(),
+                UNIQUE(empresa_id, numero)
             )
         """)
 
-        # cont_oc_linea
         await conn.execute("""
             CREATE TABLE IF NOT EXISTS finanzas2.cont_oc_linea (
                 id SERIAL PRIMARY KEY,
+                empresa_id INTEGER NOT NULL REFERENCES finanzas2.cont_empresa(id),
                 oc_id INTEGER REFERENCES finanzas2.cont_oc(id) ON DELETE CASCADE,
                 articulo_id INTEGER REFERENCES finanzas2.cont_articulo_ref(id),
                 descripcion TEXT,
@@ -290,10 +266,10 @@ async def create_schema():
             )
         """)
 
-        # cont_factura_proveedor
         await conn.execute("""
             CREATE TABLE IF NOT EXISTS finanzas2.cont_factura_proveedor (
                 id SERIAL PRIMARY KEY,
+                empresa_id INTEGER NOT NULL REFERENCES finanzas2.cont_empresa(id),
                 numero VARCHAR(30) NOT NULL,
                 proveedor_id INTEGER REFERENCES finanzas2.cont_tercero(id),
                 beneficiario_nombre VARCHAR(200),
@@ -315,10 +291,10 @@ async def create_schema():
             )
         """)
 
-        # cont_factura_proveedor_linea
         await conn.execute("""
             CREATE TABLE IF NOT EXISTS finanzas2.cont_factura_proveedor_linea (
                 id SERIAL PRIMARY KEY,
+                empresa_id INTEGER NOT NULL REFERENCES finanzas2.cont_empresa(id),
                 factura_id INTEGER REFERENCES finanzas2.cont_factura_proveedor(id) ON DELETE CASCADE,
                 categoria_id INTEGER REFERENCES finanzas2.cont_categoria(id),
                 articulo_id INTEGER REFERENCES finanzas2.cont_articulo_ref(id),
@@ -331,10 +307,10 @@ async def create_schema():
             )
         """)
 
-        # cont_cxp (Cuentas por Pagar)
         await conn.execute("""
             CREATE TABLE IF NOT EXISTS finanzas2.cont_cxp (
                 id SERIAL PRIMARY KEY,
+                empresa_id INTEGER NOT NULL REFERENCES finanzas2.cont_empresa(id),
                 factura_id INTEGER REFERENCES finanzas2.cont_factura_proveedor(id) ON DELETE CASCADE UNIQUE,
                 proveedor_id INTEGER REFERENCES finanzas2.cont_tercero(id),
                 monto_original DECIMAL(15, 2) NOT NULL,
@@ -346,10 +322,10 @@ async def create_schema():
             )
         """)
 
-        # cont_pago
         await conn.execute("""
             CREATE TABLE IF NOT EXISTS finanzas2.cont_pago (
                 id SERIAL PRIMARY KEY,
+                empresa_id INTEGER NOT NULL REFERENCES finanzas2.cont_empresa(id),
                 numero VARCHAR(20) NOT NULL,
                 tipo finanzas2.tipo_pago NOT NULL,
                 fecha DATE NOT NULL,
@@ -359,39 +335,40 @@ async def create_schema():
                 referencia VARCHAR(100),
                 notas TEXT,
                 created_at TIMESTAMP DEFAULT NOW(),
-                updated_at TIMESTAMP DEFAULT NOW()
+                updated_at TIMESTAMP DEFAULT NOW(),
+                UNIQUE(empresa_id, numero)
             )
         """)
 
-        # cont_pago_detalle (multi-medio)
         await conn.execute("""
             CREATE TABLE IF NOT EXISTS finanzas2.cont_pago_detalle (
                 id SERIAL PRIMARY KEY,
+                empresa_id INTEGER NOT NULL REFERENCES finanzas2.cont_empresa(id),
                 pago_id INTEGER REFERENCES finanzas2.cont_pago(id) ON DELETE CASCADE,
                 cuenta_financiera_id INTEGER REFERENCES finanzas2.cont_cuenta_financiera(id),
-                medio_pago VARCHAR(50) NOT NULL, -- efectivo, transferencia, cheque, tarjeta
+                medio_pago VARCHAR(50) NOT NULL,
                 monto DECIMAL(15, 2) NOT NULL,
                 referencia VARCHAR(100),
                 created_at TIMESTAMP DEFAULT NOW()
             )
         """)
 
-        # cont_pago_aplicacion (vincula pagos con documentos)
         await conn.execute("""
             CREATE TABLE IF NOT EXISTS finanzas2.cont_pago_aplicacion (
                 id SERIAL PRIMARY KEY,
+                empresa_id INTEGER NOT NULL REFERENCES finanzas2.cont_empresa(id),
                 pago_id INTEGER REFERENCES finanzas2.cont_pago(id) ON DELETE CASCADE,
-                tipo_documento VARCHAR(50) NOT NULL, -- factura, letra, gasto, planilla, adelanto, cxc
+                tipo_documento VARCHAR(50) NOT NULL,
                 documento_id INTEGER NOT NULL,
                 monto_aplicado DECIMAL(15, 2) NOT NULL,
                 created_at TIMESTAMP DEFAULT NOW()
             )
         """)
 
-        # cont_letra
         await conn.execute("""
             CREATE TABLE IF NOT EXISTS finanzas2.cont_letra (
                 id SERIAL PRIMARY KEY,
+                empresa_id INTEGER NOT NULL REFERENCES finanzas2.cont_empresa(id),
                 numero VARCHAR(30) NOT NULL,
                 factura_id INTEGER REFERENCES finanzas2.cont_factura_proveedor(id),
                 proveedor_id INTEGER REFERENCES finanzas2.cont_tercero(id),
@@ -402,14 +379,15 @@ async def create_schema():
                 saldo_pendiente DECIMAL(15, 2) NOT NULL,
                 notas TEXT,
                 created_at TIMESTAMP DEFAULT NOW(),
-                updated_at TIMESTAMP DEFAULT NOW()
+                updated_at TIMESTAMP DEFAULT NOW(),
+                UNIQUE(empresa_id, numero)
             )
         """)
 
-        # cont_gasto
         await conn.execute("""
             CREATE TABLE IF NOT EXISTS finanzas2.cont_gasto (
                 id SERIAL PRIMARY KEY,
+                empresa_id INTEGER NOT NULL REFERENCES finanzas2.cont_empresa(id),
                 numero VARCHAR(20) NOT NULL,
                 fecha DATE NOT NULL,
                 proveedor_id INTEGER REFERENCES finanzas2.cont_tercero(id),
@@ -423,14 +401,15 @@ async def create_schema():
                 notas TEXT,
                 pago_id INTEGER REFERENCES finanzas2.cont_pago(id),
                 created_at TIMESTAMP DEFAULT NOW(),
-                updated_at TIMESTAMP DEFAULT NOW()
+                updated_at TIMESTAMP DEFAULT NOW(),
+                UNIQUE(empresa_id, numero)
             )
         """)
 
-        # cont_gasto_linea
         await conn.execute("""
             CREATE TABLE IF NOT EXISTS finanzas2.cont_gasto_linea (
                 id SERIAL PRIMARY KEY,
+                empresa_id INTEGER NOT NULL REFERENCES finanzas2.cont_empresa(id),
                 gasto_id INTEGER REFERENCES finanzas2.cont_gasto(id) ON DELETE CASCADE,
                 categoria_id INTEGER REFERENCES finanzas2.cont_categoria(id),
                 descripcion TEXT,
@@ -442,10 +421,10 @@ async def create_schema():
             )
         """)
 
-        # cont_adelanto_empleado
         await conn.execute("""
             CREATE TABLE IF NOT EXISTS finanzas2.cont_adelanto_empleado (
                 id SERIAL PRIMARY KEY,
+                empresa_id INTEGER NOT NULL REFERENCES finanzas2.cont_empresa(id),
                 empleado_id INTEGER REFERENCES finanzas2.cont_tercero(id),
                 fecha DATE NOT NULL,
                 monto DECIMAL(12, 2) NOT NULL,
@@ -458,28 +437,29 @@ async def create_schema():
             )
         """)
 
-        # cont_planilla
         await conn.execute("""
             CREATE TABLE IF NOT EXISTS finanzas2.cont_planilla (
                 id SERIAL PRIMARY KEY,
-                periodo VARCHAR(20) NOT NULL, -- 2024-01-Q1, 2024-01-Q2
+                empresa_id INTEGER NOT NULL REFERENCES finanzas2.cont_empresa(id),
+                periodo VARCHAR(20) NOT NULL,
                 fecha_inicio DATE NOT NULL,
                 fecha_fin DATE NOT NULL,
                 total_bruto DECIMAL(15, 2) DEFAULT 0,
                 total_adelantos DECIMAL(15, 2) DEFAULT 0,
                 total_descuentos DECIMAL(15, 2) DEFAULT 0,
                 total_neto DECIMAL(15, 2) DEFAULT 0,
-                estado VARCHAR(20) DEFAULT 'borrador', -- borrador, aprobada, pagada
+                estado VARCHAR(20) DEFAULT 'borrador',
                 pago_id INTEGER REFERENCES finanzas2.cont_pago(id),
                 created_at TIMESTAMP DEFAULT NOW(),
-                updated_at TIMESTAMP DEFAULT NOW()
+                updated_at TIMESTAMP DEFAULT NOW(),
+                UNIQUE(empresa_id, periodo)
             )
         """)
 
-        # cont_planilla_detalle
         await conn.execute("""
             CREATE TABLE IF NOT EXISTS finanzas2.cont_planilla_detalle (
                 id SERIAL PRIMARY KEY,
+                empresa_id INTEGER NOT NULL REFERENCES finanzas2.cont_empresa(id),
                 planilla_id INTEGER REFERENCES finanzas2.cont_planilla(id) ON DELETE CASCADE,
                 empleado_id INTEGER REFERENCES finanzas2.cont_tercero(id),
                 salario_base DECIMAL(12, 2) DEFAULT 0,
@@ -491,10 +471,10 @@ async def create_schema():
             )
         """)
 
-        # cont_venta_pos (desde Odoo)
         await conn.execute("""
             CREATE TABLE IF NOT EXISTS finanzas2.cont_venta_pos (
                 id SERIAL PRIMARY KEY,
+                empresa_id INTEGER NOT NULL REFERENCES finanzas2.cont_empresa(id),
                 odoo_id INTEGER UNIQUE,
                 date_order TIMESTAMP,
                 name VARCHAR(100),
@@ -526,10 +506,10 @@ async def create_schema():
             )
         """)
         
-        # cont_venta_pos_pago (pagos asignados manualmente a ventas POS)
         await conn.execute("""
             CREATE TABLE IF NOT EXISTS finanzas2.cont_venta_pos_pago (
                 id SERIAL PRIMARY KEY,
+                empresa_id INTEGER NOT NULL REFERENCES finanzas2.cont_empresa(id),
                 venta_pos_id INTEGER REFERENCES finanzas2.cont_venta_pos(id) ON DELETE CASCADE,
                 forma_pago VARCHAR(50) NOT NULL,
                 monto DECIMAL(15, 2) NOT NULL,
@@ -542,14 +522,9 @@ async def create_schema():
         """)
         
         await conn.execute("""
-            CREATE INDEX IF NOT EXISTS idx_venta_pos_pago_venta 
-            ON finanzas2.cont_venta_pos_pago(venta_pos_id)
-        """)
-        
-        # cont_venta_pos_linea (líneas de productos de ventas POS desde Odoo)
-        await conn.execute("""
             CREATE TABLE IF NOT EXISTS finanzas2.cont_venta_pos_linea (
                 id SERIAL PRIMARY KEY,
+                empresa_id INTEGER NOT NULL REFERENCES finanzas2.cont_empresa(id),
                 venta_pos_id INTEGER REFERENCES finanzas2.cont_venta_pos(id) ON DELETE CASCADE,
                 odoo_line_id INTEGER,
                 product_id INTEGER,
@@ -565,26 +540,11 @@ async def create_schema():
                 created_at TIMESTAMP DEFAULT NOW()
             )
         """)
-        
-        await conn.execute("""
-            CREATE INDEX IF NOT EXISTS idx_venta_pos_linea_venta 
-            ON finanzas2.cont_venta_pos_linea(venta_pos_id)
-        """)
-        
-        await conn.execute("""
-            CREATE INDEX IF NOT EXISTS idx_venta_pos_linea_marca 
-            ON finanzas2.cont_venta_pos_linea(marca)
-        """)
-        
-        await conn.execute("""
-            CREATE INDEX IF NOT EXISTS idx_venta_pos_linea_tipo 
-            ON finanzas2.cont_venta_pos_linea(tipo)
-        """)
 
-        # cont_cxc (Cuentas por Cobrar)
         await conn.execute("""
             CREATE TABLE IF NOT EXISTS finanzas2.cont_cxc (
                 id SERIAL PRIMARY KEY,
+                empresa_id INTEGER NOT NULL REFERENCES finanzas2.cont_empresa(id),
                 venta_pos_id INTEGER REFERENCES finanzas2.cont_venta_pos(id),
                 cliente_id INTEGER REFERENCES finanzas2.cont_tercero(id),
                 monto_original DECIMAL(15, 2) NOT NULL,
@@ -597,10 +557,10 @@ async def create_schema():
             )
         """)
 
-        # cont_presupuesto
         await conn.execute("""
             CREATE TABLE IF NOT EXISTS finanzas2.cont_presupuesto (
                 id SERIAL PRIMARY KEY,
+                empresa_id INTEGER NOT NULL REFERENCES finanzas2.cont_empresa(id),
                 nombre VARCHAR(100) NOT NULL,
                 anio INTEGER NOT NULL,
                 version INTEGER DEFAULT 1,
@@ -611,25 +571,25 @@ async def create_schema():
             )
         """)
 
-        # cont_presupuesto_linea
         await conn.execute("""
             CREATE TABLE IF NOT EXISTS finanzas2.cont_presupuesto_linea (
                 id SERIAL PRIMARY KEY,
+                empresa_id INTEGER NOT NULL REFERENCES finanzas2.cont_empresa(id),
                 presupuesto_id INTEGER REFERENCES finanzas2.cont_presupuesto(id) ON DELETE CASCADE,
                 categoria_id INTEGER REFERENCES finanzas2.cont_categoria(id),
                 centro_costo_id INTEGER REFERENCES finanzas2.cont_centro_costo(id),
                 linea_negocio_id INTEGER REFERENCES finanzas2.cont_linea_negocio(id),
-                mes INTEGER NOT NULL, -- 1-12
+                mes INTEGER NOT NULL,
                 monto_presupuestado DECIMAL(15, 2) DEFAULT 0,
                 monto_real DECIMAL(15, 2) DEFAULT 0,
                 created_at TIMESTAMP DEFAULT NOW()
             )
         """)
 
-        # cont_banco_mov_raw (movimientos importados)
         await conn.execute("""
             CREATE TABLE IF NOT EXISTS finanzas2.cont_banco_mov_raw (
                 id SERIAL PRIMARY KEY,
+                empresa_id INTEGER NOT NULL REFERENCES finanzas2.cont_empresa(id),
                 cuenta_financiera_id INTEGER REFERENCES finanzas2.cont_cuenta_financiera(id),
                 banco VARCHAR(50),
                 fecha DATE,
@@ -644,14 +604,14 @@ async def create_schema():
             )
         """)
 
-        # cont_banco_mov (normalizado)
         await conn.execute("""
             CREATE TABLE IF NOT EXISTS finanzas2.cont_banco_mov (
                 id SERIAL PRIMARY KEY,
+                empresa_id INTEGER NOT NULL REFERENCES finanzas2.cont_empresa(id),
                 raw_id INTEGER REFERENCES finanzas2.cont_banco_mov_raw(id),
                 cuenta_financiera_id INTEGER REFERENCES finanzas2.cont_cuenta_financiera(id),
                 fecha DATE NOT NULL,
-                tipo VARCHAR(20) NOT NULL, -- cargo, abono
+                tipo VARCHAR(20) NOT NULL,
                 monto DECIMAL(15, 2) NOT NULL,
                 descripcion TEXT,
                 referencia VARCHAR(100),
@@ -660,10 +620,10 @@ async def create_schema():
             )
         """)
 
-        # cont_conciliacion
         await conn.execute("""
             CREATE TABLE IF NOT EXISTS finanzas2.cont_conciliacion (
                 id SERIAL PRIMARY KEY,
+                empresa_id INTEGER NOT NULL REFERENCES finanzas2.cont_empresa(id),
                 cuenta_financiera_id INTEGER REFERENCES finanzas2.cont_cuenta_financiera(id),
                 fecha_inicio DATE NOT NULL,
                 fecha_fin DATE NOT NULL,
@@ -677,14 +637,14 @@ async def create_schema():
             )
         """)
 
-        # cont_conciliacion_linea
         await conn.execute("""
             CREATE TABLE IF NOT EXISTS finanzas2.cont_conciliacion_linea (
                 id SERIAL PRIMARY KEY,
+                empresa_id INTEGER NOT NULL REFERENCES finanzas2.cont_empresa(id),
                 conciliacion_id INTEGER REFERENCES finanzas2.cont_conciliacion(id) ON DELETE CASCADE,
                 banco_mov_id INTEGER REFERENCES finanzas2.cont_banco_mov(id),
                 pago_id INTEGER REFERENCES finanzas2.cont_pago(id),
-                tipo VARCHAR(50), -- pago, gasto, factura, ingreso
+                tipo VARCHAR(50),
                 documento_id INTEGER,
                 monto DECIMAL(15, 2),
                 conciliado BOOLEAN DEFAULT FALSE,
@@ -692,4 +652,14 @@ async def create_schema():
             )
         """)
 
-        logger.info("Schema finanzas2 and all tables created successfully")
+        # ── Indexes ──
+        index_stmts = [
+            "CREATE INDEX IF NOT EXISTS idx_cont_venta_pos_pago_venta ON finanzas2.cont_venta_pos_pago(venta_pos_id)",
+            "CREATE INDEX IF NOT EXISTS idx_cont_venta_pos_linea_venta ON finanzas2.cont_venta_pos_linea(venta_pos_id)",
+            "CREATE INDEX IF NOT EXISTS idx_cont_venta_pos_linea_marca ON finanzas2.cont_venta_pos_linea(marca)",
+            "CREATE INDEX IF NOT EXISTS idx_cont_venta_pos_linea_tipo ON finanzas2.cont_venta_pos_linea(tipo)",
+        ]
+        for stmt in index_stmts:
+            await conn.execute(stmt)
+
+        logger.info("Schema finanzas2 and all tables created/verified successfully")
