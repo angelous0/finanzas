@@ -1336,7 +1336,7 @@ export const FacturasProveedor = () => {
                                 value={linea.categoria_id}
                                 onChange={(value) => handleLineaChange(index, 'categoria_id', value)}
                               placeholder="Categoría"
-                              displayKey="nombre"
+                              displayKey="nombre_completo"
                               valueKey="id"
                             />
                           </td>
@@ -1354,7 +1354,7 @@ export const FacturasProveedor = () => {
                               value={linea.linea_negocio_id}
                               onChange={(value) => handleLineaChange(index, 'linea_negocio_id', value)}
                               placeholder="Línea"
-                              displayKey="nombre"
+                              displayKey="nombre_completo"
                               valueKey="id"
                             />
                           </td>
@@ -1465,7 +1465,7 @@ export const FacturasProveedor = () => {
                                       value={articulo.articulo_id}
                                       onChange={(value) => handleArticuloChange(index, 'articulo_id', value)}
                                       placeholder="Artículo"
-                                      displayKey="nombre"
+                                      displayKey="nombre_completo"
                                       valueKey="id"
                                       renderOption={(inv) => `${inv.codigo ? inv.codigo + ' - ' : ''}${inv.nombre}`}
                                     />
@@ -1519,7 +1519,7 @@ export const FacturasProveedor = () => {
                                       value={articulo.linea_negocio_id}
                                       onChange={(value) => handleArticuloChange(index, 'linea_negocio_id', value)}
                                       placeholder="Línea"
-                                      displayKey="nombre"
+                                      displayKey="nombre_completo"
                                       valueKey="id"
                                     />
                                   </td>
