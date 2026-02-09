@@ -336,6 +336,8 @@ async def create_schema():
                 monto_total DECIMAL(15, 2) NOT NULL,
                 referencia VARCHAR(100),
                 notas TEXT,
+                centro_costo_id INTEGER REFERENCES finanzas2.cont_centro_costo(id),
+                linea_negocio_id INTEGER REFERENCES finanzas2.cont_linea_negocio(id),
                 created_at TIMESTAMP DEFAULT NOW(),
                 updated_at TIMESTAMP DEFAULT NOW(),
                 UNIQUE(empresa_id, numero)
