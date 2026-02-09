@@ -375,7 +375,7 @@ async def delete_moneda(id: int):
 # CATEGORIAS
 # =====================
 @api_router.get("/categorias")
-async def list_categorias(tipo: Optional[str] = None):
+async def list_categorias(empresa_id: int = Depends(get_empresa_id), tipo: Optional[str] = None):
     pool = await get_pool()
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
@@ -383,13 +383,14 @@ async def list_categorias(tipo: Optional[str] = None):
             SELECT c.*, cp.nombre as padre_nombre
             FROM finanzas2.cont_categoria c
             LEFT JOIN finanzas2.cont_categoria cp ON c.padre_id = cp.id
+            WHERE c.empresa_id = $1
         """
         if tipo:
             rows = await conn.fetch(
-                base_query + " WHERE c.tipo = $1 ORDER BY c.nombre", tipo
+                base_query + " AND c.tipo = $2 ORDER BY c.nombre", empresa_id, tipo
             )
         else:
-            rows = await conn.fetch(base_query + " ORDER BY c.tipo, c.nombre")
+            rows = await conn.fetch(base_query + " ORDER BY c.tipo, c.nombre", empresa_id)
         result = []
         for r in rows:
             item = dict(r)
@@ -399,19 +400,19 @@ async def list_categorias(tipo: Optional[str] = None):
         return result
 
 @api_router.post("/categorias", response_model=Categoria)
-async def create_categoria(data: CategoriaCreate):
+async def create_categoria(data: CategoriaCreate, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
         row = await conn.fetchrow("""
-            INSERT INTO finanzas2.cont_categoria (codigo, nombre, tipo, padre_id, descripcion, activo)
-            VALUES ($1, $2, $3, $4, $5, $6)
+            INSERT INTO finanzas2.cont_categoria (empresa_id, codigo, nombre, tipo, padre_id, descripcion, activo)
+            VALUES ($1, $2, $3, $4, $5, $6, $7)
             RETURNING *
-        """, data.codigo, data.nombre, data.tipo, data.padre_id, data.descripcion, data.activo)
+        """, empresa_id, data.codigo, data.nombre, data.tipo, data.padre_id, data.descripcion, data.activo)
         return dict(row)
 
 @api_router.put("/categorias/{id}", response_model=Categoria)
-async def update_categoria(id: int, data: CategoriaUpdate):
+async def update_categoria(id: int, data: CategoriaUpdate, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
@@ -424,19 +425,20 @@ async def update_categoria(id: int, data: CategoriaUpdate):
             idx += 1
         if not updates:
             raise HTTPException(400, "No fields to update")
+        values.append(empresa_id)
         values.append(id)
-        query = f"UPDATE finanzas2.cont_categoria SET {', '.join(updates)}, updated_at = NOW() WHERE id = ${idx} RETURNING *"
+        query = f"UPDATE finanzas2.cont_categoria SET {', '.join(updates)}, updated_at = NOW() WHERE empresa_id = ${idx} AND id = ${idx+1} RETURNING *"
         row = await conn.fetchrow(query, *values)
         if not row:
             raise HTTPException(404, "Categoria not found")
         return dict(row)
 
 @api_router.delete("/categorias/{id}")
-async def delete_categoria(id: int):
+async def delete_categoria(id: int, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
-        result = await conn.execute("DELETE FROM finanzas2.cont_categoria WHERE id = $1", id)
+        result = await conn.execute("DELETE FROM finanzas2.cont_categoria WHERE id = $1 AND empresa_id = $2", id, empresa_id)
         if result == "DELETE 0":
             raise HTTPException(404, "Categoria not found")
         return {"message": "Categoria deleted"}
