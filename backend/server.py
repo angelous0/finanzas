@@ -4232,9 +4232,9 @@ async def reporte_flujo_caja(
                    cf.nombre as cuenta
             FROM finanzas2.cont_pago p
             LEFT JOIN finanzas2.cont_cuenta_financiera cf ON p.cuenta_financiera_id = cf.id
-            WHERE p.fecha BETWEEN $1 AND $2
+            WHERE p.fecha BETWEEN $1 AND $2 AND p.empresa_id = $3
             ORDER BY p.fecha ASC
-        """, fecha_desde, fecha_hasta)
+        """, fecha_desde, fecha_hasta, empresa_id)
         
         resultado = []
         saldo_acumulado = 0
