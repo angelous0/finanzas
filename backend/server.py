@@ -310,7 +310,7 @@ async def get_dashboard_kpis(empresa_id: int = Depends(get_empresa_id)):
         ventas_mes = await conn.fetchval("""
             SELECT COALESCE(SUM(amount_total), 0) 
             FROM finanzas2.cont_venta_pos 
-            WHERE date_order >= $1 AND estado_local != 'descartado' AND empresa_id = $2
+            WHERE date_order >= $1 AND estado_local = 'confirmada' AND empresa_id = $2
         """, inicio_mes, empresa_id) or 0
         
         # Gastos del mes
@@ -4434,7 +4434,7 @@ async def reporte_estado_resultados(
         ingresos = await conn.fetchval("""
             SELECT COALESCE(SUM(amount_total), 0) 
             FROM finanzas2.cont_venta_pos 
-            WHERE date_order BETWEEN $1 AND $2 AND estado_local != 'descartada' AND empresa_id = $3
+            WHERE date_order BETWEEN $1 AND $2 AND estado_local = 'confirmada' AND empresa_id = $3
         """, datetime.combine(fecha_desde, datetime.min.time()), 
             datetime.combine(fecha_hasta, datetime.max.time()), empresa_id) or 0
         
