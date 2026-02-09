@@ -10,6 +10,21 @@ const api = axios.create({
   },
 });
 
+// Interceptor: inject empresa_id on every request (except global endpoints)
+const GLOBAL_ENDPOINTS = ['/empresas', '/monedas'];
+
+api.interceptors.request.use((config) => {
+  const url = config.url || '';
+  const isGlobal = GLOBAL_ENDPOINTS.some(ep => url === ep || url.startsWith(ep + '/'));
+  if (!isGlobal) {
+    const empresaId = localStorage.getItem('empresaActualId');
+    if (empresaId) {
+      config.params = { ...config.params, empresa_id: parseInt(empresaId) };
+    }
+  }
+  return config;
+});
+
 // Dashboard
 export const getDashboardKPIs = () => api.get('/dashboard/kpis');
 
