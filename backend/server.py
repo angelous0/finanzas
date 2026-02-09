@@ -1670,17 +1670,8 @@ async def deshacer_canje_letras(id: int, empresa_id: int = Depends(get_empresa_i
 # =====================
 async def generate_pago_number(conn, tipo: str, empresa_id: int) -> str:
     year = datetime.now().year
-    prefix = f"PAG-{tipo[0].upper()}-{year}-"
-    last = await conn.fetchval(f"""
-        SELECT numero FROM finanzas2.cont_pago 
-        WHERE numero LIKE '{prefix}%' AND empresa_id = $1
-        ORDER BY id DESC LIMIT 1
-    """, empresa_id)
-    if last:
-        num = int(last.split('-')[-1]) + 1
-    else:
-        num = 1
-    return f"{prefix}{num:05d}"
+    prefijo = f"PAG-{tipo[0].upper()}-{year}-"
+    return await get_next_correlativo(conn, empresa_id, f'pago_{tipo}', prefijo)
 
 @api_router.get("/pagos", response_model=List[Pago])
 async def list_pagos(
