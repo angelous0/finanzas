@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { 
   getEmpleados, createTercero, updateTercero, deleteTercero,
-  getAdelantos, createAdelanto, getCuentasFinancieras
+  getAdelantos, createAdelanto, getCuentasFinancieras,
+  getCentrosCosto, getLineasNegocio, saveEmpleadoDetalle
 } from '../services/api';
 import { useEmpresa } from '../context/EmpresaContext';
 import { Plus, Edit2, Trash2, Users, X, DollarSign } from 'lucide-react';
