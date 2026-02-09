@@ -641,7 +641,7 @@ export default function Gastos() {
                               >
                                 <option value="">Seleccionar...</option>
                                 {categorias.map(c => (
-                                  <option key={c.id} value={c.id}>{c.nombre}</option>
+                                  <option key={c.id} value={c.id}>{c.nombre_completo || c.nombre}</option>
                                 ))}
                               </select>
                             </td>
