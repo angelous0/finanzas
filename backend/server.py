@@ -2179,7 +2179,7 @@ async def create_gasto(data: GastoCreate, empresa_id: int = Depends(get_empresa_
                  tipo_documento, numero_documento, notas)
                 VALUES ($1, $2, TO_DATE($3, 'YYYY-MM-DD'), $4, $5, $6, $7, $8, $9, $10, $11, $12)
                 RETURNING id
-            """, numero, safe_date_param(data.fecha), data.proveedor_id, data.beneficiario_nombre, data.moneda_id,
+            """, empresa_id, numero, safe_date_param(data.fecha), data.proveedor_id, data.beneficiario_nombre, data.moneda_id,
                 subtotal, igv, total, data.tipo_documento, data.numero_documento, data.notas)
             
             gasto_id = gasto['id']
