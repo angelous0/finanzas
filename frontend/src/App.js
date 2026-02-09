@@ -143,6 +143,7 @@ function App() {
         </main>
         </div>
         <Toaster position="top-right" richColors />
+        </EmpresaGuard>
       </EmpresaProvider>
     </Router>
   );
