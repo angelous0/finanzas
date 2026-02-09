@@ -694,6 +694,14 @@ async def recalcular_saldos(empresa_id: int = Depends(get_empresa_id)):
             
             nuevo_saldo = float(ingresos) - float(egresos)
             
+            # Get saldo_inicial (the base balance set when creating the account)
+            saldo_base = await conn.fetchval("""
+                SELECT COALESCE(saldo_inicial, 0) FROM finanzas2.cont_cuenta_financiera
+                WHERE id = $1 AND empresa_id = $2
+            """, cid, empresa_id) or 0
+            
+            nuevo_saldo = float(saldo_base) + float(ingresos) - float(egresos)
+            
             await conn.execute("""
                 UPDATE finanzas2.cont_cuenta_financiera SET saldo_actual = $1, updated_at = NOW()
                 WHERE id = $2 AND empresa_id = $3
