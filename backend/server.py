@@ -581,6 +581,7 @@ async def delete_cuenta_financiera(id: int, empresa_id: int = Depends(get_empres
 # =====================
 @api_router.get("/terceros", response_model=List[Tercero])
 async def list_terceros(
+    empresa_id: int = Depends(get_empresa_id),
     es_cliente: Optional[bool] = None,
     es_proveedor: Optional[bool] = None,
     es_personal: Optional[bool] = None,
@@ -590,9 +591,9 @@ async def list_terceros(
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
         
-        conditions = ["activo = TRUE"]
-        params = []
-        idx = 1
+        conditions = ["activo = TRUE", "empresa_id = $1"]
+        params = [empresa_id]
+        idx = 2
         
         if es_cliente is not None:
             conditions.append(f"es_cliente = ${idx}")
@@ -616,33 +617,33 @@ async def list_terceros(
         return [dict(r) for r in rows]
 
 @api_router.get("/terceros/{id}", response_model=Tercero)
-async def get_tercero(id: int):
+async def get_tercero(id: int, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
-        row = await conn.fetchrow("SELECT * FROM finanzas2.cont_tercero WHERE id = $1", id)
+        row = await conn.fetchrow("SELECT * FROM finanzas2.cont_tercero WHERE id = $1 AND empresa_id = $2", id, empresa_id)
         if not row:
             raise HTTPException(404, "Tercero not found")
         return dict(row)
 
 @api_router.post("/terceros", response_model=Tercero)
-async def create_tercero(data: TerceroCreate):
+async def create_tercero(data: TerceroCreate, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
         row = await conn.fetchrow("""
             INSERT INTO finanzas2.cont_tercero 
-            (tipo_documento, numero_documento, nombre, nombre_comercial, direccion, telefono, email,
+            (empresa_id, tipo_documento, numero_documento, nombre, nombre_comercial, direccion, telefono, email,
              es_cliente, es_proveedor, es_personal, terminos_pago_dias, limite_credito, notas, activo)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
             RETURNING *
-        """, data.tipo_documento, data.numero_documento, data.nombre, data.nombre_comercial,
+        """, empresa_id, data.tipo_documento, data.numero_documento, data.nombre, data.nombre_comercial,
             data.direccion, data.telefono, data.email, data.es_cliente, data.es_proveedor,
             data.es_personal, data.terminos_pago_dias, data.limite_credito, data.notas, data.activo)
         return dict(row)
 
 @api_router.put("/terceros/{id}", response_model=Tercero)
-async def update_tercero(id: int, data: TerceroUpdate):
+async def update_tercero(id: int, data: TerceroUpdate, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
@@ -655,19 +656,20 @@ async def update_tercero(id: int, data: TerceroUpdate):
             idx += 1
         if not updates:
             raise HTTPException(400, "No fields to update")
+        values.append(empresa_id)
         values.append(id)
-        query = f"UPDATE finanzas2.cont_tercero SET {', '.join(updates)}, updated_at = NOW() WHERE id = ${idx} RETURNING *"
+        query = f"UPDATE finanzas2.cont_tercero SET {', '.join(updates)}, updated_at = NOW() WHERE empresa_id = ${idx} AND id = ${idx+1} RETURNING *"
         row = await conn.fetchrow(query, *values)
         if not row:
             raise HTTPException(404, "Tercero not found")
         return dict(row)
 
 @api_router.delete("/terceros/{id}")
-async def delete_tercero(id: int):
+async def delete_tercero(id: int, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
-        result = await conn.execute("UPDATE finanzas2.cont_tercero SET activo = FALSE WHERE id = $1", id)
+        result = await conn.execute("UPDATE finanzas2.cont_tercero SET activo = FALSE WHERE id = $1 AND empresa_id = $2", id, empresa_id)
         if result == "UPDATE 0":
             raise HTTPException(404, "Tercero not found")
         return {"message": "Tercero deactivated"}
