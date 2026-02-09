@@ -33,6 +33,7 @@ export const Planilla = () => {
   const [cuentas, setCuentas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
   const [showPagoModal, setShowPagoModal] = useState(false);
   const [showPagosListModal, setShowPagosListModal] = useState(false);
@@ -136,6 +137,7 @@ export const Planilla = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (submitting) return;
     
     // Filter out employees with no salary
     const detallesConSalario = detalles.filter(d => 
@@ -147,6 +149,7 @@ export const Planilla = () => {
       return;
     }
     
+    setSubmitting(true);
     try {
       const payload = {
         ...formData,
@@ -166,6 +169,8 @@ export const Planilla = () => {
     } catch (error) {
       console.error('Error creating planilla:', error);
       toast.error(error.response?.data?.detail || 'Error al crear planilla');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -643,9 +648,9 @@ export const Planilla = () => {
                 <button type="button" className="btn btn-outline" onClick={() => setShowModal(false)}>
                   Cancelar
                 </button>
-                <button type="submit" className="btn btn-primary">
+                <button type="submit" className="btn btn-primary" disabled={submitting}>
                   <Check size={16} />
-                  Crear Planilla
+                  {submitting ? 'Creando...' : 'Crear Planilla'}
                 </button>
               </div>
             </form>
