@@ -1338,12 +1338,12 @@ async def create_factura_proveedor(data: FacturaProveedorCreate, empresa_id: int
             
             row = await conn.fetchrow("""
                 INSERT INTO finanzas2.cont_factura_proveedor 
-                (numero, proveedor_id, beneficiario_nombre, moneda_id, fecha_factura, fecha_vencimiento,
+                (empresa_id, numero, proveedor_id, beneficiario_nombre, moneda_id, fecha_factura, fecha_vencimiento,
                  terminos_dias, tipo_documento, estado, subtotal, igv, total, saldo_pendiente, 
                  impuestos_incluidos, notas)
-                VALUES ($1, $2, $3, $4, TO_DATE($5, 'YYYY-MM-DD'), TO_DATE($6, 'YYYY-MM-DD'), $7, $8, 'pendiente', $9, $10, $11, $11, $12, $13)
+                VALUES ($1, $2, $3, $4, $5, TO_DATE($6, 'YYYY-MM-DD'), TO_DATE($7, 'YYYY-MM-DD'), $8, $9, 'pendiente', $10, $11, $12, $12, $13, $14)
                 RETURNING id
-            """, numero, data.proveedor_id, data.beneficiario_nombre, data.moneda_id,
+            """, empresa_id, numero, data.proveedor_id, data.beneficiario_nombre, data.moneda_id,
                 safe_date_param(data.fecha_factura), safe_date_param(fecha_vencimiento), data.terminos_dias, data.tipo_documento,
                 subtotal, igv, total, data.impuestos_incluidos, data.notas)
             
@@ -1362,9 +1362,9 @@ async def create_factura_proveedor(data: FacturaProveedorCreate, empresa_id: int
             # Create CxP
             await conn.execute("""
                 INSERT INTO finanzas2.cont_cxp 
-                (factura_id, proveedor_id, monto_original, saldo_pendiente, fecha_vencimiento, estado)
-                VALUES ($1, $2, $3, $3, $4, 'pendiente')
-            """, factura_id, data.proveedor_id, total, fecha_vencimiento)
+                (empresa_id, factura_id, proveedor_id, monto_original, saldo_pendiente, fecha_vencimiento, estado)
+                VALUES ($1, $2, $3, $4, $4, $5, 'pendiente')
+            """, empresa_id, factura_id, data.proveedor_id, total, fecha_vencimiento)
             
             # Get the created factura with relations within the same transaction
             row = await conn.fetchrow("""
