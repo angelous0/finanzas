@@ -10,6 +10,7 @@ export const LineasNegocio = () => {
   const [lineas, setLineas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   
   const [formData, setFormData] = useState({
     codigo: '',
@@ -36,6 +37,8 @@ export const LineasNegocio = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (submitting) return;
+    setSubmitting(true);
     try {
       await createLineaNegocio(formData);
       toast.success('Línea de negocio creada');
@@ -45,6 +48,8 @@ export const LineasNegocio = () => {
     } catch (error) {
       console.error('Error creating:', error);
       toast.error('Error al crear línea de negocio');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -178,8 +183,8 @@ export const LineasNegocio = () => {
                 <button type="button" className="btn btn-outline" onClick={() => setShowModal(false)}>
                   Cancelar
                 </button>
-                <button type="submit" className="btn btn-primary" data-testid="guardar-linea-btn">
-                  Crear
+                <button type="submit" className="btn btn-primary" data-testid="guardar-linea-btn" disabled={submitting}>
+                  {submitting ? 'Guardando...' : 'Crear'}
                 </button>
               </div>
             </form>
