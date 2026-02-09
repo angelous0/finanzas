@@ -933,7 +933,12 @@ export default function Gastos() {
                 <tbody>
                   {selectedGasto.lineas?.map((linea, i) => (
                     <tr key={i}>
-                      <td>{linea.categoria_nombre || '-'}</td>
+                      <td>
+                        {linea.categoria_padre_nombre 
+                          ? <span><span style={{ color: 'var(--text-muted)' }}>{linea.categoria_padre_nombre}</span> &gt; {linea.categoria_nombre}</span>
+                          : (linea.categoria_nombre || '-')
+                        }
+                      </td>
                       <td>{linea.descripcion || '-'}</td>
                       <td className="text-right" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
                         {formatCurrency(linea.importe)}
