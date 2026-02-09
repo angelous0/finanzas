@@ -70,6 +70,7 @@ export default function OrdenesCompra() {
   const [ordenes, setOrdenes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
   const [selectedOC, setSelectedOC] = useState(null);
   const [editingOC, setEditingOC] = useState(null);
@@ -314,6 +315,7 @@ export default function OrdenesCompra() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (submitting) return;
     
     if (!formData.proveedor_id) {
       toast.error('Seleccione un proveedor');
@@ -325,6 +327,7 @@ export default function OrdenesCompra() {
       return;
     }
     
+    setSubmitting(true);
     try {
       const payload = {
         ...formData,
@@ -348,6 +351,8 @@ export default function OrdenesCompra() {
     } catch (error) {
       console.error('Error creating OC:', error);
       toast.error(getErrorMessage(error, 'Error al crear orden de compra'));
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -726,9 +731,9 @@ export default function OrdenesCompra() {
                 {editingOC ? `Editar OC ${editingOC.numero}` : 'Nueva Orden de Compra'}
               </h2>
             </div>
-            <button type="button" className="btn btn-primary" onClick={handleSubmit}>
+            <button type="button" className="btn btn-primary" onClick={handleSubmit} disabled={submitting}>
               <FileCheck size={16} />
-              {editingOC ? 'Actualizar' : 'Guardar'}
+              {submitting ? 'Guardando...' : (editingOC ? 'Actualizar' : 'Guardar')}
             </button>
           </div>
           
