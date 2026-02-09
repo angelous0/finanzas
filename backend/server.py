@@ -2211,17 +2211,8 @@ async def delete_letra(id: int, empresa_id: int = Depends(get_empresa_id)):
 # =====================
 async def generate_gasto_number(conn, empresa_id: int) -> str:
     year = datetime.now().year
-    prefix = f"GAS-{year}-"
-    last = await conn.fetchval(f"""
-        SELECT numero FROM finanzas2.cont_gasto 
-        WHERE numero LIKE '{prefix}%' AND empresa_id = $1
-        ORDER BY id DESC LIMIT 1
-    """, empresa_id)
-    if last:
-        num = int(last.split('-')[-1]) + 1
-    else:
-        num = 1
-    return f"{prefix}{num:05d}"
+    prefijo = f"GAS-{year}-"
+    return await get_next_correlativo(conn, empresa_id, 'gasto', prefijo)
 
 @api_router.get("/gastos", response_model=List[Gasto])
 async def list_gastos(
