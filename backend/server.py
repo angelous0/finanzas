@@ -2885,12 +2885,13 @@ async def list_ventas_pos(
             params.append(company_id)
             idx += 1
         if fecha_desde:
+            # date_order is in UTC, Lima is UTC-5, so add 5 hours to filter
             conditions.append(f"date_order >= ${idx}")
-            params.append(datetime.combine(fecha_desde, datetime.min.time()))
+            params.append(datetime.combine(fecha_desde, datetime.min.time()) + timedelta(hours=5))
             idx += 1
         if fecha_hasta:
             conditions.append(f"date_order <= ${idx}")
-            params.append(datetime.combine(fecha_hasta, datetime.max.time()))
+            params.append(datetime.combine(fecha_hasta, datetime.max.time()) + timedelta(hours=5))
             idx += 1
         
         # Advanced search: num_comp, partner_name, name (order reference)
