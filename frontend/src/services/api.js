@@ -60,6 +60,8 @@ export const getCuentasFinancieras = (tipo) => api.get('/cuentas-financieras', {
 export const createCuentaFinanciera = (data) => api.post('/cuentas-financieras', data);
 export const updateCuentaFinanciera = (id, data) => api.put(`/cuentas-financieras/${id}`, data);
 export const deleteCuentaFinanciera = (id) => api.delete(`/cuentas-financieras/${id}`);
+export const getKardexCuenta = (id, params) => api.get(`/cuentas-financieras/${id}/kardex`, { params });
+export const recalcularSaldos = () => api.post('/cuentas-financieras/recalcular-saldos');
 
 // Terceros (Proveedores, Clientes, Empleados)
 export const getTerceros = (params) => api.get('/terceros', { params });
