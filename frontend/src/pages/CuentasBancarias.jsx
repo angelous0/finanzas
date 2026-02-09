@@ -371,6 +371,81 @@ export const CuentasBancarias = () => {
           </div>
         </div>
       )}
+
+      {/* Kardex Modal */}
+      {kardex && (
+        <div className="modal-overlay" onClick={() => setKardex(null)}>
+          <div className="modal modal-xl" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2 className="modal-title">Kardex — {kardex.cuenta?.nombre}</h2>
+              <button className="modal-close" onClick={() => setKardex(null)}>
+                <X size={20} />
+              </button>
+            </div>
+            <div style={{ padding: '1rem 1.5rem' }}>
+              {/* KPI row */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem', marginBottom: '1rem' }}>
+                <div style={{ padding: '0.75rem', background: '#f9fafb', borderRadius: '8px' }}>
+                  <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: '#6b7280', fontWeight: 600 }}>Saldo Inicial</div>
+                  <div style={{ fontSize: '1.1rem', fontWeight: 700 }}>{formatCurrency(kardex.saldo_inicial)}</div>
+                </div>
+                <div style={{ padding: '0.75rem', background: '#f0fdf4', borderRadius: '8px' }}>
+                  <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: '#6b7280', fontWeight: 600 }}>Ingresos</div>
+                  <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#10b981' }}>{formatCurrency(kardex.total_ingresos)}</div>
+                </div>
+                <div style={{ padding: '0.75rem', background: '#fef2f2', borderRadius: '8px' }}>
+                  <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: '#6b7280', fontWeight: 600 }}>Egresos</div>
+                  <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#ef4444' }}>{formatCurrency(kardex.total_egresos)}</div>
+                </div>
+                <div style={{ padding: '0.75rem', background: '#eff6ff', borderRadius: '8px' }}>
+                  <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: '#6b7280', fontWeight: 600 }}>Saldo Final</div>
+                  <div style={{ fontSize: '1.1rem', fontWeight: 700, color: kardex.saldo_final >= 0 ? '#10b981' : '#ef4444' }}>{formatCurrency(kardex.saldo_final)}</div>
+                </div>
+              </div>
+
+              {/* Movements Table */}
+              {kardexLoading ? (
+                <div style={{ textAlign: 'center', padding: '2rem', color: '#9ca3af' }}>Cargando...</div>
+              ) : kardex.movimientos.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '2rem', color: '#9ca3af' }}>Sin movimientos registrados</div>
+              ) : (
+                <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                  <table className="data-table" data-testid="kardex-table">
+                    <thead>
+                      <tr>
+                        <th>Fecha</th>
+                        <th>N Pago</th>
+                        <th>Concepto</th>
+                        <th>Medio</th>
+                        <th style={{ textAlign: 'right' }}>Ingreso</th>
+                        <th style={{ textAlign: 'right' }}>Egreso</th>
+                        <th style={{ textAlign: 'right' }}>Saldo</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {kardex.movimientos.map((m, i) => (
+                        <tr key={i}>
+                          <td>{new Date(m.fecha + 'T00:00:00').toLocaleDateString('es-PE')}</td>
+                          <td style={{ fontSize: '0.8rem' }}>{m.numero}</td>
+                          <td>{m.concepto || '-'}</td>
+                          <td style={{ fontSize: '0.8rem' }}>{m.medio_pago}</td>
+                          <td style={{ textAlign: 'right', color: '#10b981', fontWeight: m.ingreso > 0 ? 600 : 400 }}>
+                            {m.ingreso > 0 ? formatCurrency(m.ingreso) : '-'}
+                          </td>
+                          <td style={{ textAlign: 'right', color: '#ef4444', fontWeight: m.egreso > 0 ? 600 : 400 }}>
+                            {m.egreso > 0 ? formatCurrency(m.egreso) : '-'}
+                          </td>
+                          <td style={{ textAlign: 'right', fontWeight: 600 }}>{formatCurrency(m.saldo)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
