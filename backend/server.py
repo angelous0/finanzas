@@ -956,13 +956,14 @@ async def list_inventario(search: Optional[str] = None, empresa_id: int = Depend
         try:
             search_param = f"%{search}%" if search else None
             rows = await conn.fetch("""
-                SELECT id, codigo, nombre, descripcion, unidad_medida,
+                SELECT id, codigo, nombre, descripcion, categoria, unidad_medida,
+                       COALESCE(stock_actual, 0) as stock_actual,
+                       COALESCE(stock_minimo, 0) as stock_minimo,
                        COALESCE(precio_ref, 0) as precio_ref,
                        COALESCE(costo_compra, 0) as costo_compra,
-                       modelo, marca
+                       modelo, marca, activo
                 FROM produccion.prod_inventario
-                WHERE activo = TRUE
-                AND ($1::text IS NULL OR nombre ILIKE $1 OR codigo ILIKE $1 OR descripcion ILIKE $1)
+                WHERE ($1::text IS NULL OR nombre ILIKE $1 OR codigo ILIKE $1 OR descripcion ILIKE $1)
                 ORDER BY nombre
                 LIMIT 200
             """, search_param)
