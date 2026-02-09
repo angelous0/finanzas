@@ -39,6 +39,7 @@ export default function Gastos() {
   const [gastos, setGastos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
   const [selectedGasto, setSelectedGasto] = useState(null);
   
@@ -212,6 +213,7 @@ export default function Gastos() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (submitting) return;
     
     const totales = calcularTotales();
     const totalPagos = calcularTotalPagos();
@@ -232,6 +234,7 @@ export default function Gastos() {
       return;
     }
     
+    setSubmitting(true);
     try {
       const payload = {
         ...formData,
@@ -260,6 +263,8 @@ export default function Gastos() {
     } catch (error) {
       console.error('Error creating gasto:', error);
       toast.error(error.response?.data?.detail || 'Error al registrar gasto');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -877,10 +882,10 @@ export default function Gastos() {
                 <button 
                   type="submit" 
                   className="btn btn-primary"
-                  disabled={Math.abs(totalPagos - totales.total) > 0.01 || totales.total <= 0}
+                  disabled={submitting || Math.abs(totalPagos - totales.total) > 0.01 || totales.total <= 0}
                 >
                   <DollarSign size={16} />
-                  Guardar y Pagar
+                  {submitting ? 'Guardando...' : 'Guardar y Pagar'}
                 </button>
               </div>
             </form>
