@@ -289,6 +289,8 @@ class FacturaLinea(FacturaLineaBase):
     id: int
     factura_id: int
     categoria_nombre: Optional[str] = None
+    categoria_padre_id: Optional[int] = None
+    categoria_padre_nombre: Optional[str] = None
     linea_negocio_nombre: Optional[str] = None
     centro_costo_nombre: Optional[str] = None
     created_at: Optional[datetime] = None
