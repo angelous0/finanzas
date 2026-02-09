@@ -48,11 +48,13 @@ export const deleteCategoria = (id) => api.delete(`/categorias/${id}`);
 // Centros de Costo
 export const getCentrosCosto = () => api.get('/centros-costo');
 export const createCentroCosto = (data) => api.post('/centros-costo', data);
+export const updateCentroCosto = (id, data) => api.put(`/centros-costo/${id}`, data);
 export const deleteCentroCosto = (id) => api.delete(`/centros-costo/${id}`);
 
 // Lineas de Negocio
 export const getLineasNegocio = () => api.get('/lineas-negocio');
 export const createLineaNegocio = (data) => api.post('/lineas-negocio', data);
+export const updateLineaNegocio = (id, data) => api.put(`/lineas-negocio/${id}`, data);
 export const deleteLineaNegocio = (id) => api.delete(`/lineas-negocio/${id}`);
 
 // Cuentas Financieras
