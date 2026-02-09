@@ -53,6 +53,8 @@ export const Empleados = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (submitting) return;
+    setSubmitting(true);
     try {
       if (editingId) {
         await updateTercero(editingId, formData);
@@ -67,6 +69,8 @@ export const Empleados = () => {
     } catch (error) {
       console.error('Error saving:', error);
       toast.error('Error al guardar empleado');
+    } finally {
+      setSubmitting(false);
     }
   };
 
