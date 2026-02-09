@@ -162,7 +162,14 @@ export const Empleados = () => {
       direccion: '',
       telefono: '',
       email: '',
-      es_personal: true
+      es_personal: true,
+      cargo: '',
+      salario_base: '',
+      cuenta_bancaria: '',
+      banco: '',
+      centro_costo_id: '',
+      linea_negocio_id: '',
+      fecha_ingreso: ''
     });
     setEditingId(null);
   };
