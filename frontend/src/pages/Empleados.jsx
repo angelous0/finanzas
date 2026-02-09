@@ -21,6 +21,8 @@ export const Empleados = () => {
   const { empresaActual } = useEmpresa();
 
   const [empleados, setEmpleados] = useState([]);
+  const [centrosCosto, setCentrosCosto] = useState([]);
+  const [lineasNegocio, setLineasNegocio] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState(null);
@@ -33,12 +35,31 @@ export const Empleados = () => {
     direccion: '',
     telefono: '',
     email: '',
-    es_personal: true
+    es_personal: true,
+    // Detalle fields
+    cargo: '',
+    salario_base: '',
+    cuenta_bancaria: '',
+    banco: '',
+    centro_costo_id: '',
+    linea_negocio_id: '',
+    fecha_ingreso: ''
   });
 
   useEffect(() => {
     loadData();
+    loadMasterData();
   }, [empresaActual]);
+
+  const loadMasterData = async () => {
+    try {
+      const [ccRes, lnRes] = await Promise.all([getCentrosCosto(), getLineasNegocio()]);
+      setCentrosCosto(ccRes.data);
+      setLineasNegocio(lnRes.data);
+    } catch (error) {
+      console.error('Error loading master data:', error);
+    }
+  };
 
   const loadData = async () => {
     try {
