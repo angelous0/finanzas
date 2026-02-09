@@ -725,7 +725,7 @@ async def list_empleados(empresa_id: int = Depends(get_empresa_id), search: Opti
 
 # Empleado detalle endpoints
 @api_router.post("/empleados/{tercero_id}/detalle", response_model=EmpleadoDetalle)
-async def create_or_update_empleado_detalle(tercero_id: int, data: EmpleadoDetalleCreate):
+async def create_or_update_empleado_detalle(tercero_id: int, data: EmpleadoDetalleCreate, empresa_id: int = Depends(get_empresa_id)):
     """Create or update empleado detalle (salary, position, etc.)"""
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -762,7 +762,7 @@ async def create_or_update_empleado_detalle(tercero_id: int, data: EmpleadoDetal
         return dict(row)
 
 @api_router.get("/empleados/{tercero_id}/detalle", response_model=EmpleadoDetalle)
-async def get_empleado_detalle(tercero_id: int):
+async def get_empleado_detalle(tercero_id: int, empresa_id: int = Depends(get_empresa_id)):
     """Get empleado detalle"""
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -776,7 +776,7 @@ async def get_empleado_detalle(tercero_id: int):
 # ARTICULOS REF
 # =====================
 @api_router.get("/articulos", response_model=List[ArticuloRef])
-async def list_articulos(search: Optional[str] = None):
+async def list_articulos(search: Optional[str] = None, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
@@ -813,7 +813,7 @@ async def list_articulos(search: Optional[str] = None):
 # INVENTARIO (produccion.prod_inventario)
 # =====================
 @api_router.get("/inventario")
-async def list_inventario(search: Optional[str] = None):
+async def list_inventario(search: Optional[str] = None, empresa_id: int = Depends(get_empresa_id)):
     """Get items from produccion.prod_inventario"""
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -839,7 +839,7 @@ async def list_inventario(search: Optional[str] = None):
 # MODELOS/CORTES (produccion.prod_registros + prod_modelos)
 # =====================
 @api_router.get("/modelos-cortes")
-async def list_modelos_cortes(search: Optional[str] = None):
+async def list_modelos_cortes(search: Optional[str] = None, empresa_id: int = Depends(get_empresa_id)):
     """Get modelos/cortes from produccion.prod_registros joining with prod_modelos"""
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -861,7 +861,7 @@ async def list_modelos_cortes(search: Optional[str] = None):
             return []
 
 @api_router.get("/modelos")
-async def list_modelos(search: Optional[str] = None):
+async def list_modelos(search: Optional[str] = None, empresa_id: int = Depends(get_empresa_id)):
     """Get modelos from produccion.prod_modelos"""
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -880,7 +880,7 @@ async def list_modelos(search: Optional[str] = None):
             return []
 
 @api_router.post("/articulos", response_model=ArticuloRef)
-async def create_articulo(data: ArticuloRefCreate):
+async def create_articulo(data: ArticuloRefCreate, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
@@ -896,15 +896,15 @@ async def create_articulo(data: ArticuloRefCreate):
 # =====================
 # ORDENES DE COMPRA
 # =====================
-async def generate_oc_number(conn) -> str:
+async def generate_oc_number(conn, empresa_id: int) -> str:
     """Generate next OC number"""
     year = datetime.now().year
     prefix = f"OC-{year}-"
     last = await conn.fetchval(f"""
         SELECT numero FROM finanzas2.cont_oc 
-        WHERE numero LIKE '{prefix}%' 
+        WHERE numero LIKE '{prefix}%' AND empresa_id = $1
         ORDER BY id DESC LIMIT 1
-    """)
+    """, empresa_id)
     if last:
         num = int(last.split('-')[-1]) + 1
     else:
@@ -917,6 +917,7 @@ async def list_ordenes_compra(
     proveedor_id: Optional[int] = None,
     fecha_desde: Optional[date] = None,
     fecha_hasta: Optional[date] = None
+    empresa_id: int = Depends(get_empresa_id),
 ):
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -966,7 +967,7 @@ async def list_ordenes_compra(
         return result
 
 @api_router.get("/ordenes-compra/{id}", response_model=OC)
-async def get_orden_compra(id: int):
+async def get_orden_compra(id: int, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
@@ -991,13 +992,13 @@ async def get_orden_compra(id: int):
         return oc_dict
 
 @api_router.post("/ordenes-compra", response_model=OC)
-async def create_orden_compra(data: OCCreate):
+async def create_orden_compra(data: OCCreate, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
         
         async with conn.transaction():
-            numero = await generate_oc_number(conn)
+            numero = await generate_oc_number(conn, empresa_id)
             
             # Calculate totals
             subtotal = 0
@@ -1069,7 +1070,7 @@ async def create_orden_compra(data: OCCreate):
             return oc_dict
 
 @api_router.put("/ordenes-compra/{id}", response_model=OC)
-async def update_orden_compra(id: int, data: OCUpdate):
+async def update_orden_compra(id: int, data: OCUpdate, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
@@ -1094,7 +1095,7 @@ async def update_orden_compra(id: int, data: OCUpdate):
         return await get_orden_compra(id)
 
 @api_router.delete("/ordenes-compra/{id}")
-async def delete_orden_compra(id: int):
+async def delete_orden_compra(id: int, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
@@ -1110,7 +1111,7 @@ async def delete_orden_compra(id: int):
         return {"message": "Orden de compra deleted"}
 
 @api_router.post("/ordenes-compra/{id}/generar-factura", response_model=FacturaProveedor)
-async def generar_factura_desde_oc(id: int):
+async def generar_factura_desde_oc(id: int, empresa_id: int = Depends(get_empresa_id)):
     """Generate a factura proveedor from an OC"""
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -1200,14 +1201,14 @@ async def generar_factura_desde_oc(id: int):
 # =====================
 # FACTURAS PROVEEDOR
 # =====================
-async def generate_factura_number(conn) -> str:
+async def generate_factura_number(conn, empresa_id: int) -> str:
     year = datetime.now().year
     prefix = f"FP-{year}-"
     last = await conn.fetchval(f"""
         SELECT numero FROM finanzas2.cont_factura_proveedor 
-        WHERE numero LIKE '{prefix}%' 
+        WHERE numero LIKE '{prefix}%' AND empresa_id = $1
         ORDER BY id DESC LIMIT 1
-    """)
+    """, empresa_id)
     if last:
         num = int(last.split('-')[-1]) + 1
     else:
@@ -1220,6 +1221,7 @@ async def list_facturas_proveedor(
     proveedor_id: Optional[int] = None,
     fecha_desde: Optional[date] = None,
     fecha_hasta: Optional[date] = None
+    empresa_id: int = Depends(get_empresa_id),
 ):
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -1275,7 +1277,7 @@ async def list_facturas_proveedor(
         
         return result
 
-async def get_factura_proveedor(id: int) -> dict:
+async def get_factura_proveedor(id: int, empresa_id: int) -> dict:
     pool = await get_pool()
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
@@ -1308,17 +1310,17 @@ async def get_factura_proveedor(id: int) -> dict:
         return fp_dict
 
 @api_router.get("/facturas-proveedor/{id}", response_model=FacturaProveedor)
-async def get_factura_proveedor_endpoint(id: int):
-    return await get_factura_proveedor(id)
+async def get_factura_proveedor_endpoint(id: int, empresa_id: int = Depends(get_empresa_id)):
+    return await get_factura_proveedor(id, empresa_id)
 
 @api_router.post("/facturas-proveedor", response_model=FacturaProveedor)
-async def create_factura_proveedor(data: FacturaProveedorCreate):
+async def create_factura_proveedor(data: FacturaProveedorCreate, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
         
         async with conn.transaction():
-            numero = data.numero or await generate_factura_number(conn)
+            numero = data.numero or await generate_factura_number(conn, empresa_id)
             
             # Calculate totals
             subtotal = sum(l.importe for l in data.lineas)
@@ -1393,7 +1395,7 @@ async def create_factura_proveedor(data: FacturaProveedorCreate):
             return fp_dict
 
 @api_router.put("/facturas-proveedor/{id}", response_model=FacturaProveedor)
-async def update_factura_proveedor(id: int, data: FacturaProveedorUpdate):
+async def update_factura_proveedor(id: int, data: FacturaProveedorUpdate, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
@@ -1420,10 +1422,10 @@ async def update_factura_proveedor(id: int, data: FacturaProveedorUpdate):
         query = f"UPDATE finanzas2.cont_factura_proveedor SET {', '.join(updates)}, updated_at = NOW() WHERE id = ${idx}"
         await conn.execute(query, *values)
         
-        return await get_factura_proveedor(id)
+        return await get_factura_proveedor(id, empresa_id)
 
 @api_router.delete("/facturas-proveedor/{id}")
-async def delete_factura_proveedor(id: int):
+async def delete_factura_proveedor(id: int, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
@@ -1454,7 +1456,7 @@ async def delete_factura_proveedor(id: int):
             return {"message": "Factura deleted"}
 
 @api_router.get("/facturas-proveedor/{id}/pagos")
-async def get_pagos_de_factura(id: int):
+async def get_pagos_de_factura(id: int, empresa_id: int = Depends(get_empresa_id)):
     """Get all payments applied to a specific factura"""
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -1474,7 +1476,7 @@ async def get_pagos_de_factura(id: int):
         return [dict(r) for r in rows]
 
 @api_router.get("/facturas-proveedor/{id}/letras")
-async def get_letras_de_factura(id: int):
+async def get_letras_de_factura(id: int, empresa_id: int = Depends(get_empresa_id)):
     """Get all letras generated from a specific factura"""
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -1495,7 +1497,7 @@ async def get_letras_de_factura(id: int):
         return [dict(r) for r in rows]
 
 @api_router.post("/facturas-proveedor/{id}/deshacer-canje")
-async def deshacer_canje_letras(id: int):
+async def deshacer_canje_letras(id: int, empresa_id: int = Depends(get_empresa_id)):
     """Reverse the canje of letras - delete all letras and set factura back to pendiente"""
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -1534,14 +1536,14 @@ async def deshacer_canje_letras(id: int):
 # =====================
 # PAGOS
 # =====================
-async def generate_pago_number(conn, tipo: str) -> str:
+async def generate_pago_number(conn, tipo: str, empresa_id: int) -> str:
     year = datetime.now().year
     prefix = f"PAG-{tipo[0].upper()}-{year}-"
     last = await conn.fetchval(f"""
         SELECT numero FROM finanzas2.cont_pago 
-        WHERE numero LIKE '{prefix}%' 
+        WHERE numero LIKE '{prefix}%' AND empresa_id = $1
         ORDER BY id DESC LIMIT 1
-    """)
+    """, empresa_id)
     if last:
         num = int(last.split('-')[-1]) + 1
     else:
@@ -1555,6 +1557,7 @@ async def list_pagos(
     fecha_hasta: Optional[date] = None,
     cuenta_financiera_id: Optional[int] = None,
     conciliado: Optional[bool] = None
+    empresa_id: int = Depends(get_empresa_id),
 ):
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -1619,7 +1622,7 @@ async def list_pagos(
         return result
 
 @api_router.post("/pagos", response_model=Pago)
-async def create_pago(data: PagoCreate):
+async def create_pago(data: PagoCreate, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
@@ -1816,12 +1819,12 @@ async def get_pago(id: int) -> dict:
         return pago_dict
 
 @api_router.get("/pagos/{id}", response_model=Pago)
-async def get_pago_endpoint(id: int):
+async def get_pago_endpoint(id: int, empresa_id: int = Depends(get_empresa_id)):
     return await get_pago(id)
 
 
 @api_router.put("/pagos/{id}")
-async def update_pago(id: int, data: dict):
+async def update_pago(id: int, data: dict, empresa_id: int = Depends(get_empresa_id)):
     """Update pago - only allow editing referencia if conciliado"""
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -1877,7 +1880,7 @@ async def update_pago(id: int, data: dict):
 
 
 @api_router.delete("/pagos/{id}")
-async def delete_pago(id: int):
+async def delete_pago(id: int, empresa_id: int = Depends(get_empresa_id)):
     """Delete a payment and reverse all its effects"""
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -1933,6 +1936,7 @@ async def list_letras(
     estado: Optional[str] = None,
     proveedor_id: Optional[int] = None,
     factura_id: Optional[int] = None
+    empresa_id: int = Depends(get_empresa_id),
 ):
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -1967,7 +1971,7 @@ async def list_letras(
         return [dict(r) for r in rows]
 
 @api_router.post("/letras/generar", response_model=List[Letra])
-async def generar_letras(data: GenerarLetrasRequest):
+async def generar_letras(data: GenerarLetrasRequest, empresa_id: int = Depends(get_empresa_id)):
     """Generate letras from a factura proveedor"""
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -2041,7 +2045,7 @@ async def generar_letras(data: GenerarLetrasRequest):
             return letras
 
 @api_router.delete("/letras/{id}")
-async def delete_letra(id: int):
+async def delete_letra(id: int, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
@@ -2082,14 +2086,14 @@ async def delete_letra(id: int):
 # =====================
 # GASTOS
 # =====================
-async def generate_gasto_number(conn) -> str:
+async def generate_gasto_number(conn, empresa_id: int) -> str:
     year = datetime.now().year
     prefix = f"GAS-{year}-"
     last = await conn.fetchval(f"""
         SELECT numero FROM finanzas2.cont_gasto 
-        WHERE numero LIKE '{prefix}%' 
+        WHERE numero LIKE '{prefix}%' AND empresa_id = $1
         ORDER BY id DESC LIMIT 1
-    """)
+    """, empresa_id)
     if last:
         num = int(last.split('-')[-1]) + 1
     else:
@@ -2100,6 +2104,7 @@ async def generate_gasto_number(conn) -> str:
 async def list_gastos(
     fecha_desde: Optional[date] = None,
     fecha_hasta: Optional[date] = None
+    empresa_id: int = Depends(get_empresa_id),
 ):
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -2145,14 +2150,14 @@ async def list_gastos(
         return result
 
 @api_router.post("/gastos", response_model=Gasto)
-async def create_gasto(data: GastoCreate):
+async def create_gasto(data: GastoCreate, empresa_id: int = Depends(get_empresa_id)):
     """Create a gasto with mandatory payment(s) that must cover total"""
     pool = await get_pool()
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
         
         async with conn.transaction():
-            numero = await generate_gasto_number(conn)
+            numero = await generate_gasto_number(conn, empresa_id)
             
             # Calculate totals
             subtotal = sum(l.importe for l in data.lineas)
@@ -2189,7 +2194,7 @@ async def create_gasto(data: GastoCreate):
                     linea.centro_costo_id, linea.importe, linea.igv_aplica)
             
             # Create pago(s)
-            pago_numero = await generate_pago_number(conn, 'egreso')
+            pago_numero = await generate_pago_number(conn, 'egreso', empresa_id)
             pago = await conn.fetchrow("""
                 INSERT INTO finanzas2.cont_pago 
                 (numero, tipo, fecha, cuenta_financiera_id, moneda_id, monto_total, notas)
@@ -2279,11 +2284,11 @@ async def get_gasto(id: int) -> dict:
         return gasto_dict
 
 @api_router.get("/gastos/{id}", response_model=Gasto)
-async def get_gasto_endpoint(id: int):
+async def get_gasto_endpoint(id: int, empresa_id: int = Depends(get_empresa_id)):
     return await get_gasto(id)
 
 @api_router.delete("/gastos/{id}")
-async def delete_gasto(id: int):
+async def delete_gasto(id: int, empresa_id: int = Depends(get_empresa_id)):
     """Delete a gasto and its associated lines and payments"""
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -2348,7 +2353,7 @@ async def list_adelantos(
         return [dict(r) for r in rows]
 
 @api_router.post("/adelantos", response_model=Adelanto)
-async def create_adelanto(data: AdelantoCreate):
+async def create_adelanto(data: AdelantoCreate, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
@@ -2358,7 +2363,7 @@ async def create_adelanto(data: AdelantoCreate):
             
             if data.pagar and data.cuenta_financiera_id:
                 # Create pago
-                pago_numero = await generate_pago_number(conn, 'egreso')
+                pago_numero = await generate_pago_number(conn, 'egreso', empresa_id)
                 pago = await conn.fetchrow("""
                     INSERT INTO finanzas2.cont_pago 
                     (numero, tipo, fecha, cuenta_financiera_id, monto_total, notas)
@@ -2406,6 +2411,7 @@ async def pagar_adelanto(
     id: int, 
     cuenta_financiera_id: int = Query(...),
     medio_pago: str = Query(default="efectivo")
+    empresa_id: int = Depends(get_empresa_id),
 ):
     """Register payment for an existing unpaid advance"""
     pool = await get_pool()
@@ -2423,7 +2429,7 @@ async def pagar_adelanto(
                 raise HTTPException(400, "Este adelanto ya fue pagado")
             
             # Create pago
-            pago_numero = await generate_pago_number(conn, 'egreso')
+            pago_numero = await generate_pago_number(conn, 'egreso', empresa_id)
             pago = await conn.fetchrow("""
                 INSERT INTO finanzas2.cont_pago 
                 (numero, tipo, fecha, cuenta_financiera_id, monto_total, notas)
@@ -2472,7 +2478,7 @@ async def pagar_adelanto(
             return result
 
 @api_router.put("/adelantos/{id}", response_model=Adelanto)
-async def update_adelanto(id: int, data: AdelantoCreate):
+async def update_adelanto(id: int, data: AdelantoCreate, empresa_id: int = Depends(get_empresa_id)):
     """Update an existing advance"""
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -2505,7 +2511,7 @@ async def update_adelanto(id: int, data: AdelantoCreate):
         return result
 
 @api_router.delete("/adelantos/{id}")
-async def delete_adelanto(id: int):
+async def delete_adelanto(id: int, empresa_id: int = Depends(get_empresa_id)):
     """Delete an advance (only if not paid or discounted)"""
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -2564,7 +2570,7 @@ async def list_planillas(empresa_id: Optional[int] = None):
         return result
 
 @api_router.post("/planillas", response_model=Planilla)
-async def create_planilla(data: PlanillaCreate):
+async def create_planilla(data: PlanillaCreate, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
@@ -2630,11 +2636,11 @@ async def get_planilla(id: int) -> dict:
         return planilla_dict
 
 @api_router.get("/planillas/{id}", response_model=Planilla)
-async def get_planilla_endpoint(id: int):
+async def get_planilla_endpoint(id: int, empresa_id: int = Depends(get_empresa_id)):
     return await get_planilla(id)
 
 @api_router.post("/planillas/{id}/pagar", response_model=Planilla)
-async def pagar_planilla(id: int, cuenta_financiera_id: int = Query(...)):
+async def pagar_planilla(id: int, cuenta_financiera_id: int = Query(...), empresa_id: int = Depends(get_empresa_id)):
     """Pay the entire planilla"""
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -2648,7 +2654,7 @@ async def pagar_planilla(id: int, cuenta_financiera_id: int = Query(...)):
                 raise HTTPException(400, "Planilla already paid")
             
             # Create pago
-            pago_numero = await generate_pago_number(conn, 'egreso')
+            pago_numero = await generate_pago_number(conn, 'egreso', empresa_id)
             pago = await conn.fetchrow("""
                 INSERT INTO finanzas2.cont_pago 
                 (numero, tipo, fecha, cuenta_financiera_id, monto_total, notas)
@@ -2692,7 +2698,7 @@ async def pagar_planilla(id: int, cuenta_financiera_id: int = Query(...)):
             return await get_planilla(id)
 
 @api_router.delete("/planillas/{id}")
-async def delete_planilla(id: int):
+async def delete_planilla(id: int, empresa_id: int = Depends(get_empresa_id)):
     """Delete a planilla (only if in draft status)"""
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -2727,6 +2733,7 @@ async def list_ventas_pos(
     fecha_desde: Optional[date] = None,
     fecha_hasta: Optional[date] = None,
     search: Optional[str] = None
+    empresa_id: int = Depends(get_empresa_id),
 ):
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -2778,7 +2785,7 @@ async def list_ventas_pos(
         return [dict(r) for r in rows]
 
 @api_router.post("/ventas-pos/sync")
-async def sync_ventas_pos(company: str = "ambission", days_back: int = 30):
+async def sync_ventas_pos(company: str = "ambission", days_back: int = 30, empresa_id: int = Depends(get_empresa_id)):
     """Sync POS orders from Odoo"""
     try:
         odoo = OdooService(company=company)
@@ -2980,7 +2987,7 @@ async def sync_ventas_pos(company: str = "ambission", days_back: int = 30):
         raise HTTPException(500, f"Error syncing: {str(e)}")
 
 @api_router.post("/ventas-pos/{id}/confirmar")
-async def confirmar_venta_pos(id: int):
+async def confirmar_venta_pos(id: int, empresa_id: int = Depends(get_empresa_id)):
     """
     Confirm a POS sale. 
     NOTE: Should have assigned payments before confirming, but this is not enforced yet.
@@ -3008,7 +3015,7 @@ async def confirmar_venta_pos(id: int):
         return {"message": "Venta confirmada"}
 
 @api_router.post("/ventas-pos/{id}/credito")
-async def marcar_credito_venta_pos(id: int, fecha_vencimiento: Optional[date] = None):
+async def marcar_credito_venta_pos(id: int, fecha_vencimiento: Optional[date] = None, empresa_id: int = Depends(get_empresa_id)):
     """Mark sale as credit and create CxC"""
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -3034,7 +3041,7 @@ async def marcar_credito_venta_pos(id: int, fecha_vencimiento: Optional[date] = 
             return {"message": "Venta marcada como crédito", "cxc_id": cxc['id']}
 
 @api_router.post("/ventas-pos/{id}/descartar")
-async def descartar_venta_pos(id: int):
+async def descartar_venta_pos(id: int, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
@@ -3044,7 +3051,7 @@ async def descartar_venta_pos(id: int):
         return {"message": "Venta descartada"}
 
 @api_router.post("/ventas-pos/{id}/desconfirmar")
-async def desconfirmar_venta_pos(id: int):
+async def desconfirmar_venta_pos(id: int, empresa_id: int = Depends(get_empresa_id)):
     """
     Desconfirmar una venta POS confirmada.
     - Elimina los pagos oficiales (cont_pago, cont_pago_detalle, cont_pago_aplicacion)
@@ -3113,7 +3120,7 @@ async def desconfirmar_venta_pos(id: int):
 
 # Endpoints for payment management
 @api_router.get("/ventas-pos/{id}/pagos")
-async def get_pagos_venta_pos(id: int):
+async def get_pagos_venta_pos(id: int, empresa_id: int = Depends(get_empresa_id)):
     """Get all payments assigned to a POS sale"""
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -3130,7 +3137,7 @@ async def get_pagos_venta_pos(id: int):
         return [dict(p) for p in pagos]
 
 @api_router.get("/ventas-pos/{id}/pagos-oficiales")
-async def get_pagos_oficiales_venta_pos(id: int):
+async def get_pagos_oficiales_venta_pos(id: int, empresa_id: int = Depends(get_empresa_id)):
     """Get official payments from cont_pago for a confirmed POS sale"""
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -3150,7 +3157,7 @@ async def get_pagos_oficiales_venta_pos(id: int):
         return [dict(p) for p in pagos]
 
 @api_router.get("/ventas-pos/{id}/lineas")
-async def get_lineas_venta_pos(id: int):
+async def get_lineas_venta_pos(id: int, empresa_id: int = Depends(get_empresa_id)):
     """Get product lines for a POS sale with marca and tipo for business line analysis"""
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -3176,7 +3183,7 @@ async def get_lineas_venta_pos(id: int):
         return [dict(l) for l in lineas]
 
 @api_router.post("/ventas-pos/{id}/pagos")
-async def add_pago_venta_pos(id: int, pago: dict):
+async def add_pago_venta_pos(id: int, pago: dict, empresa_id: int = Depends(get_empresa_id)):
     """Add a payment to a POS sale. Auto-confirms if total matches."""
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -3280,7 +3287,7 @@ async def add_pago_venta_pos(id: int, pago: dict):
             }
 
 @api_router.put("/ventas-pos/{venta_id}/pagos/{pago_id}")
-async def update_pago_venta_pos(venta_id: int, pago_id: int, pago: dict):
+async def update_pago_venta_pos(venta_id: int, pago_id: int, pago: dict, empresa_id: int = Depends(get_empresa_id)):
     """Update a payment assigned to a POS sale"""
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -3308,7 +3315,7 @@ async def update_pago_venta_pos(venta_id: int, pago_id: int, pago: dict):
             raise HTTPException(500, f"Error al actualizar pago: {str(e)}")
 
 @api_router.delete("/ventas-pos/{venta_id}/pagos/{pago_id}")
-async def delete_pago_venta_pos(venta_id: int, pago_id: int):
+async def delete_pago_venta_pos(venta_id: int, pago_id: int, empresa_id: int = Depends(get_empresa_id)):
     """Delete a payment from a POS sale"""
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -3324,7 +3331,7 @@ async def delete_pago_venta_pos(venta_id: int, pago_id: int):
 # CXC (Cuentas por Cobrar)
 # =====================
 @api_router.get("/cxc", response_model=List[CXC])
-async def list_cxc(estado: Optional[str] = None):
+async def list_cxc(estado: Optional[str] = None, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
@@ -3352,7 +3359,7 @@ async def list_cxc(estado: Optional[str] = None):
 # CXP (Cuentas por Pagar)
 # =====================
 @api_router.get("/cxp")
-async def list_cxp(estado: Optional[str] = None):
+async def list_cxp(estado: Optional[str] = None, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
@@ -3381,7 +3388,7 @@ async def list_cxp(estado: Optional[str] = None):
 # PRESUPUESTOS
 # =====================
 @api_router.get("/presupuestos", response_model=List[Presupuesto])
-async def list_presupuestos(anio: Optional[int] = None):
+async def list_presupuestos(anio: Optional[int] = None, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
@@ -3410,7 +3417,7 @@ async def list_presupuestos(anio: Optional[int] = None):
         return result
 
 @api_router.post("/presupuestos", response_model=Presupuesto)
-async def create_presupuesto(data: PresupuestoCreate):
+async def create_presupuesto(data: PresupuestoCreate, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
@@ -3461,7 +3468,7 @@ async def get_presupuesto(id: int) -> dict:
         return pres_dict
 
 @api_router.get("/presupuestos/{id}", response_model=Presupuesto)
-async def get_presupuesto_endpoint(id: int):
+async def get_presupuesto_endpoint(id: int, empresa_id: int = Depends(get_empresa_id)):
     return await get_presupuesto(id)
 
 # =====================
@@ -3471,6 +3478,7 @@ async def get_presupuesto_endpoint(id: int):
 async def previsualizar_excel_banco(
     file: UploadFile = File(...),
     banco: str = Query(...)
+    empresa_id: int = Depends(get_empresa_id),
 ):
     """Preview bank movements from Excel before importing"""
     import io
@@ -3619,6 +3627,7 @@ async def importar_excel_banco(
     file: UploadFile = File(...),
     cuenta_financiera_id: int = Query(...),
     banco: str = Query(...)
+    empresa_id: int = Depends(get_empresa_id),
 ):
     """Import bank movements from Excel - UPSERT based on banco + referencia"""
     import io
@@ -3798,7 +3807,7 @@ async def importar_excel_banco(
 
 
 @api_router.get("/conciliacion/historial")
-async def get_historial_conciliaciones():
+async def get_historial_conciliaciones(empresa_id: int = Depends(get_empresa_id)):
     """Get all conciliacion records with details"""
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -3857,7 +3866,7 @@ async def get_historial_conciliaciones():
         return result
 
 @api_router.post("/conciliacion/desconciliar")
-async def desconciliar_movimientos(data: dict):
+async def desconciliar_movimientos(data: dict, empresa_id: int = Depends(get_empresa_id)):
     """Unreconcile movements"""
     banco_id = data.get('banco_id')
     pago_id = data.get('pago_id')
@@ -3891,6 +3900,7 @@ async def list_movimientos_banco(
     cuenta_financiera_id: Optional[int] = None,
     procesado: Optional[bool] = None,
     conciliado: Optional[bool] = None
+    empresa_id: int = Depends(get_empresa_id),
 ):
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -3923,7 +3933,7 @@ async def list_movimientos_banco(
         return [dict(r) for r in rows]
 
 @api_router.get("/conciliaciones", response_model=List[Conciliacion])
-async def list_conciliaciones(cuenta_financiera_id: Optional[int] = None):
+async def list_conciliaciones(cuenta_financiera_id: Optional[int] = None, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
@@ -3959,6 +3969,7 @@ async def list_conciliaciones(cuenta_financiera_id: Optional[int] = None):
 async def conciliar_movimientos(
     banco_ids: List[int] = Query(...),
     pago_ids: List[int] = Query(...)
+    empresa_id: int = Depends(get_empresa_id),
 ):
     """Mark bank movements and system payments as reconciled and create historical record"""
     pool = await get_pool()
@@ -4051,6 +4062,7 @@ async def crear_gasto_desde_movimientos_bancarios(
     categoria_id: int = Query(...),
     descripcion: Optional[str] = Query("Gastos bancarios agrupados"),
     cuenta_financiera_id: int = Query(...)
+    empresa_id: int = Depends(get_empresa_id),
 ):
     """
     Create a gasto (expense) from multiple bank movements.
@@ -4189,7 +4201,7 @@ async def crear_gasto_desde_movimientos_bancarios(
         }
 
 @api_router.post("/conciliaciones", response_model=Conciliacion)
-async def create_conciliacion(data: ConciliacionCreate):
+async def create_conciliacion(data: ConciliacionCreate, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
@@ -4213,6 +4225,7 @@ async def create_conciliacion(data: ConciliacionCreate):
 async def reporte_flujo_caja(
     fecha_desde: date = Query(...),
     fecha_hasta: date = Query(...)
+    empresa_id: int = Depends(get_empresa_id),
 ):
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -4250,6 +4263,7 @@ async def reporte_flujo_caja(
 async def reporte_estado_resultados(
     fecha_desde: date = Query(...),
     fecha_hasta: date = Query(...)
+    empresa_id: int = Depends(get_empresa_id),
 ):
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -4286,7 +4300,7 @@ async def reporte_estado_resultados(
         }
 
 @api_router.get("/reportes/balance-general")
-async def reporte_balance_general():
+async def reporte_balance_general(empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
