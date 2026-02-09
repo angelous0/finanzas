@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getConciliacionesDetalladas, desconciliarMovimientos } from '../services/api';
+import { useEmpresa } from '../context/EmpresaContext';
 import { History, Trash2, Search, Download, RefreshCw, Calendar } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -14,6 +15,8 @@ const formatDate = (dateStr) => {
 };
 
 export const HistorialConciliaciones = () => {
+  const { empresaActual } = useEmpresa();
+
   const [conciliaciones, setConciliaciones] = useState([]);
   const [conciliacionesFiltradas, setConciliacionesFiltradas] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -25,7 +28,7 @@ export const HistorialConciliaciones = () => {
 
   useEffect(() => {
     loadConciliaciones();
-  }, []);
+  }, [empresaActual]);
 
   useEffect(() => {
     filtrarConciliaciones();

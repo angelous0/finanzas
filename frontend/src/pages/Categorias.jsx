@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { getCategorias, createCategoria, updateCategoria, deleteCategoria } from '../services/api';
+import { useEmpresa } from '../context/EmpresaContext';
 import { Plus, Trash2, Tags, X, Edit2, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 
 export const Categorias = () => {
+  const { empresaActual } = useEmpresa();
+
   const [categorias, setCategorias] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);

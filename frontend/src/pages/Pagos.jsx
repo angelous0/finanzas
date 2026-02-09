@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getPagos, deletePago, updatePago } from '../services/api';
+import { useEmpresa } from '../context/EmpresaContext';
 import { Trash2, DollarSign, TrendingUp, TrendingDown, Edit2, X, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -13,6 +14,8 @@ const formatDate = (dateStr) => {
 };
 
 export const Pagos = () => {
+  const { empresaActual } = useEmpresa();
+
   const [pagos, setPagos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filtroTipo, setFiltroTipo] = useState('');

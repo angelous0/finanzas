@@ -4,6 +4,7 @@ import {
   importarExcelBanco, getConciliaciones, conciliarMovimientos, previsualizarExcelBanco,
   crearGastoBancario, getCategorias
 } from '../services/api';
+import { useEmpresa } from '../context/EmpresaContext';
 import { 
   Upload, Search, RefreshCw, Check, X, FileSpreadsheet, 
   AlertCircle, CheckCircle, Clock, ArrowDown, Download,
@@ -30,6 +31,8 @@ const BANCOS = [
 ];
 
 export const ConciliacionBancaria = () => {
+  const { empresaActual } = useEmpresa();
+
   const [cuentas, setCuentas] = useState([]);
   const [movimientosBanco, setMovimientosBanco] = useState([]);
   const [movimientosSistema, setMovimientosSistema] = useState([]);
@@ -65,7 +68,7 @@ export const ConciliacionBancaria = () => {
 
   useEffect(() => {
     loadInitialData();
-  }, []);
+  }, [empresaActual]);
 
   const loadInitialData = async () => {
     try {

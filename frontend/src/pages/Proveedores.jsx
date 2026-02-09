@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { getProveedores, createTercero, updateTercero, deleteTercero } from '../services/api';
+import { useEmpresa } from '../context/EmpresaContext';
 import { Plus, Edit2, Trash2, Users, Search, X } from 'lucide-react';
 import { toast } from 'sonner';
 
 export const Proveedores = () => {
+  const { empresaActual } = useEmpresa();
+
   const [proveedores, setProveedores] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);

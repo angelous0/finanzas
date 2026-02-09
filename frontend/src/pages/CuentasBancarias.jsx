@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getCuentasFinancieras, createCuentaFinanciera, deleteCuentaFinanciera, getMonedas } from '../services/api';
+import { useEmpresa } from '../context/EmpresaContext';
 import { Plus, Trash2, Edit2, Landmark, X } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -8,6 +9,8 @@ const formatCurrency = (value, symbol = 'S/') => {
 };
 
 export const CuentasBancarias = () => {
+  const { empresaActual } = useEmpresa();
+
   const [cuentas, setCuentas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -25,7 +28,7 @@ export const CuentasBancarias = () => {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [empresaActual]);
 
   const loadData = async () => {
     try {

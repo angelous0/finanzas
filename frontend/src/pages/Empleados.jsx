@@ -3,6 +3,7 @@ import {
   getEmpleados, createTercero, updateTercero, deleteTercero,
   getAdelantos, createAdelanto, getCuentasFinancieras
 } from '../services/api';
+import { useEmpresa } from '../context/EmpresaContext';
 import { Plus, Edit2, Trash2, Users, X, DollarSign } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -16,6 +17,8 @@ const formatDate = (dateStr) => {
 };
 
 export const Empleados = () => {
+  const { empresaActual } = useEmpresa();
+
   const [empleados, setEmpleados] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -33,7 +36,7 @@ export const Empleados = () => {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [empresaActual]);
 
   const loadData = async () => {
     try {

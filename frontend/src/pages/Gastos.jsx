@@ -12,6 +12,7 @@ import {
   getCentrosCosto,
   getCuentasFinancieras
 } from '../services/api';
+import { useEmpresa } from '../context/EmpresaContext';
 import SearchableSelect from '../components/SearchableSelect';
 
 const formatCurrency = (value, symbol = 'S/') => {
@@ -33,6 +34,8 @@ const MEDIOS_PAGO = [
 ];
 
 export default function Gastos() {
+  const { empresaActual } = useEmpresa();
+
   const [gastos, setGastos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);

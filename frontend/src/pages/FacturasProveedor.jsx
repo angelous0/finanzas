@@ -5,6 +5,7 @@ import {
   getInventario, getModelosCortes, createTercero, createPago, getCuentasFinancieras, generarLetras,
   getPagosDeFactura, getLetrasDeFactura, deshacerCanjeLetras, deletePago, updatePago
 } from '../services/api';
+import { useEmpresa } from '../context/EmpresaContext';
 import { Plus, Trash2, Search, X, FileText, ChevronDown, ChevronUp, Copy, Edit2, Eye, DollarSign, FileSpreadsheet, Undo2, History, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import SearchableSelect from '../components/SearchableSelect';
@@ -31,6 +32,8 @@ const estadoBadge = (estado) => {
 };
 
 export const FacturasProveedor = () => {
+  const { empresaActual } = useEmpresa();
+
   const [facturas, setFacturas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);

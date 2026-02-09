@@ -3,6 +3,7 @@ import {
   getFacturasProveedor, getLetras, generarLetras, deleteLetra,
   createPago, getCuentasFinancieras
 } from '../services/api';
+import { useEmpresa } from '../context/EmpresaContext';
 import { Plus, Trash2, DollarSign, FileText, X, CreditCard } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -28,6 +29,8 @@ const estadoBadge = (estado) => {
 };
 
 export const Letras = () => {
+  const { empresaActual } = useEmpresa();
+
   const [letras, setLetras] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showGenerarModal, setShowGenerarModal] = useState(false);
@@ -52,7 +55,7 @@ export const Letras = () => {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [empresaActual]);
 
   const loadData = async () => {
     try {

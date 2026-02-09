@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getCxP } from '../services/api';
+import { useEmpresa } from '../context/EmpresaContext';
 import { Clock, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -18,6 +19,8 @@ const isVencido = (fecha) => {
 };
 
 export const CxP = () => {
+  const { empresaActual } = useEmpresa();
+
   const [cxp, setCxp] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filtroEstado, setFiltroEstado] = useState('');

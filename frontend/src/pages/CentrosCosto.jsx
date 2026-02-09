@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { getCentrosCosto, createCentroCosto, deleteCentroCosto } from '../services/api';
+import { useEmpresa } from '../context/EmpresaContext';
 import { Plus, Trash2, Target, X } from 'lucide-react';
 import { toast } from 'sonner';
 
 export const CentrosCosto = () => {
+  const { empresaActual } = useEmpresa();
+
   const [centros, setCentros] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -16,7 +19,7 @@ export const CentrosCosto = () => {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [empresaActual]);
 
   const loadData = async () => {
     try {

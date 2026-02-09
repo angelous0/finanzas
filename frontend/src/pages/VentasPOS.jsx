@@ -5,6 +5,7 @@ import {
   getPagosVentaPOS, getPagosOficialesVentaPOS, addPagoVentaPOS, updatePagoVentaPOS, deletePagoVentaPOS,
   getCuentasFinancieras, getLineasVentaPOS
 } from '../services/api';
+import { useEmpresa } from '../context/EmpresaContext';
 import { RefreshCw, Check, CreditCard, X, Filter, ShoppingCart, Download, Plus, Trash2, Eye, RotateCcw, Search, Edit } from 'lucide-react';
 import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
@@ -41,6 +42,8 @@ const estadoBadge = (estado) => {
 };
 
 export const VentasPOS = () => {
+  const { empresaActual } = useEmpresa();
+
   const [ventas, setVentas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);

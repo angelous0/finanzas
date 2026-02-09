@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getReporteBalanceGeneral } from '../services/api';
+import { useEmpresa } from '../context/EmpresaContext';
 import { BarChart3 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -8,12 +9,14 @@ const formatCurrency = (value, symbol = 'S/') => {
 };
 
 export const BalanceGeneral = () => {
+  const { empresaActual } = useEmpresa();
+
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [empresaActual]);
 
   const loadData = async () => {
     try {

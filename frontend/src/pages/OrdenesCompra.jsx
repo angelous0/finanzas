@@ -12,6 +12,7 @@ import {
   getEmpresas,
   createTercero
 } from '../services/api';
+import { useEmpresa } from '../context/EmpresaContext';
 import SearchableSelect from '../components/SearchableSelect';
 
 const formatCurrency = (value, symbol = 'S/') => {
@@ -64,6 +65,8 @@ const getErrorMessage = (error, defaultMessage = 'Error en la operación') => {
 };
 
 export default function OrdenesCompra() {
+  const { empresaActual } = useEmpresa();
+
   const [ordenes, setOrdenes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);

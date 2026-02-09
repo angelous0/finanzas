@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   getFacturasProveedor, createPago, getCuentasFinancieras 
 } from '../services/api';
+import { useEmpresa } from '../context/EmpresaContext';
 import { DollarSign, CreditCard, X, Check } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -15,6 +16,8 @@ const formatDate = (dateStr) => {
 };
 
 export const PagarFacturas = () => {
+  const { empresaActual } = useEmpresa();
+
   const [facturas, setFacturas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -28,7 +31,7 @@ export const PagarFacturas = () => {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [empresaActual]);
 
   const loadData = async () => {
     try {

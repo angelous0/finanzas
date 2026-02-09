@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { getLineasNegocio, createLineaNegocio, deleteLineaNegocio } from '../services/api';
+import { useEmpresa } from '../context/EmpresaContext';
 import { Plus, Trash2, GitBranch, X } from 'lucide-react';
 import { toast } from 'sonner';
 
 export const LineasNegocio = () => {
+  const { empresaActual } = useEmpresa();
+
   const [lineas, setLineas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -16,7 +19,7 @@ export const LineasNegocio = () => {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [empresaActual]);
 
   const loadData = async () => {
     try {
