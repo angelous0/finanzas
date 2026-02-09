@@ -23,6 +23,7 @@ export const Pagos = () => {
   // Edit modal states
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingPago, setEditingPago] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
   const [editForm, setEditForm] = useState({
     fecha: '',
     referencia: '',
@@ -57,6 +58,8 @@ export const Pagos = () => {
   };
 
   const handleSaveEdit = async () => {
+    if (submitting) return;
+    setSubmitting(true);
     try {
       await updatePago(editingPago.id, editForm);
       toast.success('Pago actualizado exitosamente');
@@ -65,6 +68,8 @@ export const Pagos = () => {
     } catch (error) {
       console.error('Error updating pago:', error);
       toast.error(error.response?.data?.detail || 'Error al actualizar pago');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -324,8 +329,8 @@ export const Pagos = () => {
               <button className="btn btn-outline" onClick={() => setShowEditModal(false)}>
                 <X size={16} /> Cancelar
               </button>
-              <button className="btn btn-primary" onClick={handleSaveEdit}>
-                <Edit2 size={16} /> Guardar Cambios
+              <button className="btn btn-primary" onClick={handleSaveEdit} disabled={submitting}>
+                <Edit2 size={16} /> {submitting ? 'Guardando...' : 'Guardar Cambios'}
               </button>
             </div>
           </div>
