@@ -450,6 +450,8 @@ class GastoLinea(GastoLineaBase):
     id: int
     gasto_id: int
     categoria_nombre: Optional[str] = None
+    categoria_padre_id: Optional[int] = None
+    categoria_padre_nombre: Optional[str] = None
     created_at: Optional[datetime] = None
 
 class GastoBase(BaseModel):
