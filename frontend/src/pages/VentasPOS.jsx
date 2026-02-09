@@ -349,15 +349,16 @@ export const VentasPOS = () => {
   };
   
   // Desconfirmar venta (volver a pendiente)
-  const handleDesconfirmar = async () => {
-    if (!ventaSeleccionada) return;
+  const handleDesconfirmar = async (ventaDirecta) => {
+    const venta = ventaDirecta || ventaSeleccionada;
+    if (!venta) return;
     
     // Confirmación del usuario
     const confirmado = window.confirm(
       `¿Está seguro que desea DESCONFIRMAR esta venta?\n\n` +
-      `Venta: ${ventaSeleccionada.name}\n` +
-      `Cliente: ${ventaSeleccionada.partner_name}\n` +
-      `Total: ${formatCurrency(ventaSeleccionada.amount_total)}\n\n` +
+      `Venta: ${venta.name}\n` +
+      `Cliente: ${venta.partner_name}\n` +
+      `Total: ${formatCurrency(venta.amount_total)}\n\n` +
       `La venta volverá a estado PENDIENTE y los pagos oficiales se eliminarán.\n` +
       `Podrá volver a asignar pagos desde la pestaña Pendientes.`
     );
@@ -365,10 +366,10 @@ export const VentasPOS = () => {
     if (!confirmado) return;
     
     try {
-      const response = await desconfirmarVentaPOS(ventaSeleccionada.id);
+      const response = await desconfirmarVentaPOS(venta.id);
       toast.success(response.data.message);
       
-      // Cerrar modal
+      // Cerrar modal si está abierto
       closePagosOficialesModal();
       
       // Recargar lista de ventas
