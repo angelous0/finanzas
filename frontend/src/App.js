@@ -41,6 +41,7 @@ import {
 import FlujoCaja from './pages/FlujoCaja';
 import EstadoResultados from './pages/EstadoResultados';
 import Articulos from './pages/Articulos';
+import ReportePagos from './pages/ReportePagos';
 
 function EmpresaGuard({ children }) {
   const { empresaActual, loading } = useEmpresa();
@@ -141,6 +142,7 @@ function App() {
             <Route path="/balance-general" element={<BalanceGeneral />} />
             <Route path="/estado-resultados" element={<EstadoResultados />} />
             <Route path="/flujo-caja" element={<FlujoCaja />} />
+            <Route path="/reporte-pagos" element={<ReportePagos />} />
           </Routes>
         </main>
         </div>
