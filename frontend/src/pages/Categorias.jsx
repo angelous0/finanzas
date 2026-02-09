@@ -20,7 +20,7 @@ export const Categorias = () => {
     descripcion: ''
   });
 
-  useEffect(() => { loadData(); }, [filtroTipo]);
+  useEffect(() => { loadData(); }, [filtroTipo, empresaActual]);
 
   const loadData = async () => {
     try {
