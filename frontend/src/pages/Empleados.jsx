@@ -79,13 +79,37 @@ export const Empleados = () => {
     if (submitting) return;
     setSubmitting(true);
     try {
+      const terceroData = {
+        tipo_documento: formData.tipo_documento,
+        numero_documento: formData.numero_documento,
+        nombre: formData.nombre,
+        direccion: formData.direccion,
+        telefono: formData.telefono,
+        email: formData.email,
+        es_personal: true
+      };
+      
+      let terceroId = editingId;
       if (editingId) {
-        await updateTercero(editingId, formData);
-        toast.success('Empleado actualizado');
+        await updateTercero(editingId, terceroData);
       } else {
-        await createTercero(formData);
-        toast.success('Empleado creado');
+        const res = await createTercero(terceroData);
+        terceroId = res.data.id;
       }
+      
+      // Save detalle (centro_costo, linea_negocio, cargo, etc.)
+      await saveEmpleadoDetalle(terceroId, {
+        tercero_id: terceroId,
+        cargo: formData.cargo || null,
+        salario_base: formData.salario_base ? parseFloat(formData.salario_base) : null,
+        cuenta_bancaria: formData.cuenta_bancaria || null,
+        banco: formData.banco || null,
+        centro_costo_id: formData.centro_costo_id ? parseInt(formData.centro_costo_id) : null,
+        linea_negocio_id: formData.linea_negocio_id ? parseInt(formData.linea_negocio_id) : null,
+        fecha_ingreso: formData.fecha_ingreso || null
+      });
+      
+      toast.success(editingId ? 'Empleado actualizado' : 'Empleado creado');
       setShowModal(false);
       resetForm();
       loadData();
