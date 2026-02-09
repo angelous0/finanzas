@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getCuentasFinancieras, createCuentaFinanciera, deleteCuentaFinanciera, getMonedas } from '../services/api';
+import { getCuentasFinancieras, createCuentaFinanciera, updateCuentaFinanciera, deleteCuentaFinanciera, getMonedas } from '../services/api';
 import { useEmpresa } from '../context/EmpresaContext';
 import { Plus, Trash2, Edit2, Landmark, X } from 'lucide-react';
 import { toast } from 'sonner';
@@ -14,6 +14,7 @@ export const CuentasBancarias = () => {
   const [cuentas, setCuentas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [editingId, setEditingId] = useState(null);
   const [monedas, setMonedas] = useState([]);
   
   const [formData, setFormData] = useState({
@@ -55,19 +56,40 @@ export const CuentasBancarias = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await createCuentaFinanciera({
+      const payload = {
         ...formData,
         moneda_id: parseInt(formData.moneda_id),
         saldo_actual: parseFloat(formData.saldo_actual) || 0
-      });
-      toast.success('Cuenta creada');
+      };
+      if (editingId) {
+        await updateCuentaFinanciera(editingId, payload);
+        toast.success('Cuenta actualizada');
+      } else {
+        await createCuentaFinanciera(payload);
+        toast.success('Cuenta creada');
+      }
       setShowModal(false);
+      setEditingId(null);
       resetForm();
       loadData();
     } catch (error) {
-      console.error('Error creating cuenta:', error);
-      toast.error('Error al crear cuenta');
+      console.error('Error saving cuenta:', error);
+      toast.error('Error al guardar cuenta');
     }
+  };
+
+  const handleEdit = (cuenta) => {
+    setEditingId(cuenta.id);
+    setFormData({
+      nombre: cuenta.nombre || '',
+      tipo: cuenta.tipo || 'banco',
+      banco: cuenta.banco || '',
+      numero_cuenta: cuenta.numero_cuenta || '',
+      cci: cuenta.cci || '',
+      moneda_id: cuenta.moneda_id || '',
+      saldo_actual: cuenta.saldo_actual || 0
+    });
+    setShowModal(true);
   };
 
   const handleDelete = async (id) => {
@@ -106,7 +128,7 @@ export const CuentasBancarias = () => {
         </div>
         <button 
           className="btn btn-primary"
-          onClick={() => { resetForm(); setShowModal(true); }}
+          onClick={() => { resetForm(); setEditingId(null); setShowModal(true); }}
           data-testid="nueva-cuenta-btn"
         >
           <Plus size={18} />
@@ -155,12 +177,21 @@ export const CuentasBancarias = () => {
                       <p style={{ fontSize: '0.813rem', color: 'var(--muted)' }}>{cuenta.banco}</p>
                     )}
                   </div>
-                  <button 
-                    className="btn btn-outline btn-sm btn-icon"
-                    onClick={() => handleDelete(cuenta.id)}
+                  <div style={{ display: 'flex', gap: '0.25rem' }}>
+                    <button 
+                      className="btn btn-outline btn-sm btn-icon"
+                      onClick={() => handleEdit(cuenta)}
+                      data-testid={`edit-cuenta-${cuenta.id}`}
+                    >
+                      <Edit2 size={14} />
+                    </button>
+                    <button 
+                      className="btn btn-outline btn-sm btn-icon"
+                      onClick={() => handleDelete(cuenta.id)}
                   >
                     <Trash2 size={14} />
                   </button>
+                  </div>
                 </div>
                 
                 {cuenta.numero_cuenta && (
@@ -188,8 +219,8 @@ export const CuentasBancarias = () => {
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h2 className="modal-title">Nueva Cuenta</h2>
-              <button className="modal-close" onClick={() => setShowModal(false)}>
+              <h2 className="modal-title">{editingId ? 'Editar Cuenta' : 'Nueva Cuenta'}</h2>
+              <button className="modal-close" onClick={() => { setShowModal(false); setEditingId(null); }}>
                 <X size={20} />
               </button>
             </div>
