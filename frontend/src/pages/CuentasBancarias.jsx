@@ -107,6 +107,29 @@ export const CuentasBancarias = () => {
     }
   };
 
+  const handleRecalcular = async () => {
+    try {
+      const res = await recalcularSaldos();
+      toast.success(res.data.message);
+      loadData();
+    } catch (error) {
+      toast.error('Error al recalcular saldos');
+    }
+  };
+
+  const handleVerKardex = async (cuentaId) => {
+    setKardexCuentaId(cuentaId);
+    setKardexLoading(true);
+    try {
+      const res = await getKardexCuenta(cuentaId);
+      setKardex(res.data);
+    } catch (error) {
+      toast.error('Error al cargar kardex');
+    } finally {
+      setKardexLoading(false);
+    }
+  };
+
   const resetForm = () => {
     const pen = monedas.find(m => m.codigo === 'PEN');
     setFormData({
