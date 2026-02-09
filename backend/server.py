@@ -4407,9 +4407,9 @@ async def reporte_estado_resultados(
         ingresos = await conn.fetchval("""
             SELECT COALESCE(SUM(amount_total), 0) 
             FROM finanzas2.cont_venta_pos 
-            WHERE date_order BETWEEN $1 AND $2 AND estado_local != 'descartada'
+            WHERE date_order BETWEEN $1 AND $2 AND estado_local != 'descartada' AND empresa_id = $3
         """, datetime.combine(fecha_desde, datetime.min.time()), 
-            datetime.combine(fecha_hasta, datetime.max.time())) or 0
+            datetime.combine(fecha_hasta, datetime.max.time()), empresa_id) or 0
         
         # Egresos from pagos
         egresos_data = await conn.fetch("""
@@ -4417,9 +4417,9 @@ async def reporte_estado_resultados(
             FROM finanzas2.cont_gasto g
             JOIN finanzas2.cont_gasto_linea gl ON g.id = gl.gasto_id
             LEFT JOIN finanzas2.cont_categoria c ON gl.categoria_id = c.id
-            WHERE g.fecha BETWEEN $1 AND $2
+            WHERE g.fecha BETWEEN $1 AND $2 AND g.empresa_id = $3
             GROUP BY c.nombre
-        """, fecha_desde, fecha_hasta)
+        """, fecha_desde, fecha_hasta, empresa_id)
         
         total_egresos = sum(float(e['monto']) for e in egresos_data)
         
@@ -4441,19 +4441,19 @@ async def reporte_balance_general(empresa_id: int = Depends(get_empresa_id)):
         
         # Activos: Bancos y cajas
         activos_bancos = await conn.fetch("""
-            SELECT nombre, saldo_actual FROM finanzas2.cont_cuenta_financiera WHERE activo = TRUE
-        """)
+            SELECT nombre, saldo_actual FROM finanzas2.cont_cuenta_financiera WHERE activo = TRUE AND empresa_id = $1
+        """, empresa_id)
         
         total_activos = sum(float(a['saldo_actual']) for a in activos_bancos)
         
         # Pasivos: CxP + Letras pendientes
         total_cxp = await conn.fetchval("""
-            SELECT COALESCE(SUM(saldo_pendiente), 0) FROM finanzas2.cont_cxp WHERE estado NOT IN ('pagado', 'anulada')
-        """) or 0
+            SELECT COALESCE(SUM(saldo_pendiente), 0) FROM finanzas2.cont_cxp WHERE estado NOT IN ('pagado', 'anulada') AND empresa_id = $1
+        """, empresa_id) or 0
         
         total_letras = await conn.fetchval("""
-            SELECT COALESCE(SUM(saldo_pendiente), 0) FROM finanzas2.cont_letra WHERE estado IN ('pendiente', 'parcial')
-        """) or 0
+            SELECT COALESCE(SUM(saldo_pendiente), 0) FROM finanzas2.cont_letra WHERE estado IN ('pendiente', 'parcial') AND empresa_id = $1
+        """, empresa_id) or 0
         
         total_pasivos = float(total_cxp) + float(total_letras)
         
