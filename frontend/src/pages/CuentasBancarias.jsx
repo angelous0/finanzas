@@ -326,7 +326,7 @@ export const CuentasBancarias = () => {
                   Cancelar
                 </button>
                 <button type="submit" className="btn btn-primary">
-                  Crear Cuenta
+                  {editingId ? 'Guardar Cambios' : 'Crear Cuenta'}
                 </button>
               </div>
             </form>
