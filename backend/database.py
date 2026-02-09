@@ -208,6 +208,8 @@ async def create_schema():
                 salario_base DECIMAL(12, 2),
                 cuenta_bancaria VARCHAR(50),
                 banco VARCHAR(100),
+                centro_costo_id INTEGER REFERENCES finanzas2.cont_centro_costo(id),
+                linea_negocio_id INTEGER REFERENCES finanzas2.cont_linea_negocio(id),
                 activo BOOLEAN DEFAULT TRUE,
                 created_at TIMESTAMP DEFAULT NOW()
             )
