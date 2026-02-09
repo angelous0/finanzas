@@ -48,6 +48,7 @@ export const Adelantos = () => {
   const [pagoDetails, setPagoDetails] = useState(null);
   const [loadingPago, setLoadingPago] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
   
   // Filters
   const [filtroEmpleado, setFiltroEmpleado] = useState('');
@@ -91,6 +92,7 @@ export const Adelantos = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (submitting) return;
     
     if (!formData.empleado_id) {
       toast.error('Seleccione un empleado');
@@ -107,6 +109,7 @@ export const Adelantos = () => {
       return;
     }
     
+    setSubmitting(true);
     try {
       const payload = {
         empleado_id: parseInt(formData.empleado_id),
@@ -132,6 +135,8 @@ export const Adelantos = () => {
     } catch (error) {
       console.error('Error saving adelanto:', error);
       toast.error(error.response?.data?.detail || 'Error al guardar adelanto');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -637,9 +642,9 @@ export const Adelantos = () => {
                 <button type="button" className="btn btn-outline" onClick={() => { setShowModal(false); setEditingId(null); }}>
                   Cancelar
                 </button>
-                <button type="submit" className="btn btn-primary">
+                <button type="submit" className="btn btn-primary" disabled={submitting}>
                   <DollarSign size={16} />
-                  {editingId ? 'Guardar Cambios' : 'Registrar Adelanto'}
+                  {submitting ? 'Guardando...' : (editingId ? 'Guardar Cambios' : 'Registrar Adelanto')}
                 </button>
               </div>
             </form>
