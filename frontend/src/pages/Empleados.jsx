@@ -340,6 +340,97 @@ export const Empleados = () => {
                     />
                   </div>
                 </div>
+
+                {/* Detalle Laboral */}
+                <div style={{ borderTop: '1px solid var(--border)', marginTop: '0.75rem', paddingTop: '0.75rem' }}>
+                  <h4 style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--muted)', marginBottom: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Detalle Laboral</h4>
+                  
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                    <div className="form-group">
+                      <label className="form-label">Cargo</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        value={formData.cargo}
+                        onChange={(e) => setFormData(prev => ({ ...prev, cargo: e.target.value }))}
+                        data-testid="empleado-cargo"
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Fecha Ingreso</label>
+                      <input
+                        type="date"
+                        className="form-input"
+                        value={formData.fecha_ingreso}
+                        onChange={(e) => setFormData(prev => ({ ...prev, fecha_ingreso: e.target.value }))}
+                        data-testid="empleado-fecha-ingreso"
+                      />
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                    <div className="form-group">
+                      <label className="form-label">Centro de Costo</label>
+                      <select
+                        className="form-input form-select"
+                        value={formData.centro_costo_id}
+                        onChange={(e) => setFormData(prev => ({ ...prev, centro_costo_id: e.target.value }))}
+                        data-testid="empleado-centro-costo"
+                      >
+                        <option value="">-- Sin asignar --</option>
+                        {centrosCosto.map(cc => (
+                          <option key={cc.id} value={cc.id}>{cc.codigo} - {cc.nombre}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Línea de Negocio</label>
+                      <select
+                        className="form-input form-select"
+                        value={formData.linea_negocio_id}
+                        onChange={(e) => setFormData(prev => ({ ...prev, linea_negocio_id: e.target.value }))}
+                        data-testid="empleado-linea-negocio"
+                      >
+                        <option value="">-- Sin asignar --</option>
+                        {lineasNegocio.map(ln => (
+                          <option key={ln.id} value={ln.id}>{ln.codigo} - {ln.nombre}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
+                    <div className="form-group">
+                      <label className="form-label">Salario Base</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        className="form-input"
+                        value={formData.salario_base}
+                        onChange={(e) => setFormData(prev => ({ ...prev, salario_base: e.target.value }))}
+                        data-testid="empleado-salario"
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Banco</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        value={formData.banco}
+                        onChange={(e) => setFormData(prev => ({ ...prev, banco: e.target.value }))}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Cuenta Bancaria</label>
+                      <input
+                        type="text"
+                        className="form-input"
+                        value={formData.cuenta_bancaria}
+                        onChange={(e) => setFormData(prev => ({ ...prev, cuenta_bancaria: e.target.value }))}
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <div className="modal-footer">
