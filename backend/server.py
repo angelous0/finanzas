@@ -2931,9 +2931,7 @@ async def sync_ventas_pos(company: str = "ambission", days_back: int = 30, empre
                             vendedor_id, vendedor_name, company_id, company_name,
                             x_pagos, quantity_total, amount_total, state,
                             reserva_pendiente, reserva_facturada, is_cancel,
-                            order_cancel, reserva, is_credit, reserva_use_id)
-                    
-                    # Sync product lines for this order
+                            order_cancel, reserva, is_credit, reserva_use_id, empresa_id)
                     try:
                         # Get the local venta_pos id
                         local_venta = await conn.fetchrow("""
