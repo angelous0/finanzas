@@ -5,7 +5,7 @@ import asyncio
 import httpx
 import json
 
-API = "https://multi-company-dev.preview.emergentagent.com/api"
+API = "https://gasto-form.preview.emergentagent.com/api"
 RESULTS = []
 
 def log(msg, ok=None):
