@@ -4205,7 +4205,7 @@ async def create_conciliacion(data: ConciliacionCreate, empresa_id: int = Depend
         row = await conn.fetchrow("""
             INSERT INTO finanzas2.cont_conciliacion 
             (cuenta_financiera_id, fecha_inicio, fecha_fin, saldo_inicial, saldo_final, notas, empresa_id)
-            VALUES ($1, TO_DATE($2, 'YYYY-MM-DD'), TO_DATE($3, 'YYYY-MM-DD'), $4, $5, $6)
+            VALUES ($1, TO_DATE($2, 'YYYY-MM-DD'), TO_DATE($3, 'YYYY-MM-DD'), $4, $5, $6, $7)
             RETURNING *
         """, data.cuenta_financiera_id, safe_date_param(data.fecha_inicio), safe_date_param(data.fecha_fin),
             data.saldo_inicial, data.saldo_final, data.notas, empresa_id)
