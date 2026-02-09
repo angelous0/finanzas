@@ -27,7 +27,7 @@ export const Proveedores = () => {
 
   useEffect(() => {
     loadProveedores();
-  }, [search]);
+  }, [search, empresaActual]);
 
   const loadProveedores = async () => {
     try {

@@ -27,7 +27,7 @@ export const CxC = () => {
 
   useEffect(() => {
     loadData();
-  }, [filtroEstado]);
+  }, [filtroEstado, empresaActual]);
 
   const loadData = async () => {
     try {

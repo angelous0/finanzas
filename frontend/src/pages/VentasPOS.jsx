@@ -123,7 +123,7 @@ export const VentasPOS = () => {
 
   useEffect(() => {
     loadVentas();
-  }, [activeTab, filtroEmpresa, fechaDesde, fechaHasta, search]);
+  }, [activeTab, filtroEmpresa, fechaDesde, fechaHasta, search, empresaActual]);
 
   const loadVentas = async () => {
     try {

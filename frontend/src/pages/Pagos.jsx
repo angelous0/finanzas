@@ -31,7 +31,7 @@ export const Pagos = () => {
 
   useEffect(() => {
     loadData();
-  }, [filtroTipo]);
+  }, [filtroTipo, empresaActual]);
 
   const loadData = async () => {
     try {

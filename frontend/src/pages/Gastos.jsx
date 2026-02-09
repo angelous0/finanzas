@@ -84,7 +84,7 @@ export default function Gastos() {
 
   useEffect(() => {
     loadData();
-  }, [filtroFecha]);
+  }, [filtroFecha, empresaActual]);
 
   const loadData = async () => {
     try {

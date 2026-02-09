@@ -27,7 +27,7 @@ export const CxP = () => {
 
   useEffect(() => {
     loadData();
-  }, [filtroEstado]);
+  }, [filtroEstado, empresaActual]);
 
   const loadData = async () => {
     try {

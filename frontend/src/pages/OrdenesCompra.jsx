@@ -127,7 +127,7 @@ export default function OrdenesCompra() {
 
   useEffect(() => {
     loadData();
-  }, [filtroEstado, filtroProveedor]);
+  }, [filtroEstado, filtroProveedor, empresaActual]);
 
   const loadData = async () => {
     try {
