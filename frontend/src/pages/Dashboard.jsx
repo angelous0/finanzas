@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getDashboardKPIs } from '../services/api';
+import { useEmpresa } from '../context/EmpresaContext';
 import { 
   TrendingUp, TrendingDown, DollarSign, CreditCard, 
   FileText, Clock, Landmark, Receipt 
@@ -13,9 +14,11 @@ export const Dashboard = () => {
   const [kpis, setKpis] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const { empresaActual } = useEmpresa();
+
   useEffect(() => {
-    loadKPIs();
-  }, []);
+    if (empresaActual) loadKPIs();
+  }, [empresaActual]);
 
   const loadKPIs = async () => {
     try {
