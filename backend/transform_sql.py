@@ -339,4 +339,5 @@ with open('/app/backend/server.py', 'w') as f:
     f.write(content)
 
 print("SQL query transformations complete")
-print(f"Remaining conditions = ['1=1']: {content.count('conditions = [\"1=1\"]')}")
+count = content.count('conditions = ["1=1"]')
+print(f"Remaining conditions = ['1=1']: {count}")
