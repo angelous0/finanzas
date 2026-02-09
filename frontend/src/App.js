@@ -66,6 +66,7 @@ function App() {
   return (
     <Router>
       <EmpresaProvider>
+        <EmpresaGuard>
         <div className={`app-layout ${sidebarCollapsed ? 'sidebar-collapsed' : ''} ${mobileMenuOpen ? 'mobile-menu-open' : ''}`}>
           {/* Mobile menu overlay */}
           {mobileMenuOpen && (
