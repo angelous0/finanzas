@@ -3244,29 +3244,28 @@ async def desconfirmar_venta_pos(id: int, empresa_id: int = Depends(get_empresa_
                 WHERE pa.tipo_documento = 'venta_pos' AND pa.documento_id = $1
             """, id)
             
-            if not pagos_oficiales:
-                raise HTTPException(400, "No se encontraron pagos oficiales para esta venta")
-            
             # IMPORTANTE: Eliminar pagos temporales existentes (evita duplicados)
             await conn.execute("""
                 DELETE FROM finanzas2.cont_venta_pos_pago WHERE venta_pos_id = $1
             """, id)
             
-            # Restaurar los pagos en cont_venta_pos_pago (tabla temporal)
-            for pago in pagos_oficiales:
-                await conn.execute("""
-                    INSERT INTO finanzas2.cont_venta_pos_pago 
-                    (venta_pos_id, forma_pago, cuenta_financiera_id, monto, referencia, fecha_pago, observaciones, empresa_id)
-                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-                """, id, pago['medio_pago'], pago['cuenta_financiera_id'], 
-                    pago['monto'], pago['referencia'], pago['fecha'], 
-                    pago['notas'] or 'Pago restaurado desde confirmación', empresa_id)
-            
-            # Eliminar los pagos oficiales (CASCADE eliminará cont_pago_detalle y cont_pago_aplicacion)
-            for pago in pagos_oficiales:
-                await conn.execute("""
-                    DELETE FROM finanzas2.cont_pago WHERE id = $1
-                """, pago['pago_id'])
+            # Restaurar los pagos en cont_venta_pos_pago (tabla temporal) si existen
+            if pagos_oficiales:
+                for pago in pagos_oficiales:
+                    await conn.execute("""
+                        INSERT INTO finanzas2.cont_venta_pos_pago 
+                        (venta_pos_id, forma_pago, cuenta_financiera_id, monto, referencia, fecha_pago, observaciones, empresa_id)
+                        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+                    """, id, pago['medio_pago'], pago['cuenta_financiera_id'], 
+                        pago['monto'], pago['referencia'], pago['fecha'], 
+                        pago['notas'] or 'Pago restaurado desde confirmación', empresa_id)
+                
+                # Eliminar los pagos oficiales (CASCADE eliminará cont_pago_detalle y cont_pago_aplicacion)
+                pago_ids = list(set(p['pago_id'] for p in pagos_oficiales))
+                for pago_id in pago_ids:
+                    await conn.execute("""
+                        DELETE FROM finanzas2.cont_pago WHERE id = $1
+                    """, pago_id)
             
             # Cambiar estado de la venta a pendiente
             await conn.execute("""
