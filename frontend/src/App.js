@@ -40,6 +40,14 @@ import {
   EstadoResultados, FlujoCaja 
 } from './pages/PlaceholderPages';
 
+function EmpresaGuard({ children }) {
+  const { empresaActual, loading } = useEmpresa();
+  if (loading || !empresaActual) {
+    return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>Cargando...</div>;
+  }
+  return children;
+}
+
 function App() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
