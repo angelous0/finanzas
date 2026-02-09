@@ -1344,17 +1344,8 @@ async def generar_factura_desde_oc(id: int, empresa_id: int = Depends(get_empres
 # =====================
 async def generate_factura_number(conn, empresa_id: int) -> str:
     year = datetime.now().year
-    prefix = f"FP-{year}-"
-    last = await conn.fetchval(f"""
-        SELECT numero FROM finanzas2.cont_factura_proveedor 
-        WHERE numero LIKE '{prefix}%' AND empresa_id = $1
-        ORDER BY id DESC LIMIT 1
-    """, empresa_id)
-    if last:
-        num = int(last.split('-')[-1]) + 1
-    else:
-        num = 1
-    return f"{prefix}{num:05d}"
+    prefijo = f"FP-{year}-"
+    return await get_next_correlativo(conn, empresa_id, 'factura_proveedor', prefijo)
 
 @api_router.get("/facturas-proveedor", response_model=List[FacturaProveedor])
 async def list_facturas_proveedor(
