@@ -2008,11 +2008,11 @@ async def generar_letras(data: GenerarLetrasRequest, empresa_id: int = Depends(g
                     
                     letra = await conn.fetchrow("""
                         INSERT INTO finanzas2.cont_letra 
-                        (numero, factura_id, proveedor_id, monto, fecha_emision, fecha_vencimiento, 
+                        (empresa_id, numero, factura_id, proveedor_id, monto, fecha_emision, fecha_vencimiento, 
                          estado, saldo_pendiente)
-                        VALUES ($1, $2, $3, $4, TO_DATE($5, 'YYYY-MM-DD'), TO_DATE($6, 'YYYY-MM-DD'), 'pendiente', $4)
+                        VALUES ($1, $2, $3, $4, $5, TO_DATE($6, 'YYYY-MM-DD'), TO_DATE($7, 'YYYY-MM-DD'), 'pendiente', $5)
                         RETURNING *
-                    """, numero, data.factura_id, factura['proveedor_id'], letra_data.monto,
+                    """, empresa_id, numero, data.factura_id, factura['proveedor_id'], letra_data.monto,
                         safe_date_param(datetime.now().date()), safe_date_param(letra_data.fecha_vencimiento))
                     letras.append(dict(letra))
             else:
@@ -2026,11 +2026,11 @@ async def generar_letras(data: GenerarLetrasRequest, empresa_id: int = Depends(g
                     
                     letra = await conn.fetchrow("""
                         INSERT INTO finanzas2.cont_letra 
-                        (numero, factura_id, proveedor_id, monto, fecha_emision, fecha_vencimiento, 
+                        (empresa_id, numero, factura_id, proveedor_id, monto, fecha_emision, fecha_vencimiento, 
                          estado, saldo_pendiente)
-                        VALUES ($1, $2, $3, $4, TO_DATE($5, 'YYYY-MM-DD'), TO_DATE($6, 'YYYY-MM-DD'), 'pendiente', $4)
+                        VALUES ($1, $2, $3, $4, $5, TO_DATE($6, 'YYYY-MM-DD'), TO_DATE($7, 'YYYY-MM-DD'), 'pendiente', $5)
                         RETURNING *
-                    """, numero, data.factura_id, factura['proveedor_id'], monto_por_letra,
+                    """, empresa_id, numero, data.factura_id, factura['proveedor_id'], monto_por_letra,
                         safe_date_param(datetime.now().date()), safe_date_param(fecha_vencimiento))
                     letras.append(dict(letra))
             
