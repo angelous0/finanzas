@@ -213,8 +213,10 @@ export const Empleados = () => {
                   <tr>
                     <th>DNI</th>
                     <th>Nombre</th>
+                    <th>Cargo</th>
+                    <th>Centro Costo</th>
+                    <th>Línea Negocio</th>
                     <th>Teléfono</th>
-                    <th>Email</th>
                     <th className="text-center">Acciones</th>
                   </tr>
                 </thead>
@@ -225,8 +227,10 @@ export const Empleados = () => {
                         {empleado.numero_documento || '-'}
                       </td>
                       <td style={{ fontWeight: 500 }}>{empleado.nombre}</td>
+                      <td>{empleado.cargo || '-'}</td>
+                      <td>{empleado.centro_costo_nombre || '-'}</td>
+                      <td>{empleado.linea_negocio_nombre || '-'}</td>
                       <td>{empleado.telefono || '-'}</td>
-                      <td>{empleado.email || '-'}</td>
                       <td className="text-center">
                         <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
                           <button 
