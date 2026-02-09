@@ -615,7 +615,7 @@ async def get_kardex_cuenta(
             ORDER BY p.fecha ASC, pd.id ASC
         """, *params)
         
-        saldo_inicial = 0.0
+        saldo_base = float(cuenta.get('saldo_inicial') or 0)
         # If filtering by date, compute saldo before the period
         if fecha_desde:
             pre_ingresos = await conn.fetchval("""
@@ -628,9 +628,9 @@ async def get_kardex_cuenta(
                 JOIN finanzas2.cont_pago p ON pd.pago_id = p.id
                 WHERE pd.cuenta_financiera_id = $1 AND pd.empresa_id = $2 AND p.tipo = 'egreso' AND p.fecha < $3
             """, id, empresa_id, fecha_desde) or 0
-            saldo_periodo = float(pre_ingresos) - float(pre_egresos)
+            saldo_periodo = saldo_base + float(pre_ingresos) - float(pre_egresos)
         else:
-            saldo_periodo = 0.0
+            saldo_periodo = saldo_base
         
         movimientos = []
         saldo = saldo_periodo
