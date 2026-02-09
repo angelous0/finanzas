@@ -73,6 +73,8 @@ export const deleteTercero = (id) => api.delete(`/terceros/${id}`);
 export const getProveedores = (search) => api.get('/proveedores', { params: { search } });
 export const getClientes = (search) => api.get('/clientes', { params: { search } });
 export const getEmpleados = (search) => api.get('/empleados', { params: { search } });
+export const getEmpleadoDetalle = (terceroId) => api.get(`/empleados/${terceroId}/detalle`);
+export const saveEmpleadoDetalle = (terceroId, data) => api.post(`/empleados/${terceroId}/detalle`, data);
 
 // Articulos
 export const getArticulos = (search) => api.get('/articulos', { params: { search } });
