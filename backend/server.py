@@ -1101,7 +1101,7 @@ async def delete_orden_compra(id: int, empresa_id: int = Depends(get_empresa_id)
         await conn.execute("SET search_path TO finanzas2, public")
         
         # Check if OC has been converted to factura
-        oc = await conn.fetchrow("SELECT * FROM finanzas2.cont_oc WHERE id = $1", id)
+        oc = await conn.fetchrow("SELECT * FROM finanzas2.cont_oc WHERE id = $1 AND empresa_id = $2", id, empresa_id)
         if not oc:
             raise HTTPException(404, "Orden de compra not found")
         if oc['factura_generada_id']:
@@ -1401,7 +1401,7 @@ async def update_factura_proveedor(id: int, data: FacturaProveedorUpdate, empres
         await conn.execute("SET search_path TO finanzas2, public")
         
         # Check if factura can be edited
-        factura = await conn.fetchrow("SELECT * FROM finanzas2.cont_factura_proveedor WHERE id = $1", id)
+        factura = await conn.fetchrow("SELECT * FROM finanzas2.cont_factura_proveedor WHERE id = $1 AND empresa_id = $2", id, empresa_id)
         if not factura:
             raise HTTPException(404, "Factura not found")
         if factura['estado'] in ('pagado', 'anulada'):
@@ -1431,7 +1431,7 @@ async def delete_factura_proveedor(id: int, empresa_id: int = Depends(get_empres
         await conn.execute("SET search_path TO finanzas2, public")
         
         async with conn.transaction():
-            factura = await conn.fetchrow("SELECT * FROM finanzas2.cont_factura_proveedor WHERE id = $1", id)
+            factura = await conn.fetchrow("SELECT * FROM finanzas2.cont_factura_proveedor WHERE id = $1 AND empresa_id = $2", id, empresa_id)
             if not factura:
                 raise HTTPException(404, "Factura not found")
             
@@ -1504,7 +1504,7 @@ async def deshacer_canje_letras(id: int, empresa_id: int = Depends(get_empresa_i
         await conn.execute("SET search_path TO finanzas2, public")
         
         async with conn.transaction():
-            factura = await conn.fetchrow("SELECT * FROM finanzas2.cont_factura_proveedor WHERE id = $1", id)
+            factura = await conn.fetchrow("SELECT * FROM finanzas2.cont_factura_proveedor WHERE id = $1 AND empresa_id = $2", id, empresa_id)
             if not factura:
                 raise HTTPException(404, "Factura not found")
             
@@ -1831,7 +1831,7 @@ async def update_pago(id: int, data: dict, empresa_id: int = Depends(get_empresa
         await conn.execute("SET search_path TO finanzas2, public")
         
         # Check if pago exists and if it's conciliado
-        pago = await conn.fetchrow("SELECT * FROM finanzas2.cont_pago WHERE id = $1", id)
+        pago = await conn.fetchrow("SELECT * FROM finanzas2.cont_pago WHERE id = $1 AND empresa_id = $2", id, empresa_id)
         if not pago:
             raise HTTPException(404, "Pago no encontrado")
         
@@ -1887,7 +1887,7 @@ async def delete_pago(id: int, empresa_id: int = Depends(get_empresa_id)):
         await conn.execute("SET search_path TO finanzas2, public")
         
         async with conn.transaction():
-            pago = await conn.fetchrow("SELECT * FROM finanzas2.cont_pago WHERE id = $1", id)
+            pago = await conn.fetchrow("SELECT * FROM finanzas2.cont_pago WHERE id = $1 AND empresa_id = $2", id, empresa_id)
             if not pago:
                 raise HTTPException(404, "Pago not found")
             
@@ -2051,7 +2051,7 @@ async def delete_letra(id: int, empresa_id: int = Depends(get_empresa_id)):
         await conn.execute("SET search_path TO finanzas2, public")
         
         async with conn.transaction():
-            letra = await conn.fetchrow("SELECT * FROM finanzas2.cont_letra WHERE id = $1", id)
+            letra = await conn.fetchrow("SELECT * FROM finanzas2.cont_letra WHERE id = $1 AND empresa_id = $2", id, empresa_id)
             if not letra:
                 raise HTTPException(404, "Letra not found")
             
@@ -2295,7 +2295,7 @@ async def delete_gasto(id: int, empresa_id: int = Depends(get_empresa_id)):
         await conn.execute("SET search_path TO finanzas2, public")
         
         # Check if gasto exists
-        gasto = await conn.fetchrow("SELECT * FROM finanzas2.cont_gasto WHERE id = $1", id)
+        gasto = await conn.fetchrow("SELECT * FROM finanzas2.cont_gasto WHERE id = $1 AND empresa_id = $2", id, empresa_id)
         if not gasto:
             raise HTTPException(status_code=404, detail="Gasto no encontrado")
         
@@ -2396,7 +2396,7 @@ async def create_adelanto(data: AdelantoCreate, empresa_id: int = Depends(get_em
                 """, pago_id, row['id'], data.monto, empresa_id)
             
             # Get empleado nombre
-            emp = await conn.fetchrow("SELECT nombre FROM finanzas2.cont_tercero WHERE id = $1", data.empleado_id)
+            emp = await conn.fetchrow("SELECT nombre FROM finanzas2.cont_tercero WHERE id = $1 AND empresa_id = $2", data.empleado_id, empresa_id)
             result = dict(row)
             result['empleado_nombre'] = emp['nombre'] if emp else None
             
@@ -2417,8 +2417,8 @@ async def pagar_adelanto(
         async with conn.transaction():
             # Get the adelanto
             adelanto = await conn.fetchrow(
-                "SELECT * FROM finanzas2.cont_adelanto_empleado WHERE id = $1", id
-            )
+                "SELECT * FROM finanzas2.cont_adelanto_empleado WHERE id = $1 AND empresa_id = $2", id
+            , empresa_id)
             if not adelanto:
                 raise HTTPException(404, "Adelanto no encontrado")
             if adelanto['pagado']:
@@ -2465,9 +2465,9 @@ async def pagar_adelanto(
             
             # Get empleado nombre
             emp = await conn.fetchrow(
-                "SELECT nombre FROM finanzas2.cont_tercero WHERE id = $1", 
+                "SELECT nombre FROM finanzas2.cont_tercero WHERE id = $1 AND empresa_id = $2", 
                 row['empleado_id']
-            )
+            , empresa_id)
             result = dict(row)
             result['empleado_nombre'] = emp['nombre'] if emp else None
             
@@ -2482,8 +2482,8 @@ async def update_adelanto(id: int, data: AdelantoCreate, empresa_id: int = Depen
         
         # Check if adelanto exists and is not already paid/discounted
         existing = await conn.fetchrow(
-            "SELECT * FROM finanzas2.cont_adelanto_empleado WHERE id = $1", id
-        )
+            "SELECT * FROM finanzas2.cont_adelanto_empleado WHERE id = $1 AND empresa_id = $2", id
+        , empresa_id)
         if not existing:
             raise HTTPException(404, "Adelanto no encontrado")
         if existing['pagado'] or existing['descontado']:
@@ -2498,9 +2498,9 @@ async def update_adelanto(id: int, data: AdelantoCreate, empresa_id: int = Depen
         
         # Get empleado nombre
         emp = await conn.fetchrow(
-            "SELECT nombre FROM finanzas2.cont_tercero WHERE id = $1", 
+            "SELECT nombre FROM finanzas2.cont_tercero WHERE id = $1 AND empresa_id = $2", 
             row['empleado_id']
-        )
+        , empresa_id)
         result = dict(row)
         result['empleado_nombre'] = emp['nombre'] if emp else None
         
@@ -2515,8 +2515,8 @@ async def delete_adelanto(id: int, empresa_id: int = Depends(get_empresa_id)):
         
         # Check if adelanto exists and can be deleted
         existing = await conn.fetchrow(
-            "SELECT * FROM finanzas2.cont_adelanto_empleado WHERE id = $1", id
-        )
+            "SELECT * FROM finanzas2.cont_adelanto_empleado WHERE id = $1 AND empresa_id = $2", id
+        , empresa_id)
         if not existing:
             raise HTTPException(404, "Adelanto no encontrado")
         if existing['pagado']:
@@ -2603,7 +2603,7 @@ async def create_planilla(data: PlanillaCreate, empresa_id: int = Depends(get_em
                     detalle.adelantos, detalle.otros_descuentos, neto_pagar, empresa_id)
                 
                 # Get employee name
-                emp = await conn.fetchrow("SELECT nombre FROM finanzas2.cont_tercero WHERE id = $1", detalle.empleado_id)
+                emp = await conn.fetchrow("SELECT nombre FROM finanzas2.cont_tercero WHERE id = $1 AND empresa_id = $2", detalle.empleado_id, empresa_id)
                 detalle_dict = dict(detalle_row)
                 detalle_dict['empleado_nombre'] = emp['nombre'] if emp else None
                 detalles_list.append(detalle_dict)
@@ -2616,7 +2616,7 @@ async def get_planilla(id: int) -> dict:
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
         
-        row = await conn.fetchrow("SELECT * FROM finanzas2.cont_planilla WHERE id = $1", id)
+        row = await conn.fetchrow("SELECT * FROM finanzas2.cont_planilla WHERE id = $1 AND empresa_id = $2", id, empresa_id)
         if not row:
             raise HTTPException(404, "Planilla not found")
         
@@ -2643,7 +2643,7 @@ async def pagar_planilla(id: int, cuenta_financiera_id: int = Query(...), empres
         await conn.execute("SET search_path TO finanzas2, public")
         
         async with conn.transaction():
-            planilla = await conn.fetchrow("SELECT * FROM finanzas2.cont_planilla WHERE id = $1", id)
+            planilla = await conn.fetchrow("SELECT * FROM finanzas2.cont_planilla WHERE id = $1 AND empresa_id = $2", id, empresa_id)
             if not planilla:
                 raise HTTPException(404, "Planilla not found")
             if planilla['estado'] == 'pagada':
@@ -2702,8 +2702,8 @@ async def delete_planilla(id: int, empresa_id: int = Depends(get_empresa_id)):
         
         # Check if planilla exists and can be deleted
         existing = await conn.fetchrow(
-            "SELECT * FROM finanzas2.cont_planilla WHERE id = $1", id
-        )
+            "SELECT * FROM finanzas2.cont_planilla WHERE id = $1 AND empresa_id = $2", id
+        , empresa_id)
         if not existing:
             raise HTTPException(404, "Planilla no encontrada")
         if existing['estado'] == 'pagada':
@@ -2994,7 +2994,7 @@ async def confirmar_venta_pos(id: int, empresa_id: int = Depends(get_empresa_id)
         
         # TODO: Validate that venta has assigned payments
         # For now, just check if it exists
-        venta = await conn.fetchrow("SELECT * FROM finanzas2.cont_venta_pos WHERE id = $1", id)
+        venta = await conn.fetchrow("SELECT * FROM finanzas2.cont_venta_pos WHERE id = $1 AND empresa_id = $2", id, empresa_id)
         if not venta:
             raise HTTPException(404, "Venta not found")
         
@@ -3018,7 +3018,7 @@ async def marcar_credito_venta_pos(id: int, fecha_vencimiento: Optional[date] = 
         await conn.execute("SET search_path TO finanzas2, public")
         
         async with conn.transaction():
-            venta = await conn.fetchrow("SELECT * FROM finanzas2.cont_venta_pos WHERE id = $1", id)
+            venta = await conn.fetchrow("SELECT * FROM finanzas2.cont_venta_pos WHERE id = $1 AND empresa_id = $2", id, empresa_id)
             if not venta:
                 raise HTTPException(404, "Venta not found")
             
@@ -3062,7 +3062,7 @@ async def desconfirmar_venta_pos(id: int, empresa_id: int = Depends(get_empresa_
         
         async with conn.transaction():
             # Verificar que la venta existe y está confirmada
-            venta = await conn.fetchrow("SELECT * FROM finanzas2.cont_venta_pos WHERE id = $1", id)
+            venta = await conn.fetchrow("SELECT * FROM finanzas2.cont_venta_pos WHERE id = $1 AND empresa_id = $2", id, empresa_id)
             if not venta:
                 raise HTTPException(404, "Venta not found")
             
@@ -3187,7 +3187,7 @@ async def add_pago_venta_pos(id: int, pago: dict, empresa_id: int = Depends(get_
         
         async with conn.transaction():
             # Get venta
-            venta = await conn.fetchrow("SELECT * FROM finanzas2.cont_venta_pos WHERE id = $1", id)
+            venta = await conn.fetchrow("SELECT * FROM finanzas2.cont_venta_pos WHERE id = $1 AND empresa_id = $2", id, empresa_id)
             if not venta:
                 raise HTTPException(404, "Venta not found")
             
@@ -3448,7 +3448,7 @@ async def get_presupuesto(id: int) -> dict:
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
         
-        row = await conn.fetchrow("SELECT * FROM finanzas2.cont_presupuesto WHERE id = $1", id)
+        row = await conn.fetchrow("SELECT * FROM finanzas2.cont_presupuesto WHERE id = $1 AND empresa_id = $2", id, empresa_id)
         if not row:
             raise HTTPException(404, "Presupuesto not found")
         
