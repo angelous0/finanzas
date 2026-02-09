@@ -47,6 +47,7 @@ export const VentasPOS = () => {
   const [ventas, setVentas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [activeTab, setActiveTab] = useState('pendiente');
   
   // Helper: Get yesterday's date in Lima timezone (UTC-5)
@@ -396,6 +397,7 @@ export const VentasPOS = () => {
   };
 
   const handleAddPago = async () => {
+    if (submitting) return;
     if (!nuevoPago.monto || parseFloat(nuevoPago.monto) <= 0) {
       toast.error('Ingrese un monto válido');
       return;
@@ -406,6 +408,7 @@ export const VentasPOS = () => {
       return;
     }
 
+    setSubmitting(true);
     try {
       const response = await addPagoVentaPOS(ventaSeleccionada.id, {
         ...nuevoPago,
@@ -447,6 +450,8 @@ export const VentasPOS = () => {
     } catch (error) {
       console.error('Error adding pago:', error);
       toast.error('Error al agregar pago');
+    } finally {
+      setSubmitting(false);
     }
   };
 
