@@ -1772,7 +1772,7 @@ async def create_pago(data: PagoCreate, empresa_id: int = Depends(get_empresa_id
                     if aplicacion.monto_aplicado > float(doc['saldo_pendiente']):
                         raise HTTPException(400, f"El monto ({aplicacion.monto_aplicado:.2f}) excede el saldo pendiente ({doc['saldo_pendiente']:.2f})")
             
-            numero = await generate_pago_number(conn, data.tipo)
+            numero = await generate_pago_number(conn, data.tipo, empresa_id)
             
             # Create pago
             pago = await conn.fetchrow("""
