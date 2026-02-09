@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { getCuentasFinancieras, createCuentaFinanciera, updateCuentaFinanciera, deleteCuentaFinanciera, getMonedas } from '../services/api';
+import { getCuentasFinancieras, createCuentaFinanciera, updateCuentaFinanciera, deleteCuentaFinanciera, getMonedas, getKardexCuenta, recalcularSaldos } from '../services/api';
 import { useEmpresa } from '../context/EmpresaContext';
-import { Plus, Trash2, Edit2, Landmark, X } from 'lucide-react';
+import { Plus, Trash2, Edit2, Landmark, X, RefreshCw, FileText, ArrowUpCircle, ArrowDownCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 const formatCurrency = (value, symbol = 'S/') => {
