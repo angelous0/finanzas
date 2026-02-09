@@ -11,6 +11,7 @@ export const Proveedores = () => {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
   const [search, setSearch] = useState('');
   
   const [formData, setFormData] = useState({
@@ -44,6 +45,8 @@ export const Proveedores = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (submitting) return;
+    setSubmitting(true);
     try {
       if (editingId) {
         await updateTercero(editingId, formData);
@@ -58,6 +61,8 @@ export const Proveedores = () => {
     } catch (error) {
       console.error('Error saving:', error);
       toast.error('Error al guardar proveedor');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -314,8 +319,8 @@ export const Proveedores = () => {
                 <button type="button" className="btn btn-outline" onClick={() => setShowModal(false)}>
                   Cancelar
                 </button>
-                <button type="submit" className="btn btn-primary">
-                  {editingId ? 'Actualizar' : 'Crear'}
+                <button type="submit" className="btn btn-primary" disabled={submitting}>
+                  {submitting ? 'Guardando...' : (editingId ? 'Actualizar' : 'Crear')}
                 </button>
               </div>
             </form>
