@@ -615,9 +615,8 @@ async def get_kardex_cuenta(
             ORDER BY p.fecha ASC, pd.id ASC
         """, *params)
         
-        saldo_inicial = float(cuenta['saldo_actual'])
-        # Compute what saldo_inicial was BEFORE the filtered period
-        # by getting all movements before fecha_desde
+        saldo_inicial = 0.0
+        # If filtering by date, compute saldo before the period
         if fecha_desde:
             pre_ingresos = await conn.fetchval("""
                 SELECT COALESCE(SUM(pd.monto), 0) FROM finanzas2.cont_pago_detalle pd
@@ -629,14 +628,9 @@ async def get_kardex_cuenta(
                 JOIN finanzas2.cont_pago p ON pd.pago_id = p.id
                 WHERE pd.cuenta_financiera_id = $1 AND pd.empresa_id = $2 AND p.tipo = 'egreso' AND p.fecha < $3
             """, id, empresa_id, fecha_desde) or 0
-            # saldo_inicial for this period = initial deposit + pre_ingresos - pre_egresos
-            # But we don't know the original deposit, so use: current saldo - all movements + pre movements
-            # Simpler: just accumulate from saldo_actual of the account as starting point
-            # Actually, compute saldo_inicio = saldo_actual_original + sum(pre_ingresos) - sum(pre_egresos)
-            # Since saldo_actual in DB is the ORIGINAL (not recalculated), use it
-            saldo_periodo = float(saldo_inicial) + float(pre_ingresos) - float(pre_egresos)
+            saldo_periodo = float(pre_ingresos) - float(pre_egresos)
         else:
-            saldo_periodo = float(saldo_inicial)
+            saldo_periodo = 0.0
         
         movimientos = []
         saldo = saldo_periodo
