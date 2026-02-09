@@ -1346,9 +1346,12 @@ async def create_factura_proveedor(data: FacturaProveedorCreate):
             
             fp_dict = dict(row)
             lineas = await conn.fetch("""
-                SELECT fpl.*, c.nombre as categoria_nombre, ln.nombre as linea_negocio_nombre, cc.nombre as centro_costo_nombre
+                SELECT fpl.*, c.nombre as categoria_nombre, c.padre_id as categoria_padre_id,
+                       cp.nombre as categoria_padre_nombre,
+                       ln.nombre as linea_negocio_nombre, cc.nombre as centro_costo_nombre
                 FROM finanzas2.cont_factura_proveedor_linea fpl
                 LEFT JOIN finanzas2.cont_categoria c ON fpl.categoria_id = c.id
+                LEFT JOIN finanzas2.cont_categoria cp ON c.padre_id = cp.id
                 LEFT JOIN finanzas2.cont_linea_negocio ln ON fpl.linea_negocio_id = ln.id
                 LEFT JOIN finanzas2.cont_centro_costo cc ON fpl.centro_costo_id = cc.id
                 WHERE fpl.factura_id = $1 ORDER BY fpl.id
