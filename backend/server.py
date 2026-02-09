@@ -115,6 +115,7 @@ async def startup():
     logger.info("Starting Finanzas 4.0 API...")
     await init_db()
     await seed_data()
+    await sync_correlativos()
     logger.info("Finanzas 4.0 API started successfully")
 
 @app.on_event("shutdown")
