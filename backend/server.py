@@ -212,7 +212,7 @@ async def health():
 # =====================
 # DASHBOARD
 # =====================
-@api_router.get("/dashboard/kpis", response_model=DashboardKPIs),
+@api_router.get("/dashboard/kpis", response_model=DashboardKPIs)
 async def get_dashboard_kpis(empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -374,7 +374,7 @@ async def delete_moneda(id: int):
 # =====================
 # CATEGORIAS
 # =====================
-@api_router.get("/categorias"),
+@api_router.get("/categorias")
 async def list_categorias(empresa_id: int = Depends(get_empresa_id), tipo: Optional[str] = None):
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -399,7 +399,7 @@ async def list_categorias(empresa_id: int = Depends(get_empresa_id), tipo: Optio
             result.append(item)
         return result
 
-@api_router.post("/categorias", response_model=Categoria),
+@api_router.post("/categorias", response_model=Categoria)
 async def create_categoria(data: CategoriaCreate, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -411,7 +411,7 @@ async def create_categoria(data: CategoriaCreate, empresa_id: int = Depends(get_
         """, empresa_id, data.codigo, data.nombre, data.tipo, data.padre_id, data.descripcion, data.activo)
         return dict(row)
 
-@api_router.put("/categorias/{id}", response_model=Categoria),
+@api_router.put("/categorias/{id}", response_model=Categoria)
 async def update_categoria(id: int, data: CategoriaUpdate, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -433,7 +433,7 @@ async def update_categoria(id: int, data: CategoriaUpdate, empresa_id: int = Dep
             raise HTTPException(404, "Categoria not found")
         return dict(row)
 
-@api_router.delete("/categorias/{id}"),
+@api_router.delete("/categorias/{id}")
 async def delete_categoria(id: int, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -446,7 +446,7 @@ async def delete_categoria(id: int, empresa_id: int = Depends(get_empresa_id)):
 # =====================
 # CENTROS DE COSTO
 # =====================
-@api_router.get("/centros-costo", response_model=List[CentroCosto]),
+@api_router.get("/centros-costo", response_model=List[CentroCosto])
 async def list_centros_costo(empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -454,7 +454,7 @@ async def list_centros_costo(empresa_id: int = Depends(get_empresa_id)):
         rows = await conn.fetch("SELECT * FROM finanzas2.cont_centro_costo WHERE empresa_id = $1 ORDER BY nombre", empresa_id)
         return [dict(r) for r in rows]
 
-@api_router.post("/centros-costo", response_model=CentroCosto),
+@api_router.post("/centros-costo", response_model=CentroCosto)
 async def create_centro_costo(data: CentroCostoCreate, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -466,7 +466,7 @@ async def create_centro_costo(data: CentroCostoCreate, empresa_id: int = Depends
         """, empresa_id, data.codigo, data.nombre, data.descripcion, data.activo)
         return dict(row)
 
-@api_router.delete("/centros-costo/{id}"),
+@api_router.delete("/centros-costo/{id}")
 async def delete_centro_costo(id: int, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -479,7 +479,7 @@ async def delete_centro_costo(id: int, empresa_id: int = Depends(get_empresa_id)
 # =====================
 # LINEAS DE NEGOCIO
 # =====================
-@api_router.get("/lineas-negocio", response_model=List[LineaNegocio]),
+@api_router.get("/lineas-negocio", response_model=List[LineaNegocio])
 async def list_lineas_negocio(empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -487,7 +487,7 @@ async def list_lineas_negocio(empresa_id: int = Depends(get_empresa_id)):
         rows = await conn.fetch("SELECT * FROM finanzas2.cont_linea_negocio WHERE empresa_id = $1 ORDER BY nombre", empresa_id)
         return [dict(r) for r in rows]
 
-@api_router.post("/lineas-negocio", response_model=LineaNegocio),
+@api_router.post("/lineas-negocio", response_model=LineaNegocio)
 async def create_linea_negocio(data: LineaNegocioCreate, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -499,7 +499,7 @@ async def create_linea_negocio(data: LineaNegocioCreate, empresa_id: int = Depen
         """, empresa_id, data.codigo, data.nombre, data.descripcion, data.activo)
         return dict(row)
 
-@api_router.delete("/lineas-negocio/{id}"),
+@api_router.delete("/lineas-negocio/{id}")
 async def delete_linea_negocio(id: int, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -512,7 +512,7 @@ async def delete_linea_negocio(id: int, empresa_id: int = Depends(get_empresa_id
 # =====================
 # CUENTAS FINANCIERAS
 # =====================
-@api_router.get("/cuentas-financieras", response_model=List[CuentaFinanciera]),
+@api_router.get("/cuentas-financieras", response_model=List[CuentaFinanciera])
 async def list_cuentas_financieras(empresa_id: int = Depends(get_empresa_id), tipo: Optional[str] = None):
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -530,7 +530,7 @@ async def list_cuentas_financieras(empresa_id: int = Depends(get_empresa_id), ti
             rows = await conn.fetch(query + " ORDER BY cf.nombre", empresa_id)
         return [dict(r) for r in rows]
 
-@api_router.post("/cuentas-financieras", response_model=CuentaFinanciera),
+@api_router.post("/cuentas-financieras", response_model=CuentaFinanciera)
 async def create_cuenta_financiera(data: CuentaFinancieraCreate, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -544,7 +544,7 @@ async def create_cuenta_financiera(data: CuentaFinancieraCreate, empresa_id: int
             data.moneda_id, data.saldo_actual, data.activo)
         return dict(row)
 
-@api_router.put("/cuentas-financieras/{id}", response_model=CuentaFinanciera),
+@api_router.put("/cuentas-financieras/{id}", response_model=CuentaFinanciera)
 async def update_cuenta_financiera(id: int, data: CuentaFinancieraUpdate, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -566,7 +566,7 @@ async def update_cuenta_financiera(id: int, data: CuentaFinancieraUpdate, empres
             raise HTTPException(404, "Cuenta financiera not found")
         return dict(row)
 
-@api_router.delete("/cuentas-financieras/{id}"),
+@api_router.delete("/cuentas-financieras/{id}")
 async def delete_cuenta_financiera(id: int, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -616,7 +616,7 @@ async def list_terceros(
         rows = await conn.fetch(query, *params)
         return [dict(r) for r in rows]
 
-@api_router.get("/terceros/{id}", response_model=Tercero),
+@api_router.get("/terceros/{id}", response_model=Tercero)
 async def get_tercero(id: int, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -626,7 +626,7 @@ async def get_tercero(id: int, empresa_id: int = Depends(get_empresa_id)):
             raise HTTPException(404, "Tercero not found")
         return dict(row)
 
-@api_router.post("/terceros", response_model=Tercero),
+@api_router.post("/terceros", response_model=Tercero)
 async def create_tercero(data: TerceroCreate, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -642,7 +642,7 @@ async def create_tercero(data: TerceroCreate, empresa_id: int = Depends(get_empr
             data.es_personal, data.terminos_pago_dias, data.limite_credito, data.notas, data.activo)
         return dict(row)
 
-@api_router.put("/terceros/{id}", response_model=Tercero),
+@api_router.put("/terceros/{id}", response_model=Tercero)
 async def update_tercero(id: int, data: TerceroUpdate, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -664,7 +664,7 @@ async def update_tercero(id: int, data: TerceroUpdate, empresa_id: int = Depends
             raise HTTPException(404, "Tercero not found")
         return dict(row)
 
-@api_router.delete("/terceros/{id}"),
+@api_router.delete("/terceros/{id}")
 async def delete_tercero(id: int, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -675,15 +675,15 @@ async def delete_tercero(id: int, empresa_id: int = Depends(get_empresa_id)):
         return {"message": "Tercero deactivated"}
 
 # Aliases for separated views
-@api_router.get("/proveedores", response_model=List[Tercero]),
+@api_router.get("/proveedores", response_model=List[Tercero])
 async def list_proveedores(empresa_id: int = Depends(get_empresa_id), search: Optional[str] = None):
     return await list_terceros(empresa_id=empresa_id, es_proveedor=True, search=search)
 
-@api_router.get("/clientes", response_model=List[Tercero]),
+@api_router.get("/clientes", response_model=List[Tercero])
 async def list_clientes(empresa_id: int = Depends(get_empresa_id), search: Optional[str] = None):
     return await list_terceros(empresa_id=empresa_id, es_cliente=True, search=search)
 
-@api_router.get("/empleados"),
+@api_router.get("/empleados")
 async def list_empleados(empresa_id: int = Depends(get_empresa_id), search: Optional[str] = None):
     """Get empleados with their salary details"""
     pool = await get_pool()
@@ -724,7 +724,7 @@ async def list_empleados(empresa_id: int = Depends(get_empresa_id), search: Opti
         return result
 
 # Empleado detalle endpoints
-@api_router.post("/empleados/{tercero_id}/detalle", response_model=EmpleadoDetalle),
+@api_router.post("/empleados/{tercero_id}/detalle", response_model=EmpleadoDetalle)
 async def create_or_update_empleado_detalle(tercero_id: int, data: EmpleadoDetalleCreate, empresa_id: int = Depends(get_empresa_id)):
     """Create or update empleado detalle (salary, position, etc.)"""
     pool = await get_pool()
@@ -761,7 +761,7 @@ async def create_or_update_empleado_detalle(tercero_id: int, data: EmpleadoDetal
         
         return dict(row)
 
-@api_router.get("/empleados/{tercero_id}/detalle", response_model=EmpleadoDetalle),
+@api_router.get("/empleados/{tercero_id}/detalle", response_model=EmpleadoDetalle)
 async def get_empleado_detalle(tercero_id: int, empresa_id: int = Depends(get_empresa_id)):
     """Get empleado detalle"""
     pool = await get_pool()
@@ -775,7 +775,7 @@ async def get_empleado_detalle(tercero_id: int, empresa_id: int = Depends(get_em
 # =====================
 # ARTICULOS REF
 # =====================
-@api_router.get("/articulos", response_model=List[ArticuloRef]),
+@api_router.get("/articulos", response_model=List[ArticuloRef])
 async def list_articulos(search: Optional[str] = None, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -812,7 +812,7 @@ async def list_articulos(search: Optional[str] = None, empresa_id: int = Depends
 # =====================
 # INVENTARIO (produccion.prod_inventario)
 # =====================
-@api_router.get("/inventario"),
+@api_router.get("/inventario")
 async def list_inventario(search: Optional[str] = None, empresa_id: int = Depends(get_empresa_id)):
     """Get items from produccion.prod_inventario"""
     pool = await get_pool()
@@ -838,7 +838,7 @@ async def list_inventario(search: Optional[str] = None, empresa_id: int = Depend
 # =====================
 # MODELOS/CORTES (produccion.prod_registros + prod_modelos)
 # =====================
-@api_router.get("/modelos-cortes"),
+@api_router.get("/modelos-cortes")
 async def list_modelos_cortes(search: Optional[str] = None, empresa_id: int = Depends(get_empresa_id)):
     """Get modelos/cortes from produccion.prod_registros joining with prod_modelos"""
     pool = await get_pool()
@@ -860,7 +860,7 @@ async def list_modelos_cortes(search: Optional[str] = None, empresa_id: int = De
             logger.error(f"Error fetching modelos/cortes: {e}")
             return []
 
-@api_router.get("/modelos"),
+@api_router.get("/modelos")
 async def list_modelos(search: Optional[str] = None, empresa_id: int = Depends(get_empresa_id)):
     """Get modelos from produccion.prod_modelos"""
     pool = await get_pool()
@@ -879,7 +879,7 @@ async def list_modelos(search: Optional[str] = None, empresa_id: int = Depends(g
             logger.error(f"Error fetching modelos: {e}")
             return []
 
-@api_router.post("/articulos", response_model=ArticuloRef),
+@api_router.post("/articulos", response_model=ArticuloRef)
 async def create_articulo(data: ArticuloRefCreate, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -966,7 +966,7 @@ async def list_ordenes_compra(
         
         return result
 
-@api_router.get("/ordenes-compra/{id}", response_model=OC),
+@api_router.get("/ordenes-compra/{id}", response_model=OC)
 async def get_orden_compra(id: int, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -991,7 +991,7 @@ async def get_orden_compra(id: int, empresa_id: int = Depends(get_empresa_id)):
         
         return oc_dict
 
-@api_router.post("/ordenes-compra", response_model=OC),
+@api_router.post("/ordenes-compra", response_model=OC)
 async def create_orden_compra(data: OCCreate, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -1069,7 +1069,7 @@ async def create_orden_compra(data: OCCreate, empresa_id: int = Depends(get_empr
             
             return oc_dict
 
-@api_router.put("/ordenes-compra/{id}", response_model=OC),
+@api_router.put("/ordenes-compra/{id}", response_model=OC)
 async def update_orden_compra(id: int, data: OCUpdate, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -1094,7 +1094,7 @@ async def update_orden_compra(id: int, data: OCUpdate, empresa_id: int = Depends
         
         return await get_orden_compra(id)
 
-@api_router.delete("/ordenes-compra/{id}"),
+@api_router.delete("/ordenes-compra/{id}")
 async def delete_orden_compra(id: int, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -1110,7 +1110,7 @@ async def delete_orden_compra(id: int, empresa_id: int = Depends(get_empresa_id)
         await conn.execute("DELETE FROM finanzas2.cont_oc WHERE id = $1", id)
         return {"message": "Orden de compra deleted"}
 
-@api_router.post("/ordenes-compra/{id}/generar-factura", response_model=FacturaProveedor),
+@api_router.post("/ordenes-compra/{id}/generar-factura", response_model=FacturaProveedor)
 async def generar_factura_desde_oc(id: int, empresa_id: int = Depends(get_empresa_id)):
     """Generate a factura proveedor from an OC"""
     pool = await get_pool()
@@ -1309,11 +1309,11 @@ async def get_factura_proveedor(id: int, empresa_id: int) -> dict:
         
         return fp_dict
 
-@api_router.get("/facturas-proveedor/{id}", response_model=FacturaProveedor),
+@api_router.get("/facturas-proveedor/{id}", response_model=FacturaProveedor)
 async def get_factura_proveedor_endpoint(id: int, empresa_id: int = Depends(get_empresa_id)):
     return await get_factura_proveedor(id, empresa_id)
 
-@api_router.post("/facturas-proveedor", response_model=FacturaProveedor),
+@api_router.post("/facturas-proveedor", response_model=FacturaProveedor)
 async def create_factura_proveedor(data: FacturaProveedorCreate, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -1394,7 +1394,7 @@ async def create_factura_proveedor(data: FacturaProveedorCreate, empresa_id: int
             
             return fp_dict
 
-@api_router.put("/facturas-proveedor/{id}", response_model=FacturaProveedor),
+@api_router.put("/facturas-proveedor/{id}", response_model=FacturaProveedor)
 async def update_factura_proveedor(id: int, data: FacturaProveedorUpdate, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -1424,7 +1424,7 @@ async def update_factura_proveedor(id: int, data: FacturaProveedorUpdate, empres
         
         return await get_factura_proveedor(id, empresa_id)
 
-@api_router.delete("/facturas-proveedor/{id}"),
+@api_router.delete("/facturas-proveedor/{id}")
 async def delete_factura_proveedor(id: int, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -1455,7 +1455,7 @@ async def delete_factura_proveedor(id: int, empresa_id: int = Depends(get_empres
             
             return {"message": "Factura deleted"}
 
-@api_router.get("/facturas-proveedor/{id}/pagos"),
+@api_router.get("/facturas-proveedor/{id}/pagos")
 async def get_pagos_de_factura(id: int, empresa_id: int = Depends(get_empresa_id)):
     """Get all payments applied to a specific factura"""
     pool = await get_pool()
@@ -1475,7 +1475,7 @@ async def get_pagos_de_factura(id: int, empresa_id: int = Depends(get_empresa_id
         
         return [dict(r) for r in rows]
 
-@api_router.get("/facturas-proveedor/{id}/letras"),
+@api_router.get("/facturas-proveedor/{id}/letras")
 async def get_letras_de_factura(id: int, empresa_id: int = Depends(get_empresa_id)):
     """Get all letras generated from a specific factura"""
     pool = await get_pool()
@@ -1496,7 +1496,7 @@ async def get_letras_de_factura(id: int, empresa_id: int = Depends(get_empresa_i
         
         return [dict(r) for r in rows]
 
-@api_router.post("/facturas-proveedor/{id}/deshacer-canje"),
+@api_router.post("/facturas-proveedor/{id}/deshacer-canje")
 async def deshacer_canje_letras(id: int, empresa_id: int = Depends(get_empresa_id)):
     """Reverse the canje of letras - delete all letras and set factura back to pendiente"""
     pool = await get_pool()
@@ -1621,7 +1621,7 @@ async def list_pagos(
         
         return result
 
-@api_router.post("/pagos", response_model=Pago),
+@api_router.post("/pagos", response_model=Pago)
 async def create_pago(data: PagoCreate, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -1818,12 +1818,12 @@ async def get_pago(id: int) -> dict:
         
         return pago_dict
 
-@api_router.get("/pagos/{id}", response_model=Pago),
+@api_router.get("/pagos/{id}", response_model=Pago)
 async def get_pago_endpoint(id: int, empresa_id: int = Depends(get_empresa_id)):
     return await get_pago(id)
 
 
-@api_router.put("/pagos/{id}"),
+@api_router.put("/pagos/{id}")
 async def update_pago(id: int, data: dict, empresa_id: int = Depends(get_empresa_id)):
     """Update pago - only allow editing referencia if conciliado"""
     pool = await get_pool()
@@ -1879,7 +1879,7 @@ async def update_pago(id: int, data: dict, empresa_id: int = Depends(get_empresa
         return {"message": "Pago actualizado exitosamente"}
 
 
-@api_router.delete("/pagos/{id}"),
+@api_router.delete("/pagos/{id}")
 async def delete_pago(id: int, empresa_id: int = Depends(get_empresa_id)):
     """Delete a payment and reverse all its effects"""
     pool = await get_pool()
@@ -1970,7 +1970,7 @@ async def list_letras(
         rows = await conn.fetch(query, *params)
         return [dict(r) for r in rows]
 
-@api_router.post("/letras/generar", response_model=List[Letra]),
+@api_router.post("/letras/generar", response_model=List[Letra])
 async def generar_letras(data: GenerarLetrasRequest, empresa_id: int = Depends(get_empresa_id)):
     """Generate letras from a factura proveedor"""
     pool = await get_pool()
@@ -2044,7 +2044,7 @@ async def generar_letras(data: GenerarLetrasRequest, empresa_id: int = Depends(g
             
             return letras
 
-@api_router.delete("/letras/{id}"),
+@api_router.delete("/letras/{id}")
 async def delete_letra(id: int, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -2149,7 +2149,7 @@ async def list_gastos(
         
         return result
 
-@api_router.post("/gastos", response_model=Gasto),
+@api_router.post("/gastos", response_model=Gasto)
 async def create_gasto(data: GastoCreate, empresa_id: int = Depends(get_empresa_id)):
     """Create a gasto with mandatory payment(s) that must cover total"""
     pool = await get_pool()
@@ -2283,11 +2283,11 @@ async def get_gasto(id: int) -> dict:
         
         return gasto_dict
 
-@api_router.get("/gastos/{id}", response_model=Gasto),
+@api_router.get("/gastos/{id}", response_model=Gasto)
 async def get_gasto_endpoint(id: int, empresa_id: int = Depends(get_empresa_id)):
     return await get_gasto(id)
 
-@api_router.delete("/gastos/{id}"),
+@api_router.delete("/gastos/{id}")
 async def delete_gasto(id: int, empresa_id: int = Depends(get_empresa_id)):
     """Delete a gasto and its associated lines and payments"""
     pool = await get_pool()
@@ -2352,7 +2352,7 @@ async def list_adelantos(
         rows = await conn.fetch(query, *params)
         return [dict(r) for r in rows]
 
-@api_router.post("/adelantos", response_model=Adelanto),
+@api_router.post("/adelantos", response_model=Adelanto)
 async def create_adelanto(data: AdelantoCreate, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -2477,7 +2477,7 @@ async def pagar_adelanto(
             
             return result
 
-@api_router.put("/adelantos/{id}", response_model=Adelanto),
+@api_router.put("/adelantos/{id}", response_model=Adelanto)
 async def update_adelanto(id: int, data: AdelantoCreate, empresa_id: int = Depends(get_empresa_id)):
     """Update an existing advance"""
     pool = await get_pool()
@@ -2510,7 +2510,7 @@ async def update_adelanto(id: int, data: AdelantoCreate, empresa_id: int = Depen
         
         return result
 
-@api_router.delete("/adelantos/{id}"),
+@api_router.delete("/adelantos/{id}")
 async def delete_adelanto(id: int, empresa_id: int = Depends(get_empresa_id)):
     """Delete an advance (only if not paid or discounted)"""
     pool = await get_pool()
@@ -2569,7 +2569,7 @@ async def list_planillas(empresa_id: Optional[int] = None):
         
         return result
 
-@api_router.post("/planillas", response_model=Planilla),
+@api_router.post("/planillas", response_model=Planilla)
 async def create_planilla(data: PlanillaCreate, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -2635,11 +2635,11 @@ async def get_planilla(id: int) -> dict:
         
         return planilla_dict
 
-@api_router.get("/planillas/{id}", response_model=Planilla),
+@api_router.get("/planillas/{id}", response_model=Planilla)
 async def get_planilla_endpoint(id: int, empresa_id: int = Depends(get_empresa_id)):
     return await get_planilla(id)
 
-@api_router.post("/planillas/{id}/pagar", response_model=Planilla),
+@api_router.post("/planillas/{id}/pagar", response_model=Planilla)
 async def pagar_planilla(id: int, cuenta_financiera_id: int = Query(...), empresa_id: int = Depends(get_empresa_id)):
     """Pay the entire planilla"""
     pool = await get_pool()
@@ -2697,7 +2697,7 @@ async def pagar_planilla(id: int, cuenta_financiera_id: int = Query(...), empres
             
             return await get_planilla(id)
 
-@api_router.delete("/planillas/{id}"),
+@api_router.delete("/planillas/{id}")
 async def delete_planilla(id: int, empresa_id: int = Depends(get_empresa_id)):
     """Delete a planilla (only if in draft status)"""
     pool = await get_pool()
@@ -2784,7 +2784,7 @@ async def list_ventas_pos(
         rows = await conn.fetch(query, *params)
         return [dict(r) for r in rows]
 
-@api_router.post("/ventas-pos/sync"),
+@api_router.post("/ventas-pos/sync")
 async def sync_ventas_pos(company: str = "ambission", days_back: int = 30, empresa_id: int = Depends(get_empresa_id)):
     """Sync POS orders from Odoo"""
     try:
@@ -2986,7 +2986,7 @@ async def sync_ventas_pos(company: str = "ambission", days_back: int = 30, empre
         logger.error(f"Error syncing from Odoo: {e}")
         raise HTTPException(500, f"Error syncing: {str(e)}")
 
-@api_router.post("/ventas-pos/{id}/confirmar"),
+@api_router.post("/ventas-pos/{id}/confirmar")
 async def confirmar_venta_pos(id: int, empresa_id: int = Depends(get_empresa_id)):
     """
     Confirm a POS sale. 
@@ -3014,7 +3014,7 @@ async def confirmar_venta_pos(id: int, empresa_id: int = Depends(get_empresa_id)
         
         return {"message": "Venta confirmada"}
 
-@api_router.post("/ventas-pos/{id}/credito"),
+@api_router.post("/ventas-pos/{id}/credito")
 async def marcar_credito_venta_pos(id: int, fecha_vencimiento: Optional[date] = None, empresa_id: int = Depends(get_empresa_id)):
     """Mark sale as credit and create CxC"""
     pool = await get_pool()
@@ -3040,7 +3040,7 @@ async def marcar_credito_venta_pos(id: int, fecha_vencimiento: Optional[date] = 
             
             return {"message": "Venta marcada como crédito", "cxc_id": cxc['id']}
 
-@api_router.post("/ventas-pos/{id}/descartar"),
+@api_router.post("/ventas-pos/{id}/descartar")
 async def descartar_venta_pos(id: int, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -3050,7 +3050,7 @@ async def descartar_venta_pos(id: int, empresa_id: int = Depends(get_empresa_id)
         """, id)
         return {"message": "Venta descartada"}
 
-@api_router.post("/ventas-pos/{id}/desconfirmar"),
+@api_router.post("/ventas-pos/{id}/desconfirmar")
 async def desconfirmar_venta_pos(id: int, empresa_id: int = Depends(get_empresa_id)):
     """
     Desconfirmar una venta POS confirmada.
@@ -3119,7 +3119,7 @@ async def desconfirmar_venta_pos(id: int, empresa_id: int = Depends(get_empresa_
             }
 
 # Endpoints for payment management
-@api_router.get("/ventas-pos/{id}/pagos"),
+@api_router.get("/ventas-pos/{id}/pagos")
 async def get_pagos_venta_pos(id: int, empresa_id: int = Depends(get_empresa_id)):
     """Get all payments assigned to a POS sale"""
     pool = await get_pool()
@@ -3136,7 +3136,7 @@ async def get_pagos_venta_pos(id: int, empresa_id: int = Depends(get_empresa_id)
         
         return [dict(p) for p in pagos]
 
-@api_router.get("/ventas-pos/{id}/pagos-oficiales"),
+@api_router.get("/ventas-pos/{id}/pagos-oficiales")
 async def get_pagos_oficiales_venta_pos(id: int, empresa_id: int = Depends(get_empresa_id)):
     """Get official payments from cont_pago for a confirmed POS sale"""
     pool = await get_pool()
@@ -3156,7 +3156,7 @@ async def get_pagos_oficiales_venta_pos(id: int, empresa_id: int = Depends(get_e
         
         return [dict(p) for p in pagos]
 
-@api_router.get("/ventas-pos/{id}/lineas"),
+@api_router.get("/ventas-pos/{id}/lineas")
 async def get_lineas_venta_pos(id: int, empresa_id: int = Depends(get_empresa_id)):
     """Get product lines for a POS sale with marca and tipo for business line analysis"""
     pool = await get_pool()
@@ -3182,7 +3182,7 @@ async def get_lineas_venta_pos(id: int, empresa_id: int = Depends(get_empresa_id
         
         return [dict(l) for l in lineas]
 
-@api_router.post("/ventas-pos/{id}/pagos"),
+@api_router.post("/ventas-pos/{id}/pagos")
 async def add_pago_venta_pos(id: int, pago: dict, empresa_id: int = Depends(get_empresa_id)):
     """Add a payment to a POS sale. Auto-confirms if total matches."""
     pool = await get_pool()
@@ -3286,7 +3286,7 @@ async def add_pago_venta_pos(id: int, pago: dict, empresa_id: int = Depends(get_
                 "auto_confirmed": False
             }
 
-@api_router.put("/ventas-pos/{venta_id}/pagos/{pago_id}"),
+@api_router.put("/ventas-pos/{venta_id}/pagos/{pago_id}")
 async def update_pago_venta_pos(venta_id: int, pago_id: int, pago: dict, empresa_id: int = Depends(get_empresa_id)):
     """Update a payment assigned to a POS sale"""
     pool = await get_pool()
@@ -3314,7 +3314,7 @@ async def update_pago_venta_pos(venta_id: int, pago_id: int, pago: dict, empresa
             logger.error(f"Error updating payment: {e}")
             raise HTTPException(500, f"Error al actualizar pago: {str(e)}")
 
-@api_router.delete("/ventas-pos/{venta_id}/pagos/{pago_id}"),
+@api_router.delete("/ventas-pos/{venta_id}/pagos/{pago_id}")
 async def delete_pago_venta_pos(venta_id: int, pago_id: int, empresa_id: int = Depends(get_empresa_id)):
     """Delete a payment from a POS sale"""
     pool = await get_pool()
@@ -3330,7 +3330,7 @@ async def delete_pago_venta_pos(venta_id: int, pago_id: int, empresa_id: int = D
 # =====================
 # CXC (Cuentas por Cobrar)
 # =====================
-@api_router.get("/cxc", response_model=List[CXC]),
+@api_router.get("/cxc", response_model=List[CXC])
 async def list_cxc(estado: Optional[str] = None, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -3358,7 +3358,7 @@ async def list_cxc(estado: Optional[str] = None, empresa_id: int = Depends(get_e
 # =====================
 # CXP (Cuentas por Pagar)
 # =====================
-@api_router.get("/cxp"),
+@api_router.get("/cxp")
 async def list_cxp(estado: Optional[str] = None, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -3387,7 +3387,7 @@ async def list_cxp(estado: Optional[str] = None, empresa_id: int = Depends(get_e
 # =====================
 # PRESUPUESTOS
 # =====================
-@api_router.get("/presupuestos", response_model=List[Presupuesto]),
+@api_router.get("/presupuestos", response_model=List[Presupuesto])
 async def list_presupuestos(anio: Optional[int] = None, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -3416,7 +3416,7 @@ async def list_presupuestos(anio: Optional[int] = None, empresa_id: int = Depend
         
         return result
 
-@api_router.post("/presupuestos", response_model=Presupuesto),
+@api_router.post("/presupuestos", response_model=Presupuesto)
 async def create_presupuesto(data: PresupuestoCreate, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -3467,7 +3467,7 @@ async def get_presupuesto(id: int) -> dict:
         
         return pres_dict
 
-@api_router.get("/presupuestos/{id}", response_model=Presupuesto),
+@api_router.get("/presupuestos/{id}", response_model=Presupuesto)
 async def get_presupuesto_endpoint(id: int, empresa_id: int = Depends(get_empresa_id)):
     return await get_presupuesto(id)
 
@@ -3806,7 +3806,7 @@ async def importar_excel_banco(
         raise HTTPException(500, f"Error al importar: {str(e)}")
 
 
-@api_router.get("/conciliacion/historial"),
+@api_router.get("/conciliacion/historial")
 async def get_historial_conciliaciones(empresa_id: int = Depends(get_empresa_id)):
     """Get all conciliacion records with details"""
     pool = await get_pool()
@@ -3865,7 +3865,7 @@ async def get_historial_conciliaciones(empresa_id: int = Depends(get_empresa_id)
         
         return result
 
-@api_router.post("/conciliacion/desconciliar"),
+@api_router.post("/conciliacion/desconciliar")
 async def desconciliar_movimientos(data: dict, empresa_id: int = Depends(get_empresa_id)):
     """Unreconcile movements"""
     banco_id = data.get('banco_id')
@@ -3932,7 +3932,7 @@ async def list_movimientos_banco(
         rows = await conn.fetch(query, *params)
         return [dict(r) for r in rows]
 
-@api_router.get("/conciliaciones", response_model=List[Conciliacion]),
+@api_router.get("/conciliaciones", response_model=List[Conciliacion])
 async def list_conciliaciones(cuenta_financiera_id: Optional[int] = None, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -4200,7 +4200,7 @@ async def crear_gasto_desde_movimientos_bancarios(
             "movimientos_conciliados": len(banco_ids)
         }
 
-@api_router.post("/conciliaciones", response_model=Conciliacion),
+@api_router.post("/conciliaciones", response_model=Conciliacion)
 async def create_conciliacion(data: ConciliacionCreate, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
@@ -4299,7 +4299,7 @@ async def reporte_estado_resultados(
             "resultado_neto": float(ingresos) - total_egresos
         }
 
-@api_router.get("/reportes/balance-general"),
+@api_router.get("/reportes/balance-general")
 async def reporte_balance_general(empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
