@@ -94,6 +94,19 @@ async def get_empresa_id(
         raise HTTPException(400, "empresa_id es requerido")
     return eid
 
+
+async def get_next_correlativo(conn, empresa_id: int, tipo_documento: str, prefijo: str) -> str:
+    """Atomically get next correlative number for a document type.
+    Uses INSERT ... ON CONFLICT ... UPDATE to guarantee uniqueness."""
+    row = await conn.fetchrow("""
+        INSERT INTO finanzas2.cont_correlativos (empresa_id, tipo_documento, prefijo, ultimo_numero, updated_at)
+        VALUES ($1, $2, $3, 1, NOW())
+        ON CONFLICT (empresa_id, tipo_documento, prefijo)
+        DO UPDATE SET ultimo_numero = finanzas2.cont_correlativos.ultimo_numero + 1, updated_at = NOW()
+        RETURNING ultimo_numero
+    """, empresa_id, tipo_documento, prefijo)
+    return f"{prefijo}{row['ultimo_numero']:05d}"
+
 # =====================
 # STARTUP / SHUTDOWN
 # =====================
