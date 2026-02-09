@@ -1,132 +1,115 @@
 """
-Fix ALL remaining INSERT statements to include empresa_id.
-Strategy: For each INSERT INTO finanzas2.cont_* that doesn't have empresa_id:
-1. Add empresa_id to column list (first position)
-2. Shift $N placeholders by 1 in VALUES
-3. Add $1 for empresa_id in VALUES
-4. Add empresa_id to the parameter list
+Fix remaining INSERT statements by adding empresa_id as LAST column/value.
+This avoids shifting $N placeholders (much safer).
 """
 import re
 
 GLOBAL_TABLES = ['cont_empresa', 'cont_moneda', 'cont_tipo_cambio']
 
 with open('/app/backend/server.py', 'r') as f:
-    lines = f.readlines()
+    content = f.read()
 
-# Also fix seed data INSERT statements
-SEED_INSERTS_TABLES = ['cont_categoria', 'cont_centro_costo', 'cont_linea_negocio',
-                       'cont_cuenta_financiera', 'cont_tercero']
+# Find all INSERT patterns that don't have empresa_id
+pattern = r'(INSERT INTO finanzas2\.(cont_\w+)\s*\n\s*\()([^)]+)(\)\s*\n\s*VALUES\s*\()([^)]+)(\))'
 
-total_fixed = 0
-i = 0
-while i < len(lines):
-    line = lines[i]
-    stripped = line.strip()
+def fix_insert(match):
+    full = match.group(0)
+    table = match.group(2)
+    cols = match.group(3)
+    vals = match.group(5)
     
-    # Check if this is an INSERT INTO finanzas2.cont_* line
-    match = re.match(r'\s*(INSERT INTO finanzas2\.(cont_\w+))\s*$', stripped)
-    if not match:
-        # Also match: INSERT INTO finanzas2.cont_xxx (columns...
-        match = re.match(r'\s*(INSERT INTO finanzas2\.(cont_\w+))\s*\(', stripped)
+    # Skip global tables
+    if table in GLOBAL_TABLES:
+        return full
     
-    if match:
-        table = match.group(2)
-        
-        # Skip global tables
-        if table in GLOBAL_TABLES:
-            i += 1
-            continue
-        
-        # Check if next line (or this line) already has empresa_id
-        block = ''.join(lines[i:i+5])
-        if 'empresa_id' in block:
-            i += 1
-            continue
-        
-        # Found an INSERT that needs empresa_id!
-        # Collect the full INSERT statement (until RETURNING or the closing paren of VALUES)
-        insert_start = i
-        insert_lines = []
-        j = i
-        while j < len(lines):
-            insert_lines.append(lines[j])
-            full = ''.join(insert_lines)
-            # Check if we've found the complete statement (ends with params)
-            if ('RETURNING' in lines[j] or 
-                (j > insert_start + 2 and lines[j].strip().startswith('"""')) or
-                (j > insert_start + 2 and lines[j].strip().startswith('"",'))):
+    # Skip if already has empresa_id
+    if 'empresa_id' in cols:
+        return full
+    
+    # Count existing $N to find the next number
+    placeholders = re.findall(r'\$(\d+)', vals)
+    if placeholders:
+        max_n = max(int(p) for p in placeholders)
+    else:
+        max_n = 0
+    
+    next_n = max_n + 1
+    
+    # Add empresa_id
+    new_cols = cols.rstrip() + ', empresa_id'
+    new_vals = vals.rstrip() + f', ${next_n}'
+    
+    result = full.replace(cols, new_cols, 1).replace(vals, new_vals, 1)
+    return result
+
+new_content = re.sub(pattern, fix_insert, content)
+
+# Count changes
+old_count = len(re.findall(r'INSERT INTO finanzas2\.cont_\w+', content))
+new_empresa_count = new_content.count('empresa_id')
+old_empresa_count = content.count('empresa_id')
+
+print(f"Total INSERTs found: {old_count}")
+print(f"empresa_id occurrences: {old_empresa_count} -> {new_empresa_count} (added {new_empresa_count - old_empresa_count})")
+
+# Now fix the params - add empresa_id to the end of each fixed INSERT's params
+# We need to find lines that end with `, $N)` where the INSERT was just fixed
+# and add empresa_id to the params on the next line(s)
+
+# This is trickier - let's handle it by finding the closing """, ...) pattern
+# For each INSERT we fixed, the params follow on the line after """
+
+lines = new_content.split('\n')
+fixed_params = 0
+
+for i in range(len(lines)):
+    line = lines[i].strip()
+    
+    # Check if this line has a closing paren of VALUES with our new empresa_id placeholder
+    # Pattern: Values end with ", $N)" where we added the placeholder
+    match = re.search(r', \$(\d+)\)$', line)
+    if match and 'empresa_id' not in line:
+        # Check if this is a VALUES line (look back to find VALUES keyword)
+        found_values = False
+        for j in range(max(0, i-3), i):
+            if 'VALUES' in lines[j]:
+                found_values = True
                 break
-            j += 1
         
-        full_insert = ''.join(insert_lines)
-        
-        # Parse the column list
-        col_match = re.search(r'\(([^)]+)\)\s*\n\s*VALUES', full_insert, re.DOTALL)
-        if not col_match:
-            i += 1
+        if not found_values:
             continue
         
-        cols = col_match.group(1)
-        
-        # Add empresa_id as first column
-        new_cols = 'empresa_id, ' + cols
-        
-        # Find and fix VALUES
-        val_match = re.search(r'VALUES\s*\(([^)]+)\)', full_insert)
-        if not val_match:
-            i += 1
-            continue
-        
-        vals = val_match.group(1)
-        
-        # Shift $N placeholders
-        def shift_placeholder(m):
-            n = int(m.group(1))
-            return f'${n+1}'
-        
-        new_vals = re.sub(r'\$(\d+)', shift_placeholder, vals)
-        new_vals = '$1, ' + new_vals
-        
-        # Apply changes
-        new_insert = full_insert.replace(cols, new_cols, 1)
-        new_insert = new_insert.replace(vals, new_vals, 1)
-        
-        # Now find the params line (line after the closing """)
-        # and prepend empresa_id
-        param_line_idx = j + 1
-        if param_line_idx < len(lines):
-            param_line = lines[param_line_idx]
-            # Pattern: """, param1, param2...)
-            # Sometimes params are on the same line as """
-            if '"""' in lines[j]:
-                param_part = lines[j]
-                if '""",' in param_part:
-                    # params on same line as closing """
-                    old_after_triple = param_part.split('""",', 1)[1]
-                    new_after_triple = ' empresa_id,' + old_after_triple
-                    new_line = param_part.split('""",', 1)[0] + '""",' + new_after_triple
-                    
-                    # Replace the lines
-                    new_lines = new_insert.split('\n')
-                    # Reconstruct: replace original lines
-                    for k in range(insert_start, j):
-                        lines[k] = ''
-                    lines[j] = ''
-                    lines[insert_start] = new_insert.replace(lines[j] if lines[j] else '', '') 
-            
-        # Simpler approach: just do the column and VALUES substitution
-        for k in range(insert_start, j + 1):
-            lines[k] = ''
-        lines[insert_start] = new_insert
-        
-        total_fixed += 1
-        i = j + 1
-        continue
-    
-    i += 1
+        # Check the context - we need the actual column list to contain 'empresa_id'
+        for j in range(max(0, i-5), i):
+            if 'empresa_id' in lines[j] and 'INSERT' in ''.join(lines[max(0,j-3):j+1]):
+                # This is one of our fixed INSERTs
+                # Find the closing line with params
+                # Look forward from VALUES closing for the """, params line
+                for k in range(i, min(len(lines), i+5)):
+                    if '"""' in lines[k]:
+                        # Params might be on this line or next
+                        param_line = lines[k]
+                        if '""",' in param_line:
+                            # Add empresa_id before the closing paren
+                            # Pattern: ..., last_param)
+                            param_line = param_line.rstrip()
+                            if param_line.endswith(')'):
+                                param_line = param_line[:-1] + ', empresa_id)'
+                                lines[k] = param_line + '\n'
+                                fixed_params += 1
+                        elif k + 1 < len(lines):
+                            # Params on next line
+                            next_param = lines[k+1].rstrip()
+                            if next_param.endswith(')'):
+                                next_param = next_param[:-1] + ', empresa_id)'
+                                lines[k+1] = next_param + '\n'
+                                fixed_params += 1
+                        break
+                break
 
-# Write result
+new_content = '\n'.join(lines)
+
+print(f"Fixed {fixed_params} param lines")
+
 with open('/app/backend/server.py', 'w') as f:
-    f.writelines(lines)
-
-print(f"Fixed {total_fixed} INSERT statements")
+    f.write(new_content)
