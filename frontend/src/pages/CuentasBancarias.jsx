@@ -210,6 +210,14 @@ export const CuentasBancarias = () => {
                   <div style={{ display: 'flex', gap: '0.25rem' }}>
                     <button 
                       className="btn btn-outline btn-sm btn-icon"
+                      onClick={() => handleVerKardex(cuenta.id)}
+                      title="Ver Kardex"
+                      data-testid={`kardex-cuenta-${cuenta.id}`}
+                    >
+                      <FileText size={14} />
+                    </button>
+                    <button 
+                      className="btn btn-outline btn-sm btn-icon"
                       onClick={() => handleEdit(cuenta)}
                       data-testid={`edit-cuenta-${cuenta.id}`}
                     >
