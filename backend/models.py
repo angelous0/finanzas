@@ -196,6 +196,8 @@ class EmpleadoDetalleBase(BaseModel):
     salario_base: Optional[float] = None
     cuenta_bancaria: Optional[str] = None
     banco: Optional[str] = None
+    centro_costo_id: Optional[int] = None
+    linea_negocio_id: Optional[int] = None
     activo: bool = True
 
 class EmpleadoDetalleCreate(EmpleadoDetalleBase):
