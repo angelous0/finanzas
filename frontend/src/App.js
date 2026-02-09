@@ -37,8 +37,9 @@ import { HistorialConciliaciones } from './pages/HistorialConciliaciones';
 import { 
   Clientes, Articulos,
   Presupuestos,
-  EstadoResultados, FlujoCaja 
+  EstadoResultados
 } from './pages/PlaceholderPages';
+import FlujoCaja from './pages/FlujoCaja';
 
 function EmpresaGuard({ children }) {
   const { empresaActual, loading } = useEmpresa();
