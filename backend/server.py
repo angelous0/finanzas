@@ -684,7 +684,7 @@ async def recalcular_saldos(empresa_id: int = Depends(get_empresa_id)):
         results = []
         for cuenta in cuentas:
             cid = cuenta['id']
-            original = float(cuenta['saldo_actual'])
+            saldo_anterior = float(cuenta['saldo_actual'])
             
             ingresos = await conn.fetchval("""
                 SELECT COALESCE(SUM(pd.monto), 0) FROM finanzas2.cont_pago_detalle pd
@@ -698,14 +698,14 @@ async def recalcular_saldos(empresa_id: int = Depends(get_empresa_id)):
                 WHERE pd.cuenta_financiera_id = $1 AND pd.empresa_id = $2 AND p.tipo = 'egreso'
             """, cid, empresa_id) or 0
             
-            nuevo_saldo = original + float(ingresos) - float(egresos)
+            nuevo_saldo = float(ingresos) - float(egresos)
             
             await conn.execute("""
                 UPDATE finanzas2.cont_cuenta_financiera SET saldo_actual = $1, updated_at = NOW()
                 WHERE id = $2 AND empresa_id = $3
             """, nuevo_saldo, cid, empresa_id)
             
-            results.append({"cuenta_id": cid, "saldo_anterior": original, "saldo_nuevo": round(nuevo_saldo, 2)})
+            results.append({"cuenta_id": cid, "saldo_anterior": saldo_anterior, "saldo_nuevo": round(nuevo_saldo, 2)})
         
         return {"message": f"Saldos recalculados para {len(results)} cuentas", "cuentas": results}
 
