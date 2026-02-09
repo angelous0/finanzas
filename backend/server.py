@@ -359,18 +359,29 @@ async def delete_moneda(id: int):
 # =====================
 # CATEGORIAS
 # =====================
-@api_router.get("/categorias", response_model=List[Categoria])
+@api_router.get("/categorias")
 async def list_categorias(tipo: Optional[str] = None):
     pool = await get_pool()
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
+        base_query = """
+            SELECT c.*, cp.nombre as padre_nombre
+            FROM finanzas2.cont_categoria c
+            LEFT JOIN finanzas2.cont_categoria cp ON c.padre_id = cp.id
+        """
         if tipo:
             rows = await conn.fetch(
-                "SELECT * FROM finanzas2.cont_categoria WHERE tipo = $1 ORDER BY nombre", tipo
+                base_query + " WHERE c.tipo = $1 ORDER BY c.nombre", tipo
             )
         else:
-            rows = await conn.fetch("SELECT * FROM finanzas2.cont_categoria ORDER BY tipo, nombre")
-        return [dict(r) for r in rows]
+            rows = await conn.fetch(base_query + " ORDER BY c.tipo, c.nombre")
+        result = []
+        for r in rows:
+            item = dict(r)
+            padre_nombre = item.pop("padre_nombre", None)
+            item["nombre_completo"] = f"{padre_nombre} > {item['nombre']}" if padre_nombre else item["nombre"]
+            result.append(item)
+        return result
 
 @api_router.post("/categorias", response_model=Categoria)
 async def create_categoria(data: CategoriaCreate):
