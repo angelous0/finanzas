@@ -138,15 +138,17 @@ async def seed_data():
         logger.info("Creating seed data...")
         
         # Insert empresa
-        await conn.execute("""
+        empresa_id = await conn.fetchval("""
             INSERT INTO finanzas2.cont_empresa (nombre, ruc, direccion, telefono, email)
             VALUES ('Mi Empresa S.A.C.', '20123456789', 'Av. Principal 123, Lima', '01-1234567', 'contacto@miempresa.com')
+            RETURNING id
         """)
         
         # Insert moneda PEN
-        await conn.execute("""
+        pen_id = await conn.fetchval("""
             INSERT INTO finanzas2.cont_moneda (codigo, nombre, simbolo, es_principal)
             VALUES ('PEN', 'Sol Peruano', 'S/', TRUE)
+            RETURNING id
         """)
         
         # Insert moneda USD
@@ -158,51 +160,48 @@ async def seed_data():
         # Insert categorías
         await conn.execute("""
             INSERT INTO finanzas2.cont_categoria (empresa_id, codigo, nombre, tipo) VALUES
-            (3, 'ING-001', 'Ventas', 'ingreso'),
-            (3, 'ING-002', 'Otros Ingresos', 'ingreso'),
-            (3, 'EGR-001', 'Compras Mercadería', 'egreso'),
-            (3, 'EGR-002', 'Servicios', 'egreso'),
-            (3, 'EGR-003', 'Planilla', 'egreso'),
-            (3, 'EGR-004', 'Alquileres', 'egreso'),
-            (3, 'EGR-005', 'Servicios Públicos', 'egreso'),
-            (3, 'EGR-006', 'Otros Gastos', 'egreso')
-        """)
+            ($1, 'ING-001', 'Ventas', 'ingreso'),
+            ($1, 'ING-002', 'Otros Ingresos', 'ingreso'),
+            ($1, 'EGR-001', 'Compras Mercadería', 'egreso'),
+            ($1, 'EGR-002', 'Servicios', 'egreso'),
+            ($1, 'EGR-003', 'Planilla', 'egreso'),
+            ($1, 'EGR-004', 'Alquileres', 'egreso'),
+            ($1, 'EGR-005', 'Servicios Públicos', 'egreso'),
+            ($1, 'EGR-006', 'Otros Gastos', 'egreso')
+        """, empresa_id)
         
         # Insert centro de costo
         await conn.execute("""
             INSERT INTO finanzas2.cont_centro_costo (empresa_id, codigo, nombre) VALUES
-            (3, 'CC-001', 'Administración'),
-            (3, 'CC-002', 'Ventas'),
-            (3, 'CC-003', 'Operaciones')
-        """)
+            ($1, 'CC-001', 'Administración'),
+            ($1, 'CC-002', 'Ventas'),
+            ($1, 'CC-003', 'Operaciones')
+        """, empresa_id)
         
         # Insert línea de negocio
         await conn.execute("""
             INSERT INTO finanzas2.cont_linea_negocio (empresa_id, codigo, nombre) VALUES
-            (3, 'LN-001', 'Línea Principal'),
-            (3, 'LN-002', 'Línea Secundaria')
-        """)
-        
-        # Get PEN moneda_id
-        pen_id = await conn.fetchval("SELECT id FROM finanzas2.cont_moneda WHERE codigo = 'PEN'")
+            ($1, 'LN-001', 'Línea Principal'),
+            ($1, 'LN-002', 'Línea Secundaria')
+        """, empresa_id)
         
         # Insert cuenta bancaria
         await conn.execute("""
             INSERT INTO finanzas2.cont_cuenta_financiera (empresa_id, nombre, tipo, banco, numero_cuenta, moneda_id, saldo_actual)
-            VALUES (3, 'Cuenta BCP Soles', 'banco', 'BCP', '191-12345678-0-12', $1, 10000.00)
-        """, pen_id)
+            VALUES ($1, 'Cuenta BCP Soles', 'banco', 'BCP', '191-12345678-0-12', $2, 0)
+        """, empresa_id, pen_id)
         
         # Insert caja
         await conn.execute("""
             INSERT INTO finanzas2.cont_cuenta_financiera (empresa_id, nombre, tipo, moneda_id, saldo_actual)
-            VALUES (3, 'Caja Chica', 'caja', $1, 500.00)
-        """, pen_id)
+            VALUES ($1, 'Caja Chica', 'caja', $2, 0)
+        """, empresa_id, pen_id)
         
         # Insert proveedor
         await conn.execute("""
             INSERT INTO finanzas2.cont_tercero (empresa_id, tipo_documento, numero_documento, nombre, es_proveedor, terminos_pago_dias)
-            VALUES (3, 'RUC', '20987654321', 'Proveedor Demo S.A.C.', TRUE, 30)
-        """)
+            VALUES ($1, 'RUC', '20987654321', 'Proveedor Demo S.A.C.', TRUE, 30)
+        """, empresa_id)
         
         logger.info("Seed data created successfully")
 
