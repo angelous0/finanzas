@@ -143,30 +143,30 @@ async def seed_data():
         
         # Insert categorías
         await conn.execute("""
-            INSERT INTO finanzas2.cont_categoria (codigo, nombre, tipo) VALUES
-            ('ING-001', 'Ventas', 'ingreso'),
-            ('ING-002', 'Otros Ingresos', 'ingreso'),
-            ('EGR-001', 'Compras Mercadería', 'egreso'),
-            ('EGR-002', 'Servicios', 'egreso'),
-            ('EGR-003', 'Planilla', 'egreso'),
-            ('EGR-004', 'Alquileres', 'egreso'),
-            ('EGR-005', 'Servicios Públicos', 'egreso'),
-            ('EGR-006', 'Otros Gastos', 'egreso')
+            INSERT INTO finanzas2.cont_categoria (empresa_id, codigo, nombre, tipo) VALUES
+            (3, 'ING-001', 'Ventas', 'ingreso'),
+            (3, 'ING-002', 'Otros Ingresos', 'ingreso'),
+            (3, 'EGR-001', 'Compras Mercadería', 'egreso'),
+            (3, 'EGR-002', 'Servicios', 'egreso'),
+            (3, 'EGR-003', 'Planilla', 'egreso'),
+            (3, 'EGR-004', 'Alquileres', 'egreso'),
+            (3, 'EGR-005', 'Servicios Públicos', 'egreso'),
+            (3, 'EGR-006', 'Otros Gastos', 'egreso')
         """)
         
         # Insert centro de costo
         await conn.execute("""
-            INSERT INTO finanzas2.cont_centro_costo (codigo, nombre) VALUES
-            ('CC-001', 'Administración'),
-            ('CC-002', 'Ventas'),
-            ('CC-003', 'Operaciones')
+            INSERT INTO finanzas2.cont_centro_costo (empresa_id, codigo, nombre) VALUES
+            (3, 'CC-001', 'Administración'),
+            (3, 'CC-002', 'Ventas'),
+            (3, 'CC-003', 'Operaciones')
         """)
         
         # Insert línea de negocio
         await conn.execute("""
-            INSERT INTO finanzas2.cont_linea_negocio (codigo, nombre) VALUES
-            ('LN-001', 'Línea Principal'),
-            ('LN-002', 'Línea Secundaria')
+            INSERT INTO finanzas2.cont_linea_negocio (empresa_id, codigo, nombre) VALUES
+            (3, 'LN-001', 'Línea Principal'),
+            (3, 'LN-002', 'Línea Secundaria')
         """)
         
         # Get PEN moneda_id
@@ -174,20 +174,20 @@ async def seed_data():
         
         # Insert cuenta bancaria
         await conn.execute("""
-            INSERT INTO finanzas2.cont_cuenta_financiera (nombre, tipo, banco, numero_cuenta, moneda_id, saldo_actual)
-            VALUES ('Cuenta BCP Soles', 'banco', 'BCP', '191-12345678-0-12', $1, 10000.00)
+            INSERT INTO finanzas2.cont_cuenta_financiera (empresa_id, nombre, tipo, banco, numero_cuenta, moneda_id, saldo_actual)
+            VALUES (3, 'Cuenta BCP Soles', 'banco', 'BCP', '191-12345678-0-12', $1, 10000.00)
         """, pen_id)
         
         # Insert caja
         await conn.execute("""
-            INSERT INTO finanzas2.cont_cuenta_financiera (nombre, tipo, moneda_id, saldo_actual)
-            VALUES ('Caja Chica', 'caja', $1, 500.00)
+            INSERT INTO finanzas2.cont_cuenta_financiera (empresa_id, nombre, tipo, moneda_id, saldo_actual)
+            VALUES (3, 'Caja Chica', 'caja', $1, 500.00)
         """, pen_id)
         
         # Insert proveedor
         await conn.execute("""
-            INSERT INTO finanzas2.cont_tercero (tipo_documento, numero_documento, nombre, es_proveedor, terminos_pago_dias)
-            VALUES ('RUC', '20987654321', 'Proveedor Demo S.A.C.', TRUE, 30)
+            INSERT INTO finanzas2.cont_tercero (empresa_id, tipo_documento, numero_documento, nombre, es_proveedor, terminos_pago_dias)
+            VALUES (3, 'RUC', '20987654321', 'Proveedor Demo S.A.C.', TRUE, 30)
         """)
         
         logger.info("Seed data created successfully")
