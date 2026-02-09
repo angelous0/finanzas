@@ -152,14 +152,18 @@ export const CuentasBancarias = () => {
           <h1 className="page-title">Cuentas Bancarias</h1>
           <p className="page-subtitle">Saldo total: {formatCurrency(totalSaldo)}</p>
         </div>
-        <button 
-          className="btn btn-primary"
-          onClick={() => { resetForm(); setEditingId(null); setShowModal(true); }}
-          data-testid="nueva-cuenta-btn"
-        >
-          <Plus size={18} />
-          Nueva Cuenta
-        </button>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <button className="btn btn-outline" onClick={handleRecalcular} data-testid="recalcular-saldos-btn">
+            <RefreshCw size={16} /> Recalcular Saldos
+          </button>
+          <button 
+            className="btn btn-primary"
+            onClick={() => { resetForm(); setEditingId(null); setShowModal(true); }}
+            data-testid="nueva-cuenta-btn"
+          >
+            <Plus size={18} /> Nueva Cuenta
+          </button>
+        </div>
       </div>
 
       <div className="page-content">
