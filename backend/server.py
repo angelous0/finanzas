@@ -1942,9 +1942,9 @@ async def list_letras(
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
         
-        conditions = ["1=1"]
-        params = []
-        idx = 1
+        conditions = ["l.empresa_id = $1"]
+        params = [empresa_id]
+        idx = 2
         
         if estado:
             conditions.append(f"l.estado = ${idx}")
@@ -2315,15 +2315,15 @@ async def list_adelantos(
     empleado_id: Optional[int] = None,
     pagado: Optional[bool] = None,
     descontado: Optional[bool] = None,
-    empresa_id: Optional[int] = None
+    empresa_id: int = Depends(get_empresa_id),
 ):
     pool = await get_pool()
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
         
-        conditions = ["1=1"]
-        params = []
-        idx = 1
+        conditions = ["a.empresa_id = $1"]
+        params = [empresa_id]
+        idx = 2
         
         if empleado_id:
             conditions.append(f"a.empleado_id = ${idx}")
@@ -2336,10 +2336,6 @@ async def list_adelantos(
         if descontado is not None:
             conditions.append(f"a.descontado = ${idx}")
             params.append(descontado)
-            idx += 1
-        if empresa_id is not None:
-            conditions.append(f"t.empresa_id = ${idx}")
-            params.append(empresa_id)
             idx += 1
         
         query = f"""
@@ -2739,9 +2735,9 @@ async def list_ventas_pos(
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
         
-        conditions = ["1=1"]
-        params = []
-        idx = 1
+        conditions = ["v.empresa_id = $1"]
+        params = [empresa_id]
+        idx = 2
         
         if estado:
             conditions.append(f"estado_local = ${idx}")
@@ -3336,9 +3332,9 @@ async def list_cxc(estado: Optional[str] = None, empresa_id: int = Depends(get_e
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
         
-        conditions = ["1=1"]
-        params = []
-        idx = 1
+        conditions = ["cxc.empresa_id = $1"]
+        params = [empresa_id]
+        idx = 2
         
         if estado:
             conditions.append(f"cxc.estado = ${idx}")
@@ -3364,9 +3360,9 @@ async def list_cxp(estado: Optional[str] = None, empresa_id: int = Depends(get_e
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
         
-        conditions = ["1=1"]
-        params = []
-        idx = 1
+        conditions = ["cxp.empresa_id = $1"]
+        params = [empresa_id]
+        idx = 2
         
         if estado:
             conditions.append(f"cxp.estado = ${idx}")
@@ -3906,9 +3902,9 @@ async def list_movimientos_banco(
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
         
-        conditions = ["1=1"]
-        params = []
-        idx = 1
+        conditions = ["empresa_id = $1"]
+        params = [empresa_id]
+        idx = 2
         
         if cuenta_financiera_id:
             conditions.append(f"cuenta_financiera_id = ${idx}")
