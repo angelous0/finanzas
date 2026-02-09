@@ -1654,10 +1654,10 @@ async def create_pago(data: PagoCreate, empresa_id: int = Depends(get_empresa_id
             # Create pago
             pago = await conn.fetchrow("""
                 INSERT INTO finanzas2.cont_pago 
-                (numero, tipo, fecha, cuenta_financiera_id, moneda_id, monto_total, referencia, notas)
-                VALUES ($1, $2, TO_DATE($3, 'YYYY-MM-DD'), $4, $5, $6, $7, $8)
+                (empresa_id, numero, tipo, fecha, cuenta_financiera_id, moneda_id, monto_total, referencia, notas)
+                VALUES ($1, $2, $3, TO_DATE($4, 'YYYY-MM-DD'), $5, $6, $7, $8, $9)
                 RETURNING *
-            """, numero, data.tipo, safe_date_param(data.fecha), data.cuenta_financiera_id, data.moneda_id,
+            """, empresa_id, numero, data.tipo, safe_date_param(data.fecha), data.cuenta_financiera_id, data.moneda_id,
                 data.monto_total, data.referencia, data.notas)
             
             pago_id = pago['id']
@@ -1666,9 +1666,9 @@ async def create_pago(data: PagoCreate, empresa_id: int = Depends(get_empresa_id
             for detalle in data.detalles:
                 await conn.execute("""
                     INSERT INTO finanzas2.cont_pago_detalle 
-                    (pago_id, cuenta_financiera_id, medio_pago, monto, referencia)
-                    VALUES ($1, $2, $3, $4, $5)
-                """, pago_id, detalle.cuenta_financiera_id, detalle.medio_pago, 
+                    (empresa_id, pago_id, cuenta_financiera_id, medio_pago, monto, referencia)
+                    VALUES ($1, $2, $3, $4, $5, $6)
+                """, empresa_id, pago_id, detalle.cuenta_financiera_id, detalle.medio_pago, 
                     detalle.monto, detalle.referencia)
                 
                 # Update cuenta financiera saldo
