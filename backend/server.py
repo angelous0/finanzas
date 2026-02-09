@@ -1687,9 +1687,9 @@ async def create_pago(data: PagoCreate, empresa_id: int = Depends(get_empresa_id
             for aplicacion in data.aplicaciones:
                 await conn.execute("""
                     INSERT INTO finanzas2.cont_pago_aplicacion 
-                    (pago_id, tipo_documento, documento_id, monto_aplicado)
-                    VALUES ($1, $2, $3, $4)
-                """, pago_id, aplicacion.tipo_documento, aplicacion.documento_id, 
+                    (empresa_id, pago_id, tipo_documento, documento_id, monto_aplicado)
+                    VALUES ($1, $2, $3, $4, $5)
+                """, empresa_id, pago_id, aplicacion.tipo_documento, aplicacion.documento_id, 
                     aplicacion.monto_aplicado)
                 
                 # Update document saldo
