@@ -1,0 +1,101 @@
+{
+  "summary": "Tested report filtering by empresa_id (bug fix) and new EstadoResultados component. All 16 backend tests passed. Frontend report pages working correctly with empresa_id filtering verified.",
+  "test_date": "2026-02-09",
+  
+  "features_tested": {
+    "Balance_General_API_filtering": {
+      "description": "GET /api/reportes/balance-general requires empresa_id and filters data correctly",
+      "status": "PASS",
+      "details": "Returns 400 without empresa_id. Returns different data for empresa 3 vs empresa 1."
+    },
+    "Estado_Resultados_API_filtering": {
+      "description": "GET /api/reportes/estado-resultados requires empresa_id and fecha_desde/fecha_hasta",
+      "status": "PASS",
+      "details": "Returns 400 without empresa_id, 422 without dates. Data correctly filtered by empresa."
+    },
+    "Flujo_Caja_API_filtering": {
+      "description": "GET /api/reportes/flujo-caja requires empresa_id and fecha_desde/fecha_hasta",
+      "status": "PASS",
+      "details": "Returns 400 without empresa_id, 422 without dates. Movement list filtered by empresa."
+    },
+    "Balance_General_Frontend": {
+      "description": "Balance General page loads and shows data for selected empresa",
+      "status": "PASS",
+      "details": "Page shows Activos, Pasivos, Patrimonio. data-testid='balance-general-page' present."
+    },
+    "Estado_Resultados_Frontend": {
+      "description": "Estado de Resultados page is full component with KPI cards and date filters (not placeholder)",
+      "status": "PASS",
+      "details": "Shows Total Ingresos (S/ 243,236.50), Total Egresos (S/ 1,423.73), Resultado Neto (S/ 241,812.77) for empresa 3. Date filters present with data-testid."
+    },
+    "Flujo_Caja_Frontend": {
+      "description": "Flujo de Caja page loads with KPI cards and movement table",
+      "status": "PASS",
+      "details": "Shows Ingresos (S/ 621.00), Egresos (S/ 10,115.00), Flujo Neto (S/ -9,494.00). Date filters and table working."
+    },
+    "Empresa_Switching_Reloads_Data": {
+      "description": "Switching empresa in TopBar dropdown reloads report data",
+      "status": "PASS",
+      "details": "Switching from empresa 3 to empresa 1 changed Estado Resultados data from S/ 243,236.50 to S/ -22,362.00 ingresos. Data isolation confirmed."
+    },
+    "Empresa_Selector_Dropdown": {
+      "description": "TopBar empresa selector shows all 3 empresas",
+      "status": "PASS",
+      "details": "Dropdown contains: Empresa de Prueba SAC, Mi Empresa S.A.C., Test Empresa"
+    }
+  },
+  
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  
+  "test_report_links": [
+    "/app/backend/tests/test_reportes_filtering.py",
+    "/app/test_reports/pytest/pytest_reportes_iter7.xml"
+  ],
+  
+  "action_items": [],
+  
+  "critical_code_review_comments": [
+    "Backend report endpoints (lines 4386-4498) now correctly filter by empresa_id in SQL WHERE clauses",
+    "get_next_correlativo function (lines 98-108) uses atomic INSERT ON CONFLICT for safe document numbering",
+    "Frontend axios interceptor correctly injects empresa_id from localStorage on all non-global requests",
+    "EstadoResultados.jsx is a full component with KPI cards, date filters, and proper data fetching (not a placeholder)"
+  ],
+  
+  "updated_files": [
+    "/app/backend/tests/test_reportes_filtering.py"
+  ],
+  
+  "success_rate": {
+    "backend": "100% (16/16 tests passed)",
+    "frontend": "100% (all report pages verified working)"
+  },
+  
+  "seed_data_creation": "None - used existing test data",
+  
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  
+  "context_for_next_testing_agent": "Report filtering by empresa_id is fully working. Balance General, Estado de Resultados, and Flujo de Caja all filter correctly. Empresa switching in TopBar reloads data. EstadoResultados is a complete component with date filters and KPI cards. Previous test iterations covered: multitenancy (iter6), category hierarchy (iter5).",
+  
+  "bug_fix_verification": {
+    "bug_1_report_filtering": {
+      "description": "Reports (Balance General, Estado de Resultados) were not filtering by empresa_id",
+      "status": "FIXED AND VERIFIED",
+      "evidence": "API returns different data for empresa 3 vs empresa 1. Frontend correctly shows different data when switching empresa."
+    },
+    "bug_2_correlativos": {
+      "description": "Document numbering needed atomic correlatives with cont_correlativos table",
+      "status": "VERIFIED IN CODE",
+      "evidence": "get_next_correlativo function uses INSERT ON CONFLICT for atomic numbering"
+    }
+  }
+}
