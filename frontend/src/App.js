@@ -5,7 +5,7 @@ import { Menu } from 'lucide-react';
 import './App.css';
 
 // Context
-import { EmpresaProvider } from './context/EmpresaContext';
+import { EmpresaProvider, useEmpresa } from './context/EmpresaContext';
 
 // Components
 import Sidebar from './components/Sidebar';
