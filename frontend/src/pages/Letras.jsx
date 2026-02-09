@@ -35,6 +35,7 @@ export const Letras = () => {
   const [loading, setLoading] = useState(true);
   const [showGenerarModal, setShowGenerarModal] = useState(false);
   const [showPagarModal, setShowPagarModal] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [facturasPendientes, setFacturasPendientes] = useState([]);
   const [cuentasFinancieras, setCuentasFinancieras] = useState([]);
   const [letraAPagar, setLetraAPagar] = useState(null);
@@ -78,6 +79,8 @@ export const Letras = () => {
 
   const handleGenerarLetras = async (e) => {
     e.preventDefault();
+    if (submitting) return;
+    setSubmitting(true);
     try {
       await generarLetras({
         factura_id: parseInt(generarForm.factura_id),
@@ -97,13 +100,16 @@ export const Letras = () => {
     } catch (error) {
       console.error('Error generating letras:', error);
       toast.error(error.response?.data?.detail || 'Error al generar letras');
+    } finally {
+      setSubmitting(false);
     }
   };
 
   const handlePagarLetra = async (e) => {
     e.preventDefault();
-    if (!letraAPagar) return;
+    if (!letraAPagar || submitting) return;
 
+    setSubmitting(true);
     try {
       await createPago({
         tipo: 'egreso',
@@ -137,6 +143,8 @@ export const Letras = () => {
     } catch (error) {
       console.error('Error paying letra:', error);
       toast.error(error.response?.data?.detail || 'Error al pagar letra');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -340,8 +348,8 @@ export const Letras = () => {
                 <button type="button" className="btn btn-outline" onClick={() => setShowGenerarModal(false)}>
                   Cancelar
                 </button>
-                <button type="submit" className="btn btn-primary">
-                  Generar Letras
+                <button type="submit" className="btn btn-primary" disabled={submitting}>
+                  {submitting ? 'Generando...' : 'Generar Letras'}
                 </button>
               </div>
             </form>
@@ -426,9 +434,9 @@ export const Letras = () => {
                 <button type="button" className="btn btn-outline" onClick={() => setShowPagarModal(false)}>
                   Cancelar
                 </button>
-                <button type="submit" className="btn btn-primary">
+                <button type="submit" className="btn btn-primary" disabled={submitting}>
                   <CreditCard size={18} />
-                  Registrar Pago
+                  {submitting ? 'Registrando...' : 'Registrar Pago'}
                 </button>
               </div>
             </form>
