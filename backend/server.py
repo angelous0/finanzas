@@ -2532,15 +2532,23 @@ async def create_adelanto(data: AdelantoCreate, empresa_id: int = Depends(get_em
             pago_id = None
             
             if data.pagar and data.cuenta_financiera_id:
+                # Get centro_costo and linea_negocio from employee
+                emp_info = await conn.fetchrow("""
+                    SELECT centro_costo_id, linea_negocio_id
+                    FROM finanzas2.cont_empleado_detalle WHERE tercero_id = $1
+                """, data.empleado_id)
+                cc_id = emp_info['centro_costo_id'] if emp_info else None
+                ln_id = emp_info['linea_negocio_id'] if emp_info else None
+                
                 # Create pago
                 pago_numero = await generate_pago_number(conn, 'egreso', empresa_id)
                 pago = await conn.fetchrow("""
                     INSERT INTO finanzas2.cont_pago 
-                    (numero, tipo, fecha, cuenta_financiera_id, monto_total, notas, empresa_id)
-                    VALUES ($1, 'egreso', TO_DATE($2, 'YYYY-MM-DD'), $3, $4, $5, $6)
+                    (numero, tipo, fecha, cuenta_financiera_id, monto_total, notas, centro_costo_id, linea_negocio_id, empresa_id)
+                    VALUES ($1, 'egreso', TO_DATE($2, 'YYYY-MM-DD'), $3, $4, $5, $6, $7, $8)
                     RETURNING id
                 """, pago_numero, safe_date_param(data.fecha), data.cuenta_financiera_id, data.monto, 
-                    "Adelanto a empleado", empresa_id)
+                    "Adelanto a empleado", cc_id, ln_id, empresa_id)
                 pago_id = pago['id']
                 
                 await conn.execute("""
