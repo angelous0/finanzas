@@ -73,6 +73,7 @@ const navSections = [
       { icon: BarChart3, label: 'Balance General', path: '/balance-general' },
       { icon: FileText, label: 'Estado de Resultados', path: '/estado-resultados' },
       { icon: DollarSign, label: 'Flujo de Caja', path: '/flujo-caja' },
+      { icon: CreditCard, label: 'Reporte de Pagos', path: '/reporte-pagos' },
     ]
   },
 ];
