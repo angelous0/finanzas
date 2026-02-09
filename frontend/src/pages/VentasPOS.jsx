@@ -784,6 +784,17 @@ export const VentasPOS = () => {
                           >
                             <ShoppingCart size={14} />
                           </button>
+                          {venta.estado_local === 'confirmada' && (
+                            <button 
+                              className="btn btn-outline btn-sm btn-icon"
+                              onClick={() => handleDesconfirmar(venta)}
+                              title="Desconfirmar venta y eliminar pagos"
+                              data-testid={`desconfirmar-${venta.id}`}
+                              style={{ color: '#dc2626' }}
+                            >
+                              <RotateCcw size={14} />
+                            </button>
+                          )}
                           {venta.estado_local === 'pendiente' && (
                             <>
                               <button 
