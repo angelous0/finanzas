@@ -2598,15 +2598,23 @@ async def pagar_adelanto(
             if adelanto['pagado']:
                 raise HTTPException(400, "Este adelanto ya fue pagado")
             
+            # Get centro_costo and linea_negocio from employee
+            emp_info = await conn.fetchrow("""
+                SELECT centro_costo_id, linea_negocio_id
+                FROM finanzas2.cont_empleado_detalle WHERE tercero_id = $1
+            """, adelanto['empleado_id'])
+            cc_id = emp_info['centro_costo_id'] if emp_info else None
+            ln_id = emp_info['linea_negocio_id'] if emp_info else None
+            
             # Create pago
             pago_numero = await generate_pago_number(conn, 'egreso', empresa_id)
             pago = await conn.fetchrow("""
                 INSERT INTO finanzas2.cont_pago 
-                (numero, tipo, fecha, cuenta_financiera_id, monto_total, notas, empresa_id)
-                VALUES ($1, 'egreso', CURRENT_DATE, $2, $3, $4, $5)
+                (numero, tipo, fecha, cuenta_financiera_id, monto_total, notas, centro_costo_id, linea_negocio_id, empresa_id)
+                VALUES ($1, 'egreso', CURRENT_DATE, $2, $3, $4, $5, $6, $7)
                 RETURNING id
             """, pago_numero, cuenta_financiera_id, adelanto['monto'], 
-                "Pago de adelanto a empleado", empresa_id)
+                "Pago de adelanto a empleado", cc_id, ln_id, empresa_id)
             pago_id = pago['id']
             
             # Create pago detalle
