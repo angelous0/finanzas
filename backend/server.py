@@ -2403,8 +2403,8 @@ async def create_gasto(data: GastoCreate, empresa_id: int = Depends(get_empresa_
                     INSERT INTO finanzas2.cont_gasto_linea 
                     (empresa_id, gasto_id, categoria_id, descripcion, linea_negocio_id, centro_costo_id, importe, igv_aplica)
                     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-                """, gasto_id, linea.categoria_id, linea.descripcion, linea.linea_negocio_id,
-                    linea.centro_costo_id, linea.importe, linea.igv_aplica, empresa_id)
+                """, empresa_id, gasto_id, linea.categoria_id, linea.descripcion, linea.linea_negocio_id,
+                    linea.centro_costo_id, linea.importe, linea.igv_aplica)
             
             # Create pago(s)
             pago_numero = await generate_pago_number(conn, 'egreso', empresa_id)
