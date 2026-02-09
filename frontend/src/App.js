@@ -35,11 +35,12 @@ import Adelantos from './pages/Adelantos';
 import ConciliacionBancaria from './pages/ConciliacionBancaria';
 import { HistorialConciliaciones } from './pages/HistorialConciliaciones';
 import { 
-  Clientes, Articulos,
+  Clientes,
   Presupuestos,
   EstadoResultados
 } from './pages/PlaceholderPages';
 import FlujoCaja from './pages/FlujoCaja';
+import Articulos from './pages/Articulos';
 
 function EmpresaGuard({ children }) {
   const { empresaActual, loading } = useEmpresa();
