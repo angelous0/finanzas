@@ -539,6 +539,19 @@ async def delete_centro_costo(id: int, empresa_id: int = Depends(get_empresa_id)
             raise HTTPException(404, "Centro de costo not found")
         return {"message": "Centro de costo deleted"}
 
+@api_router.put("/centros-costo/{id}", response_model=CentroCosto)
+async def update_centro_costo(id: int, data: CentroCostoCreate, empresa_id: int = Depends(get_empresa_id)):
+    pool = await get_pool()
+    async with pool.acquire() as conn:
+        await conn.execute("SET search_path TO finanzas2, public")
+        row = await conn.fetchrow("""
+            UPDATE finanzas2.cont_centro_costo SET codigo = $1, nombre = $2, descripcion = $3
+            WHERE id = $4 AND empresa_id = $5 RETURNING *
+        """, data.codigo, data.nombre, data.descripcion, id, empresa_id)
+        if not row:
+            raise HTTPException(404, "Centro de costo not found")
+        return dict(row)
+
 # =====================
 # LINEAS DE NEGOCIO
 # =====================
@@ -571,6 +584,19 @@ async def delete_linea_negocio(id: int, empresa_id: int = Depends(get_empresa_id
         if result == "DELETE 0":
             raise HTTPException(404, "Línea de negocio not found")
         return {"message": "Línea de negocio deleted"}
+
+@api_router.put("/lineas-negocio/{id}", response_model=LineaNegocio)
+async def update_linea_negocio(id: int, data: LineaNegocioCreate, empresa_id: int = Depends(get_empresa_id)):
+    pool = await get_pool()
+    async with pool.acquire() as conn:
+        await conn.execute("SET search_path TO finanzas2, public")
+        row = await conn.fetchrow("""
+            UPDATE finanzas2.cont_linea_negocio SET codigo = $1, nombre = $2, descripcion = $3
+            WHERE id = $4 AND empresa_id = $5 RETURNING *
+        """, data.codigo, data.nombre, data.descripcion, id, empresa_id)
+        if not row:
+            raise HTTPException(404, "Línea de negocio not found")
+        return dict(row)
 
 # =====================
 # CUENTAS FINANCIERAS
