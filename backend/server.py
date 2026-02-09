@@ -513,7 +513,7 @@ async def delete_linea_negocio(id: int, empresa_id: int = Depends(get_empresa_id
 # CUENTAS FINANCIERAS
 # =====================
 @api_router.get("/cuentas-financieras", response_model=List[CuentaFinanciera])
-async def list_cuentas_financieras(tipo: Optional[str] = None):
+async def list_cuentas_financieras(empresa_id: int = Depends(get_empresa_id), tipo: Optional[str] = None):
     pool = await get_pool()
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
@@ -521,30 +521,31 @@ async def list_cuentas_financieras(tipo: Optional[str] = None):
             SELECT cf.*, m.codigo as moneda_codigo
             FROM finanzas2.cont_cuenta_financiera cf
             LEFT JOIN finanzas2.cont_moneda m ON cf.moneda_id = m.id
+            WHERE cf.empresa_id = $1
         """
         if tipo:
-            query += " WHERE cf.tipo = $1"
-            rows = await conn.fetch(query + " ORDER BY cf.nombre", tipo)
+            query += " AND cf.tipo = $2"
+            rows = await conn.fetch(query + " ORDER BY cf.nombre", empresa_id, tipo)
         else:
-            rows = await conn.fetch(query + " ORDER BY cf.nombre")
+            rows = await conn.fetch(query + " ORDER BY cf.nombre", empresa_id)
         return [dict(r) for r in rows]
 
 @api_router.post("/cuentas-financieras", response_model=CuentaFinanciera)
-async def create_cuenta_financiera(data: CuentaFinancieraCreate):
+async def create_cuenta_financiera(data: CuentaFinancieraCreate, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
         row = await conn.fetchrow("""
             INSERT INTO finanzas2.cont_cuenta_financiera 
-            (nombre, tipo, banco, numero_cuenta, cci, moneda_id, saldo_actual, activo)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            (empresa_id, nombre, tipo, banco, numero_cuenta, cci, moneda_id, saldo_actual, activo)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
             RETURNING *
-        """, data.nombre, data.tipo, data.banco, data.numero_cuenta, data.cci, 
+        """, empresa_id, data.nombre, data.tipo, data.banco, data.numero_cuenta, data.cci, 
             data.moneda_id, data.saldo_actual, data.activo)
         return dict(row)
 
 @api_router.put("/cuentas-financieras/{id}", response_model=CuentaFinanciera)
-async def update_cuenta_financiera(id: int, data: CuentaFinancieraUpdate):
+async def update_cuenta_financiera(id: int, data: CuentaFinancieraUpdate, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
@@ -557,19 +558,20 @@ async def update_cuenta_financiera(id: int, data: CuentaFinancieraUpdate):
             idx += 1
         if not updates:
             raise HTTPException(400, "No fields to update")
+        values.append(empresa_id)
         values.append(id)
-        query = f"UPDATE finanzas2.cont_cuenta_financiera SET {', '.join(updates)}, updated_at = NOW() WHERE id = ${idx} RETURNING *"
+        query = f"UPDATE finanzas2.cont_cuenta_financiera SET {', '.join(updates)}, updated_at = NOW() WHERE empresa_id = ${idx} AND id = ${idx+1} RETURNING *"
         row = await conn.fetchrow(query, *values)
         if not row:
             raise HTTPException(404, "Cuenta financiera not found")
         return dict(row)
 
 @api_router.delete("/cuentas-financieras/{id}")
-async def delete_cuenta_financiera(id: int):
+async def delete_cuenta_financiera(id: int, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
-        result = await conn.execute("DELETE FROM finanzas2.cont_cuenta_financiera WHERE id = $1", id)
+        result = await conn.execute("DELETE FROM finanzas2.cont_cuenta_financiera WHERE id = $1 AND empresa_id = $2", id, empresa_id)
         if result == "DELETE 0":
             raise HTTPException(404, "Cuenta financiera not found")
         return {"message": "Cuenta financiera deleted"}
