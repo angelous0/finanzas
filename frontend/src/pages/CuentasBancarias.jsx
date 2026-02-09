@@ -15,6 +15,7 @@ export const CuentasBancarias = () => {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
   const [monedas, setMonedas] = useState([]);
   const [kardex, setKardex] = useState(null);
   const [kardexCuentaId, setKardexCuentaId] = useState(null);
@@ -58,6 +59,8 @@ export const CuentasBancarias = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (submitting) return;
+    setSubmitting(true);
     try {
       const payload = {
         ...formData,
@@ -78,6 +81,8 @@ export const CuentasBancarias = () => {
     } catch (error) {
       console.error('Error saving cuenta:', error);
       toast.error('Error al guardar cuenta');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -363,8 +368,8 @@ export const CuentasBancarias = () => {
                 <button type="button" className="btn btn-outline" onClick={() => setShowModal(false)}>
                   Cancelar
                 </button>
-                <button type="submit" className="btn btn-primary">
-                  {editingId ? 'Guardar Cambios' : 'Crear Cuenta'}
+                <button type="submit" className="btn btn-primary" disabled={submitting}>
+                  {submitting ? 'Guardando...' : (editingId ? 'Guardar Cambios' : 'Crear Cuenta')}
                 </button>
               </div>
             </form>
