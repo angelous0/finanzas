@@ -652,6 +652,34 @@ async def create_schema():
             )
         """)
 
+        # ── Correlativos (secure per-company sequences) ──
+        await conn.execute("""
+            CREATE TABLE IF NOT EXISTS finanzas2.cont_correlativos (
+                id SERIAL PRIMARY KEY,
+                empresa_id INTEGER NOT NULL REFERENCES finanzas2.cont_empresa(id),
+                tipo_documento VARCHAR(30) NOT NULL,
+                prefijo VARCHAR(30) NOT NULL,
+                ultimo_numero INTEGER NOT NULL DEFAULT 0,
+                updated_at TIMESTAMP DEFAULT NOW(),
+                UNIQUE(empresa_id, tipo_documento, prefijo)
+            )
+        """)
+
+        # Add UNIQUE constraint on cont_factura_proveedor(empresa_id, numero) if missing
+        await conn.execute("""
+            DO $$
+            BEGIN
+                IF NOT EXISTS (
+                    SELECT 1 FROM pg_constraint
+                    WHERE conname = 'cont_factura_proveedor_empresa_numero_key'
+                ) THEN
+                    ALTER TABLE finanzas2.cont_factura_proveedor
+                    ADD CONSTRAINT cont_factura_proveedor_empresa_numero_key
+                    UNIQUE(empresa_id, numero);
+                END IF;
+            END $$;
+        """)
+
         # ── Indexes ──
         index_stmts = [
             "CREATE INDEX IF NOT EXISTS idx_cont_venta_pos_pago_venta ON finanzas2.cont_venta_pos_pago(venta_pos_id)",
