@@ -1766,6 +1766,8 @@ async def list_pagos(
     fecha_hasta: Optional[date] = None,
     cuenta_financiera_id: Optional[int] = None,
     conciliado: Optional[bool] = None,
+    centro_costo_id: Optional[int] = None,
+    linea_negocio_id: Optional[int] = None,
     empresa_id: int = Depends(get_empresa_id),
 ):
     pool = await get_pool()
@@ -1796,12 +1798,23 @@ async def list_pagos(
             conditions.append(f"COALESCE(p.conciliado, false) = ${idx}")
             params.append(conciliado)
             idx += 1
+        if centro_costo_id:
+            conditions.append(f"p.centro_costo_id = ${idx}")
+            params.append(centro_costo_id)
+            idx += 1
+        if linea_negocio_id:
+            conditions.append(f"p.linea_negocio_id = ${idx}")
+            params.append(linea_negocio_id)
+            idx += 1
         
         query = f"""
-            SELECT p.*, cf.nombre as cuenta_nombre, m.codigo as moneda_codigo
+            SELECT p.*, cf.nombre as cuenta_nombre, m.codigo as moneda_codigo,
+                   cc.nombre as centro_costo_nombre, ln.nombre as linea_negocio_nombre
             FROM finanzas2.cont_pago p
             LEFT JOIN finanzas2.cont_cuenta_financiera cf ON p.cuenta_financiera_id = cf.id
             LEFT JOIN finanzas2.cont_moneda m ON p.moneda_id = m.id
+            LEFT JOIN finanzas2.cont_centro_costo cc ON p.centro_costo_id = cc.id
+            LEFT JOIN finanzas2.cont_linea_negocio ln ON p.linea_negocio_id = ln.id
             WHERE {' AND '.join(conditions)}
             ORDER BY p.fecha DESC, p.id DESC
         """
