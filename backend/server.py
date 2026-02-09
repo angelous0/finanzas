@@ -1047,19 +1047,10 @@ async def create_articulo(data: ArticuloRefCreate, empresa_id: int = Depends(get
 # ORDENES DE COMPRA
 # =====================
 async def generate_oc_number(conn, empresa_id: int) -> str:
-    """Generate next OC number"""
+    """Generate next OC number using secure correlatives"""
     year = datetime.now().year
-    prefix = f"OC-{year}-"
-    last = await conn.fetchval(f"""
-        SELECT numero FROM finanzas2.cont_oc 
-        WHERE numero LIKE '{prefix}%' AND empresa_id = $1
-        ORDER BY id DESC LIMIT 1
-    """, empresa_id)
-    if last:
-        num = int(last.split('-')[-1]) + 1
-    else:
-        num = 1
-    return f"{prefix}{num:05d}"
+    prefijo = f"OC-{year}-"
+    return await get_next_correlativo(conn, empresa_id, 'oc', prefijo)
 
 @api_router.get("/ordenes-compra", response_model=List[OC])
 async def list_ordenes_compra(
