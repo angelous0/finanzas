@@ -753,8 +753,8 @@ async def create_or_update_empleado_detalle(tercero_id: int, data: EmpleadoDetal
             # Create new
             row = await conn.fetchrow("""
                 INSERT INTO finanzas2.cont_empleado_detalle 
-                (tercero_id, fecha_ingreso, cargo, salario_base, cuenta_bancaria, banco, activo)
-                VALUES ($1, $2, $3, $4, $5, $6, $7)
+                (tercero_id, fecha_ingreso, cargo, salario_base, cuenta_bancaria, banco, activo, empresa_id)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
                 RETURNING *
             """, tercero_id, data.fecha_ingreso, data.cargo, data.salario_base,
                 data.cuenta_bancaria, data.banco, data.activo)
@@ -886,8 +886,8 @@ async def create_articulo(data: ArticuloRefCreate, empresa_id: int = Depends(get
         await conn.execute("SET search_path TO finanzas2, public")
         row = await conn.fetchrow("""
             INSERT INTO finanzas2.cont_articulo_ref 
-            (prod_inventario_id, codigo, nombre, descripcion, precio_referencia, activo)
-            VALUES ($1, $2, $3, $4, $5, $6)
+            (prod_inventario_id, codigo, nombre, descripcion, precio_referencia, activo, empresa_id)
+            VALUES ($1, $2, $3, $4, $5, $6, $7)
             RETURNING *
         """, data.prod_inventario_id, data.codigo, data.nombre, data.descripcion, 
             data.precio_referencia, data.activo)
@@ -2223,8 +2223,8 @@ async def create_gasto(data: GastoCreate, empresa_id: int = Depends(get_empresa_
             # Insert pago aplicacion
             await conn.execute("""
                 INSERT INTO finanzas2.cont_pago_aplicacion 
-                (pago_id, tipo_documento, documento_id, monto_aplicado)
-                VALUES ($1, 'gasto', $2, $3)
+                (pago_id, tipo_documento, documento_id, monto_aplicado, empresa_id)
+                VALUES ($1, 'gasto', $2, $3, $4)
             """, pago_id, gasto_id, total)
             
             # Update gasto with pago_id
@@ -2362,8 +2362,8 @@ async def create_adelanto(data: AdelantoCreate, empresa_id: int = Depends(get_em
                 pago_numero = await generate_pago_number(conn, 'egreso', empresa_id)
                 pago = await conn.fetchrow("""
                     INSERT INTO finanzas2.cont_pago 
-                    (numero, tipo, fecha, cuenta_financiera_id, monto_total, notas)
-                    VALUES ($1, 'egreso', TO_DATE($2, 'YYYY-MM-DD'), $3, $4, $5)
+                    (numero, tipo, fecha, cuenta_financiera_id, monto_total, notas, empresa_id)
+                    VALUES ($1, 'egreso', TO_DATE($2, 'YYYY-MM-DD', $3), $3, $4, $5)
                     RETURNING id
                 """, pago_numero, safe_date_param(data.fecha), data.cuenta_financiera_id, data.monto, 
                     "Adelanto a empleado")
@@ -2371,8 +2371,8 @@ async def create_adelanto(data: AdelantoCreate, empresa_id: int = Depends(get_em
                 
                 await conn.execute("""
                     INSERT INTO finanzas2.cont_pago_detalle 
-                    (pago_id, cuenta_financiera_id, medio_pago, monto)
-                    VALUES ($1, $2, $3, $4)
+                    (pago_id, cuenta_financiera_id, medio_pago, monto, empresa_id)
+                    VALUES ($1, $2, $3, $4, $5)
                 """, pago_id, data.cuenta_financiera_id, data.medio_pago, data.monto)
                 
                 await conn.execute("""
@@ -2382,8 +2382,8 @@ async def create_adelanto(data: AdelantoCreate, empresa_id: int = Depends(get_em
             
             row = await conn.fetchrow("""
                 INSERT INTO finanzas2.cont_adelanto_empleado 
-                (empleado_id, fecha, monto, motivo, pagado, pago_id)
-                VALUES ($1, TO_DATE($2, 'YYYY-MM-DD'), $3, $4, $5, $6)
+                (empleado_id, fecha, monto, motivo, pagado, pago_id, empresa_id)
+                VALUES ($1, TO_DATE($2, 'YYYY-MM-DD', $3), $3, $4, $5, $6)
                 RETURNING *
             """, data.empleado_id, safe_date_param(data.fecha), data.monto, data.motivo, 
                 data.pagar, pago_id)
@@ -2391,8 +2391,8 @@ async def create_adelanto(data: AdelantoCreate, empresa_id: int = Depends(get_em
             if pago_id:
                 await conn.execute("""
                     INSERT INTO finanzas2.cont_pago_aplicacion 
-                    (pago_id, tipo_documento, documento_id, monto_aplicado)
-                    VALUES ($1, 'adelanto', $2, $3)
+                    (pago_id, tipo_documento, documento_id, monto_aplicado, empresa_id)
+                    VALUES ($1, 'adelanto', $2, $3, $4)
                 """, pago_id, row['id'], data.monto)
             
             # Get empleado nombre
@@ -2428,8 +2428,8 @@ async def pagar_adelanto(
             pago_numero = await generate_pago_number(conn, 'egreso', empresa_id)
             pago = await conn.fetchrow("""
                 INSERT INTO finanzas2.cont_pago 
-                (numero, tipo, fecha, cuenta_financiera_id, monto_total, notas)
-                VALUES ($1, 'egreso', CURRENT_DATE, $2, $3, $4)
+                (numero, tipo, fecha, cuenta_financiera_id, monto_total, notas, empresa_id)
+                VALUES ($1, 'egreso', CURRENT_DATE, $2, $3, $4, $5)
                 RETURNING id
             """, pago_numero, cuenta_financiera_id, adelanto['monto'], 
                 "Pago de adelanto a empleado")
@@ -2438,8 +2438,8 @@ async def pagar_adelanto(
             # Create pago detalle
             await conn.execute("""
                 INSERT INTO finanzas2.cont_pago_detalle 
-                (pago_id, cuenta_financiera_id, medio_pago, monto)
-                VALUES ($1, $2, $3, $4)
+                (pago_id, cuenta_financiera_id, medio_pago, monto, empresa_id)
+                VALUES ($1, $2, $3, $4, $5)
             """, pago_id, cuenta_financiera_id, medio_pago, adelanto['monto'])
             
             # Update cuenta saldo
@@ -2459,8 +2459,8 @@ async def pagar_adelanto(
             # Create pago aplicacion
             await conn.execute("""
                 INSERT INTO finanzas2.cont_pago_aplicacion 
-                (pago_id, tipo_documento, documento_id, monto_aplicado)
-                VALUES ($1, 'adelanto', $2, $3)
+                (pago_id, tipo_documento, documento_id, monto_aplicado, empresa_id)
+                VALUES ($1, 'adelanto', $2, $3, $4)
             """, pago_id, id, adelanto['monto'])
             
             # Get empleado nombre
@@ -2581,8 +2581,8 @@ async def create_planilla(data: PlanillaCreate, empresa_id: int = Depends(get_em
             row = await conn.fetchrow("""
                 INSERT INTO finanzas2.cont_planilla 
                 (periodo, fecha_inicio, fecha_fin, total_bruto, total_adelantos, 
-                 total_descuentos, total_neto, estado)
-                VALUES ($1, TO_DATE($2, 'YYYY-MM-DD'), TO_DATE($3, 'YYYY-MM-DD'), $4, $5, $6, $7, 'borrador')
+                 total_descuentos, total_neto, estado, empresa_id)
+                VALUES ($1, TO_DATE($2, 'YYYY-MM-DD', $3), TO_DATE($3, 'YYYY-MM-DD'), $4, $5, $6, $7, 'borrador')
                 RETURNING *
             """, data.periodo, safe_date_param(data.fecha_inicio), safe_date_param(data.fecha_fin), total_bruto,
                 total_adelantos, total_descuentos, total_neto)
@@ -2596,8 +2596,8 @@ async def create_planilla(data: PlanillaCreate, empresa_id: int = Depends(get_em
                 detalle_row = await conn.fetchrow("""
                     INSERT INTO finanzas2.cont_planilla_detalle 
                     (planilla_id, empleado_id, salario_base, bonificaciones, adelantos, 
-                     otros_descuentos, neto_pagar)
-                    VALUES ($1, $2, $3, $4, $5, $6, $7)
+                     otros_descuentos, neto_pagar, empresa_id)
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
                     RETURNING *
                 """, planilla_id, detalle.empleado_id, detalle.salario_base, detalle.bonificaciones,
                     detalle.adelantos, detalle.otros_descuentos, neto_pagar)
@@ -2653,8 +2653,8 @@ async def pagar_planilla(id: int, cuenta_financiera_id: int = Query(...), empres
             pago_numero = await generate_pago_number(conn, 'egreso', empresa_id)
             pago = await conn.fetchrow("""
                 INSERT INTO finanzas2.cont_pago 
-                (numero, tipo, fecha, cuenta_financiera_id, monto_total, notas)
-                VALUES ($1, 'egreso', $2, $3, $4, $5)
+                (numero, tipo, fecha, cuenta_financiera_id, monto_total, notas, empresa_id)
+                VALUES ($1, 'egreso', $2, $3, $4, $5, $6)
                 RETURNING id
             """, pago_numero, datetime.now().date(), cuenta_financiera_id, 
                 planilla['total_neto'], f"Pago planilla {planilla['periodo']}")
@@ -2663,8 +2663,8 @@ async def pagar_planilla(id: int, cuenta_financiera_id: int = Query(...), empres
             
             await conn.execute("""
                 INSERT INTO finanzas2.cont_pago_detalle 
-                (pago_id, cuenta_financiera_id, medio_pago, monto)
-                VALUES ($1, $2, 'transferencia', $3)
+                (pago_id, cuenta_financiera_id, medio_pago, monto, empresa_id)
+                VALUES ($1, $2, 'transferencia', $3, $4)
             """, pago_id, cuenta_financiera_id, planilla['total_neto'])
             
             await conn.execute("""
@@ -2674,8 +2674,8 @@ async def pagar_planilla(id: int, cuenta_financiera_id: int = Query(...), empres
             
             await conn.execute("""
                 INSERT INTO finanzas2.cont_pago_aplicacion 
-                (pago_id, tipo_documento, documento_id, monto_aplicado)
-                VALUES ($1, 'planilla', $2, $3)
+                (pago_id, tipo_documento, documento_id, monto_aplicado, empresa_id)
+                VALUES ($1, 'planilla', $2, $3, $4)
             """, pago_id, id, planilla['total_neto'])
             
             # Mark adelantos as descontado
@@ -2922,10 +2922,10 @@ async def sync_ventas_pos(company: str = "ambission", days_back: int = 30, empre
                              x_pagos, quantity_total, amount_total, state,
                              reserva_pendiente, reserva_facturada, is_cancel,
                              order_cancel, reserva, is_credit, reserva_use_id,
-                             synced_at)
+                             synced_at, empresa_id)
                             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10,
                                     $11, $12, $13, $14, $15, $16, $17, $18, $19,
-                                    $20, $21, $22, $23, $24, NOW())
+                                    $20, $21, $22, $23, $24, NOW(, $25))
                         """, odoo_id, date_order, name, tipo_comp, num_comp,
                             partner_id, partner_name, tienda_id, tienda_name,
                             vendedor_id, vendedor_name, company_id, company_name,
@@ -2959,8 +2959,8 @@ async def sync_ventas_pos(company: str = "ambission", days_back: int = 30, empre
                                     INSERT INTO finanzas2.cont_venta_pos_linea
                                     (venta_pos_id, odoo_line_id, product_id, product_name, product_code,
                                      qty, price_unit, price_subtotal, price_subtotal_incl, discount,
-                                     marca, tipo)
-                                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+                                     marca, tipo, empresa_id)
+                                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
                                 """, venta_pos_id, line.get('id'), product_id_val, product_name,
                                     line.get('product_code', ''), line.get('qty', 0),
                                     line.get('price_unit', 0), line.get('price_subtotal', 0),
@@ -3025,8 +3025,8 @@ async def marcar_credito_venta_pos(id: int, fecha_vencimiento: Optional[date] = 
             # Create CxC
             cxc = await conn.fetchrow("""
                 INSERT INTO finanzas2.cont_cxc 
-                (venta_pos_id, monto_original, saldo_pendiente, fecha_vencimiento, estado)
-                VALUES ($1, $2, $2, TO_DATE($3, 'YYYY-MM-DD'), 'pendiente')
+                (venta_pos_id, monto_original, saldo_pendiente, fecha_vencimiento, estado, empresa_id)
+                VALUES ($1, $2, $2, TO_DATE($3, 'YYYY-MM-DD', $4), 'pendiente')
                 RETURNING id
             """, id, venta['amount_total'], safe_date_param(fecha_vencimiento or (datetime.now().date() + timedelta(days=30))))
             
@@ -3091,8 +3091,8 @@ async def desconfirmar_venta_pos(id: int, empresa_id: int = Depends(get_empresa_
             for pago in pagos_oficiales:
                 await conn.execute("""
                     INSERT INTO finanzas2.cont_venta_pos_pago 
-                    (venta_pos_id, forma_pago, cuenta_financiera_id, monto, referencia, fecha_pago, observaciones)
-                    VALUES ($1, $2, $3, $4, $5, $6, $7)
+                    (venta_pos_id, forma_pago, cuenta_financiera_id, monto, referencia, fecha_pago, observaciones, empresa_id)
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
                 """, id, pago['medio_pago'], pago['cuenta_financiera_id'], 
                     pago['monto'], pago['referencia'], pago['fecha'], 
                     pago['notas'] or 'Pago restaurado desde confirmación')
@@ -3197,8 +3197,8 @@ async def add_pago_venta_pos(id: int, pago: dict, empresa_id: int = Depends(get_
             # Insert payment
             await conn.execute("""
                 INSERT INTO finanzas2.cont_venta_pos_pago 
-                (venta_pos_id, forma_pago, cuenta_financiera_id, monto, referencia, fecha_pago, observaciones)
-                VALUES ($1, $2, $3, $4, $5, TO_DATE($6, 'YYYY-MM-DD'), $7)
+                (venta_pos_id, forma_pago, cuenta_financiera_id, monto, referencia, fecha_pago, observaciones, empresa_id)
+                VALUES ($1, $2, $3, $4, $5, TO_DATE($6, 'YYYY-MM-DD', $7), $7)
             """, id, pago.get('forma_pago'), int(pago.get('cuenta_financiera_id')), pago.get('monto'), 
                 pago.get('referencia'), pago.get('fecha_pago'), pago.get('observaciones'))
             
@@ -3244,8 +3244,8 @@ async def add_pago_venta_pos(id: int, pago: dict, empresa_id: int = Depends(get_
                     # Insertar en cont_pago como INGRESO (ventas = dinero que entra)
                     pago_result = await conn.fetchrow("""
                         INSERT INTO finanzas2.cont_pago 
-                        (numero, tipo, fecha, cuenta_financiera_id, moneda_id, monto_total, referencia, notas)
-                        VALUES ($1, 'ingreso', $2::date, $3, 1, $4, $5, $6)
+                        (numero, tipo, fecha, cuenta_financiera_id, moneda_id, monto_total, referencia, notas, empresa_id)
+                        VALUES ($1, 'ingreso', $2::date, $3, 1, $4, $5, $6, $7)
                         RETURNING id
                     """, numero_pago, pago_item['fecha_pago'], pago_item['cuenta_financiera_id'],
                         pago_item['monto'], pago_item['referencia'],
@@ -3256,16 +3256,16 @@ async def add_pago_venta_pos(id: int, pago: dict, empresa_id: int = Depends(get_
                     # Insertar detalle del pago
                     await conn.execute("""
                         INSERT INTO finanzas2.cont_pago_detalle 
-                        (pago_id, cuenta_financiera_id, medio_pago, monto, referencia)
-                        VALUES ($1, $2, $3, $4, $5)
+                        (pago_id, cuenta_financiera_id, medio_pago, monto, referencia, empresa_id)
+                        VALUES ($1, $2, $3, $4, $5, $6)
                     """, pago_id, pago_item['cuenta_financiera_id'], pago_item['forma_pago'], 
                         pago_item['monto'], pago_item['referencia'])
                     
                     # Vincular el pago con la venta POS en cont_pago_aplicacion
                     await conn.execute("""
                         INSERT INTO finanzas2.cont_pago_aplicacion
-                        (pago_id, tipo_documento, documento_id, monto_aplicado)
-                        VALUES ($1, 'venta_pos', $2, $3)
+                        (pago_id, tipo_documento, documento_id, monto_aplicado, empresa_id)
+                        VALUES ($1, 'venta_pos', $2, $3, $4)
                     """, pago_id, id, pago_item['monto'])
                 
                 return {
@@ -3426,8 +3426,8 @@ async def create_presupuesto(data: PresupuestoCreate, empresa_id: int = Depends(
             
             row = await conn.fetchrow("""
                 INSERT INTO finanzas2.cont_presupuesto 
-                (nombre, anio, version, estado, notas)
-                VALUES ($1, $2, $3, 'borrador', $4)
+                (nombre, anio, version, estado, notas, empresa_id)
+                VALUES ($1, $2, $3, 'borrador', $4, $5)
                 RETURNING *
             """, data.nombre, data.anio, version, data.notas)
             
@@ -3436,8 +3436,8 @@ async def create_presupuesto(data: PresupuestoCreate, empresa_id: int = Depends(
             for linea in data.lineas:
                 await conn.execute("""
                     INSERT INTO finanzas2.cont_presupuesto_linea 
-                    (presupuesto_id, categoria_id, centro_costo_id, linea_negocio_id, mes, monto_presupuestado)
-                    VALUES ($1, $2, $3, $4, $5, $6)
+                    (presupuesto_id, categoria_id, centro_costo_id, linea_negocio_id, mes, monto_presupuestado, empresa_id)
+                    VALUES ($1, $2, $3, $4, $5, $6, $7)
                 """, presupuesto_id, linea.categoria_id, linea.centro_costo_id,
                     linea.linea_negocio_id, linea.mes, linea.monto_presupuestado)
             
@@ -3780,8 +3780,8 @@ async def importar_excel_banco(
                         # Insert new record
                         await conn.execute("""
                             INSERT INTO finanzas2.cont_banco_mov_raw 
-                            (cuenta_financiera_id, banco, fecha, descripcion, referencia, monto, banco_excel, procesado)
-                            VALUES ($1, $2, $3, $4, $5, $6, $7, FALSE)
+                            (cuenta_financiera_id, banco, fecha, descripcion, referencia, monto, banco_excel, procesado, empresa_id)
+                            VALUES ($1, $2, $3, $4, $5, $6, $7, FALSE, $8)
                         """, cuenta_financiera_id, banco, fecha, desc_clean, 
                             ref_clean if ref_clean else None, monto, banco)
                         imported += 1
@@ -4026,8 +4026,8 @@ async def conciliar_movimientos(
                 # Create conciliacion record
                 conciliacion = await conn.fetchrow("""
                     INSERT INTO finanzas2.cont_conciliacion 
-                    (cuenta_financiera_id, fecha_inicio, fecha_fin, saldo_final, estado, notas)
-                    VALUES ($1, $2, $2, $3, 'completado', $4)
+                    (cuenta_financiera_id, fecha_inicio, fecha_fin, saldo_final, estado, notas, empresa_id)
+                    VALUES ($1, $2, $2, $3, 'completado', $4, $5)
                     RETURNING id
                 """, cuenta_id, today, total_banco,
                     f"Conciliación: {len(banco_ids)} mov. banco + {len(pago_ids)} mov. sistema")
@@ -4042,8 +4042,8 @@ async def conciliar_movimientos(
                     
                     await conn.execute("""
                         INSERT INTO finanzas2.cont_conciliacion_linea 
-                        (conciliacion_id, pago_id, tipo, monto, conciliado)
-                        VALUES ($1, $2, 'pago', $3, TRUE)
+                        (conciliacion_id, pago_id, tipo, monto, conciliado, empresa_id)
+                        VALUES ($1, $2, 'pago', $3, TRUE, $4)
                     """, conciliacion_id, pago_id, pago_info['monto_total'] if pago_info else 0)
         
         return {
@@ -4105,8 +4105,8 @@ async def crear_gasto_desde_movimientos_bancarios(
             gasto = await conn.fetchrow("""
                 INSERT INTO finanzas2.cont_gasto 
                 (numero, fecha, beneficiario_nombre, moneda_id, subtotal, igv, total,
-                 tipo_documento, numero_documento, notas)
-                VALUES ($1, CURRENT_DATE, $2, 1, $3, 0, $3, 'gasto_bancario', $4, $5)
+                 tipo_documento, numero_documento, notas, empresa_id)
+                VALUES ($1, CURRENT_DATE, $2, 1, $3, 0, $3, 'gasto_bancario', $4, $5, $6)
                 RETURNING id
             """, numero, 'Banco', total, numero, descripcion)
             
@@ -4115,16 +4115,16 @@ async def crear_gasto_desde_movimientos_bancarios(
             # Insert gasto line
             await conn.execute("""
                 INSERT INTO finanzas2.cont_gasto_linea 
-                (gasto_id, categoria_id, descripcion, importe, igv_aplica)
-                VALUES ($1, $2, $3, $4, FALSE)
+                (gasto_id, categoria_id, descripcion, importe, igv_aplica, empresa_id)
+                VALUES ($1, $2, $3, $4, FALSE, $5)
             """, gasto_id, categoria_id, f"{descripcion} ({len(movimientos)} movimientos)", total)
             
             # Create pago (automatic payment)
             pago_numero = f"PAG-E-{numero}"
             pago = await conn.fetchrow("""
                 INSERT INTO finanzas2.cont_pago 
-                (numero, tipo, fecha, cuenta_financiera_id, moneda_id, monto_total, notas)
-                VALUES ($1, 'egreso', CURRENT_DATE, $2, 1, $3, $4)
+                (numero, tipo, fecha, cuenta_financiera_id, moneda_id, monto_total, notas, empresa_id)
+                VALUES ($1, 'egreso', CURRENT_DATE, $2, 1, $3, $4, $5)
                 RETURNING id
             """, pago_numero, cuenta_financiera_id, total, f"Pago automático de {descripcion}")
             
@@ -4133,15 +4133,15 @@ async def crear_gasto_desde_movimientos_bancarios(
             # Insert pago detalle
             await conn.execute("""
                 INSERT INTO finanzas2.cont_pago_detalle 
-                (pago_id, cuenta_financiera_id, medio_pago, monto)
-                VALUES ($1, $2, 'cargo_bancario', $3)
+                (pago_id, cuenta_financiera_id, medio_pago, monto, empresa_id)
+                VALUES ($1, $2, 'cargo_bancario', $3, $4)
             """, pago_id, cuenta_financiera_id, total)
             
             # Link pago to gasto
             await conn.execute("""
                 INSERT INTO finanzas2.cont_pago_aplicacion 
-                (pago_id, tipo_documento, documento_id, monto_aplicado)
-                VALUES ($1, 'gasto', $2, $3)
+                (pago_id, tipo_documento, documento_id, monto_aplicado, empresa_id)
+                VALUES ($1, 'gasto', $2, $3, $4)
             """, pago_id, gasto_id, total)
             
             # Mark bank movements as reconciled
@@ -4172,8 +4172,8 @@ async def crear_gasto_desde_movimientos_bancarios(
             
             conciliacion = await conn.fetchrow("""
                 INSERT INTO finanzas2.cont_conciliacion 
-                (cuenta_financiera_id, fecha_inicio, fecha_fin, saldo_final, estado, notas)
-                VALUES ($1, $2, $2, $3, 'completado', $4)
+                (cuenta_financiera_id, fecha_inicio, fecha_fin, saldo_final, estado, notas, empresa_id)
+                VALUES ($1, $2, $2, $3, 'completado', $4, $5)
                 RETURNING id
             """, cuenta_financiera_id, today, total,
                 f"Gasto bancario automático: {descripcion} ({len(banco_ids)} movimientos)")
@@ -4183,8 +4183,8 @@ async def crear_gasto_desde_movimientos_bancarios(
             # Create detail record for the pago
             await conn.execute("""
                 INSERT INTO finanzas2.cont_conciliacion_linea 
-                (conciliacion_id, pago_id, tipo, documento_id, monto, conciliado)
-                VALUES ($1, $2, 'gasto', $3, $4, TRUE)
+                (conciliacion_id, pago_id, tipo, documento_id, monto, conciliado, empresa_id)
+                VALUES ($1, $2, 'gasto', $3, $4, TRUE, $5)
             """, conciliacion_id, pago_id, gasto_id, total)
         
         return {
@@ -4204,8 +4204,8 @@ async def create_conciliacion(data: ConciliacionCreate, empresa_id: int = Depend
         
         row = await conn.fetchrow("""
             INSERT INTO finanzas2.cont_conciliacion 
-            (cuenta_financiera_id, fecha_inicio, fecha_fin, saldo_inicial, saldo_final, notas)
-            VALUES ($1, TO_DATE($2, 'YYYY-MM-DD'), TO_DATE($3, 'YYYY-MM-DD'), $4, $5, $6)
+            (cuenta_financiera_id, fecha_inicio, fecha_fin, saldo_inicial, saldo_final, notas, empresa_id)
+            VALUES ($1, TO_DATE($2, 'YYYY-MM-DD', $3), TO_DATE($3, 'YYYY-MM-DD'), $4, $5, $6)
             RETURNING *
         """, data.cuenta_financiera_id, safe_date_param(data.fecha_inicio), safe_date_param(data.fecha_fin),
             data.saldo_inicial, data.saldo_final, data.notas)
