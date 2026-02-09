@@ -2363,7 +2363,7 @@ async def create_adelanto(data: AdelantoCreate, empresa_id: int = Depends(get_em
                 pago = await conn.fetchrow("""
                     INSERT INTO finanzas2.cont_pago 
                     (numero, tipo, fecha, cuenta_financiera_id, monto_total, notas, empresa_id)
-                    VALUES ($1, 'egreso', TO_DATE($2, 'YYYY-MM-DD', $3), $3, $4, $5)
+                    VALUES ($1, 'egreso', TO_DATE($2, 'YYYY-MM-DD'), $3, $4, $5)
                     RETURNING id
                 """, pago_numero, safe_date_param(data.fecha), data.cuenta_financiera_id, data.monto, 
                     "Adelanto a empleado", empresa_id)
@@ -2383,7 +2383,7 @@ async def create_adelanto(data: AdelantoCreate, empresa_id: int = Depends(get_em
             row = await conn.fetchrow("""
                 INSERT INTO finanzas2.cont_adelanto_empleado 
                 (empleado_id, fecha, monto, motivo, pagado, pago_id, empresa_id)
-                VALUES ($1, TO_DATE($2, 'YYYY-MM-DD', $3), $3, $4, $5, $6)
+                VALUES ($1, TO_DATE($2, 'YYYY-MM-DD'), $3, $4, $5, $6)
                 RETURNING *
             """, data.empleado_id, safe_date_param(data.fecha), data.monto, data.motivo, 
                 data.pagar, pago_id, empresa_id)
@@ -2582,7 +2582,7 @@ async def create_planilla(data: PlanillaCreate, empresa_id: int = Depends(get_em
                 INSERT INTO finanzas2.cont_planilla 
                 (periodo, fecha_inicio, fecha_fin, total_bruto, total_adelantos, 
                  total_descuentos, total_neto, estado, empresa_id)
-                VALUES ($1, TO_DATE($2, 'YYYY-MM-DD', $3), TO_DATE($3, 'YYYY-MM-DD'), $4, $5, $6, $7, 'borrador')
+                VALUES ($1, TO_DATE($2, 'YYYY-MM-DD'), TO_DATE($3, 'YYYY-MM-DD'), $4, $5, $6, $7, 'borrador')
                 RETURNING *
             """, data.periodo, safe_date_param(data.fecha_inicio), safe_date_param(data.fecha_fin), total_bruto,
                 total_adelantos, total_descuentos, total_neto, empresa_id)
@@ -3026,7 +3026,7 @@ async def marcar_credito_venta_pos(id: int, fecha_vencimiento: Optional[date] = 
             cxc = await conn.fetchrow("""
                 INSERT INTO finanzas2.cont_cxc 
                 (venta_pos_id, monto_original, saldo_pendiente, fecha_vencimiento, estado, empresa_id)
-                VALUES ($1, $2, $2, TO_DATE($3, 'YYYY-MM-DD', $4), 'pendiente')
+                VALUES ($1, $2, $2, TO_DATE($3, 'YYYY-MM-DD'), 'pendiente')
                 RETURNING id
             """, id, venta['amount_total'], safe_date_param(fecha_vencimiento or (datetime.now().date() + timedelta(days=30))), empresa_id)
             
@@ -3198,7 +3198,7 @@ async def add_pago_venta_pos(id: int, pago: dict, empresa_id: int = Depends(get_
             await conn.execute("""
                 INSERT INTO finanzas2.cont_venta_pos_pago 
                 (venta_pos_id, forma_pago, cuenta_financiera_id, monto, referencia, fecha_pago, observaciones, empresa_id)
-                VALUES ($1, $2, $3, $4, $5, TO_DATE($6, 'YYYY-MM-DD', $7), $7)
+                VALUES ($1, $2, $3, $4, $5, TO_DATE($6, 'YYYY-MM-DD'), $7)
             """, id, pago.get('forma_pago'), int(pago.get('cuenta_financiera_id')), pago.get('monto'), 
                 pago.get('referencia'), pago.get('fecha_pago'), pago.get('observaciones'), empresa_id)
             
@@ -4205,7 +4205,7 @@ async def create_conciliacion(data: ConciliacionCreate, empresa_id: int = Depend
         row = await conn.fetchrow("""
             INSERT INTO finanzas2.cont_conciliacion 
             (cuenta_financiera_id, fecha_inicio, fecha_fin, saldo_inicial, saldo_final, notas, empresa_id)
-            VALUES ($1, TO_DATE($2, 'YYYY-MM-DD', $3), TO_DATE($3, 'YYYY-MM-DD'), $4, $5, $6)
+            VALUES ($1, TO_DATE($2, 'YYYY-MM-DD'), TO_DATE($3, 'YYYY-MM-DD'), $4, $5, $6)
             RETURNING *
         """, data.cuenta_financiera_id, safe_date_param(data.fecha_inicio), safe_date_param(data.fecha_fin),
             data.saldo_inicial, data.saldo_final, data.notas, empresa_id)
