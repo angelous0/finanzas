@@ -1107,7 +1107,7 @@ async def delete_orden_compra(id: int, empresa_id: int = Depends(get_empresa_id)
         if oc['factura_generada_id']:
             raise HTTPException(400, "Cannot delete OC that has generated a factura")
         
-        await conn.execute("DELETE FROM finanzas2.cont_oc WHERE id = $1", id)
+        await conn.execute("DELETE FROM finanzas2.cont_oc WHERE id = $1 AND empresa_id = $2", id, empresa_id)
         return {"message": "Orden de compra deleted"}
 
 @api_router.post("/ordenes-compra/{id}/generar-factura", response_model=FacturaProveedor)
@@ -1451,7 +1451,7 @@ async def delete_factura_proveedor(id: int, empresa_id: int = Depends(get_empres
             
             # Delete CxP and factura
             await conn.execute("DELETE FROM finanzas2.cont_cxp WHERE factura_id = $1", id)
-            await conn.execute("DELETE FROM finanzas2.cont_factura_proveedor WHERE id = $1", id)
+            await conn.execute("DELETE FROM finanzas2.cont_factura_proveedor WHERE id = $1 AND empresa_id = $2", id, empresa_id)
             
             return {"message": "Factura deleted"}
 
@@ -1924,7 +1924,7 @@ async def delete_pago(id: int, empresa_id: int = Depends(get_empresa_id)):
                     """, aplicacion['monto_aplicado'], aplicacion['documento_id'])
             
             # Delete pago
-            await conn.execute("DELETE FROM finanzas2.cont_pago WHERE id = $1", id)
+            await conn.execute("DELETE FROM finanzas2.cont_pago WHERE id = $1 AND empresa_id = $2", id, empresa_id)
             
             return {"message": "Pago deleted and reversed"}
 
@@ -2065,7 +2065,7 @@ async def delete_letra(id: int, empresa_id: int = Depends(get_empresa_id)):
             
             factura_id = letra['factura_id']
             
-            await conn.execute("DELETE FROM finanzas2.cont_letra WHERE id = $1", id)
+            await conn.execute("DELETE FROM finanzas2.cont_letra WHERE id = $1 AND empresa_id = $2", id, empresa_id)
             
             # Check if factura has remaining letras
             remaining = await conn.fetchval("""
@@ -2303,7 +2303,7 @@ async def delete_gasto(id: int, empresa_id: int = Depends(get_empresa_id)):
         await conn.execute("DELETE FROM finanzas2.cont_gasto_linea WHERE gasto_id = $1", id)
         
         # Delete the gasto (pagos should cascade or be handled separately)
-        await conn.execute("DELETE FROM finanzas2.cont_gasto WHERE id = $1", id)
+        await conn.execute("DELETE FROM finanzas2.cont_gasto WHERE id = $1 AND empresa_id = $2", id, empresa_id)
         
         return {"message": "Gasto eliminado exitosamente"}
 
@@ -2525,8 +2525,8 @@ async def delete_adelanto(id: int, empresa_id: int = Depends(get_empresa_id)):
             raise HTTPException(400, "No se puede eliminar un adelanto ya descontado en planilla")
         
         await conn.execute(
-            "DELETE FROM finanzas2.cont_adelanto_empleado WHERE id = $1", id
-        )
+            "DELETE FROM finanzas2.cont_adelanto_empleado WHERE id = $1 AND empresa_id = $2", id
+        , empresa_id)
         return {"message": "Adelanto eliminado"}
 
 # =====================
@@ -2715,8 +2715,8 @@ async def delete_planilla(id: int, empresa_id: int = Depends(get_empresa_id)):
         )
         # Delete planilla
         await conn.execute(
-            "DELETE FROM finanzas2.cont_planilla WHERE id = $1", id
-        )
+            "DELETE FROM finanzas2.cont_planilla WHERE id = $1 AND empresa_id = $2", id
+        , empresa_id)
         return {"message": "Planilla eliminada"}
 
 # =====================
