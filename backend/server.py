@@ -904,9 +904,15 @@ async def list_empleados(empresa_id: int = Depends(get_empresa_id), search: Opti
                    ed.cargo,
                    ed.fecha_ingreso,
                    ed.cuenta_bancaria,
-                   ed.banco
+                   ed.banco,
+                   ed.centro_costo_id,
+                   ed.linea_negocio_id,
+                   cc.nombre as centro_costo_nombre,
+                   ln.nombre as linea_negocio_nombre
             FROM finanzas2.cont_tercero t
             LEFT JOIN finanzas2.cont_empleado_detalle ed ON t.id = ed.tercero_id
+            LEFT JOIN finanzas2.cont_centro_costo cc ON ed.centro_costo_id = cc.id
+            LEFT JOIN finanzas2.cont_linea_negocio ln ON ed.linea_negocio_id = ln.id
             WHERE {' AND '.join(conditions)}
             ORDER BY t.nombre
         """
@@ -943,20 +949,24 @@ async def create_or_update_empleado_detalle(tercero_id: int, data: EmpleadoDetal
             row = await conn.fetchrow("""
                 UPDATE finanzas2.cont_empleado_detalle 
                 SET fecha_ingreso = $1, cargo = $2, salario_base = $3, 
-                    cuenta_bancaria = $4, banco = $5, activo = $6
-                WHERE tercero_id = $7
+                    cuenta_bancaria = $4, banco = $5, activo = $6,
+                    centro_costo_id = $7, linea_negocio_id = $8
+                WHERE tercero_id = $9
                 RETURNING *
             """, data.fecha_ingreso, data.cargo, data.salario_base,
-                data.cuenta_bancaria, data.banco, data.activo, tercero_id)
+                data.cuenta_bancaria, data.banco, data.activo,
+                data.centro_costo_id, data.linea_negocio_id, tercero_id)
         else:
             # Create new
             row = await conn.fetchrow("""
                 INSERT INTO finanzas2.cont_empleado_detalle 
-                (tercero_id, fecha_ingreso, cargo, salario_base, cuenta_bancaria, banco, activo, empresa_id)
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+                (tercero_id, fecha_ingreso, cargo, salario_base, cuenta_bancaria, banco, activo, 
+                 centro_costo_id, linea_negocio_id, empresa_id)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
                 RETURNING *
             """, tercero_id, data.fecha_ingreso, data.cargo, data.salario_base,
-                data.cuenta_bancaria, data.banco, data.activo, empresa_id)
+                data.cuenta_bancaria, data.banco, data.activo,
+                data.centro_costo_id, data.linea_negocio_id, empresa_id)
         
         return dict(row)
 
