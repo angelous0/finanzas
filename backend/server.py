@@ -676,23 +676,23 @@ async def delete_tercero(id: int, empresa_id: int = Depends(get_empresa_id)):
 
 # Aliases for separated views
 @api_router.get("/proveedores", response_model=List[Tercero])
-async def list_proveedores(search: Optional[str] = None):
-    return await list_terceros(es_proveedor=True, search=search)
+async def list_proveedores(empresa_id: int = Depends(get_empresa_id), search: Optional[str] = None):
+    return await list_terceros(empresa_id=empresa_id, es_proveedor=True, search=search)
 
 @api_router.get("/clientes", response_model=List[Tercero])
-async def list_clientes(search: Optional[str] = None):
-    return await list_terceros(es_cliente=True, search=search)
+async def list_clientes(empresa_id: int = Depends(get_empresa_id), search: Optional[str] = None):
+    return await list_terceros(empresa_id=empresa_id, es_cliente=True, search=search)
 
 @api_router.get("/empleados")
-async def list_empleados(search: Optional[str] = None):
+async def list_empleados(empresa_id: int = Depends(get_empresa_id), search: Optional[str] = None):
     """Get empleados with their salary details"""
     pool = await get_pool()
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
         
-        conditions = ["t.activo = TRUE", "t.es_personal = TRUE"]
-        params = []
-        idx = 1
+        conditions = ["t.activo = TRUE", "t.es_personal = TRUE", "t.empresa_id = $1"]
+        params = [empresa_id]
+        idx = 2
         
         if search:
             conditions.append(f"(t.nombre ILIKE ${idx} OR t.numero_documento ILIKE ${idx})")
