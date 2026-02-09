@@ -10,6 +10,7 @@ export const CentrosCosto = () => {
   const [centros, setCentros] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   
   const [formData, setFormData] = useState({
     codigo: '',
@@ -36,6 +37,8 @@ export const CentrosCosto = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (submitting) return;
+    setSubmitting(true);
     try {
       await createCentroCosto(formData);
       toast.success('Centro de costo creado');
@@ -45,6 +48,8 @@ export const CentrosCosto = () => {
     } catch (error) {
       console.error('Error creating:', error);
       toast.error('Error al crear centro de costo');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -178,8 +183,8 @@ export const CentrosCosto = () => {
                 <button type="button" className="btn btn-outline" onClick={() => setShowModal(false)}>
                   Cancelar
                 </button>
-                <button type="submit" className="btn btn-primary" data-testid="guardar-centro-btn">
-                  Crear
+                <button type="submit" className="btn btn-primary" data-testid="guardar-centro-btn" disabled={submitting}>
+                  {submitting ? 'Guardando...' : 'Crear'}
                 </button>
               </div>
             </form>
