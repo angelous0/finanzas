@@ -2925,8 +2925,8 @@ async def sync_ventas_pos(company: str = "ambission", days_back: int = 30, empre
                              synced_at, empresa_id)
                             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10,
                                     $11, $12, $13, $14, $15, $16, $17, $18, $19,
-                                    $20, $21, $22, $23, $24, NOW(, $25))
-                        """, empresa_id, odoo_id, date_order, name, tipo_comp, num_comp,
+                                    $20, $21, $22, $23, $24, NOW(), $25)
+                        """, odoo_id, date_order, name, tipo_comp, num_comp,
                             partner_id, partner_name, tienda_id, tienda_name,
                             vendedor_id, vendedor_name, company_id, company_name,
                             x_pagos, quantity_total, amount_total, state,
