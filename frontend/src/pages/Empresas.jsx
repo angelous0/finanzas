@@ -8,6 +8,7 @@ export const Empresas = () => {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
   
   const [formData, setFormData] = useState({
     nombre: '',
@@ -36,6 +37,8 @@ export const Empresas = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (submitting) return;
+    setSubmitting(true);
     try {
       if (editingId) {
         await updateEmpresa(editingId, formData);
@@ -50,6 +53,8 @@ export const Empresas = () => {
     } catch (error) {
       console.error('Error saving:', error);
       toast.error('Error al guardar empresa');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -241,8 +246,8 @@ export const Empresas = () => {
                 <button type="button" className="btn btn-outline" onClick={() => setShowModal(false)}>
                   Cancelar
                 </button>
-                <button type="submit" className="btn btn-primary" data-testid="guardar-empresa-btn">
-                  {editingId ? 'Guardar cambios' : 'Crear'}
+                <button type="submit" className="btn btn-primary" data-testid="guardar-empresa-btn" disabled={submitting}>
+                  {submitting ? 'Guardando...' : (editingId ? 'Guardar cambios' : 'Crear')}
                 </button>
               </div>
             </form>
