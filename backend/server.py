@@ -2100,9 +2100,11 @@ async def list_gastos(
         for row in rows:
             gasto_dict = dict(row)
             lineas = await conn.fetch("""
-                SELECT gl.*, c.nombre as categoria_nombre
+                SELECT gl.*, c.nombre as categoria_nombre, c.padre_id as categoria_padre_id,
+                       cp.nombre as categoria_padre_nombre
                 FROM finanzas2.cont_gasto_linea gl
                 LEFT JOIN finanzas2.cont_categoria c ON gl.categoria_id = c.id
+                LEFT JOIN finanzas2.cont_categoria cp ON c.padre_id = cp.id
                 WHERE gl.gasto_id = $1 ORDER BY gl.id
             """, row['id'])
             gasto_dict['lineas'] = [dict(l) for l in lineas]
