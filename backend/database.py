@@ -694,6 +694,12 @@ async def create_schema():
                 IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='finanzas2' AND table_name='cont_empleado_detalle' AND column_name='linea_negocio_id') THEN
                     ALTER TABLE finanzas2.cont_empleado_detalle ADD COLUMN linea_negocio_id INTEGER REFERENCES finanzas2.cont_linea_negocio(id);
                 END IF;
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='finanzas2' AND table_name='cont_pago' AND column_name='centro_costo_id') THEN
+                    ALTER TABLE finanzas2.cont_pago ADD COLUMN centro_costo_id INTEGER REFERENCES finanzas2.cont_centro_costo(id);
+                END IF;
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='finanzas2' AND table_name='cont_pago' AND column_name='linea_negocio_id') THEN
+                    ALTER TABLE finanzas2.cont_pago ADD COLUMN linea_negocio_id INTEGER REFERENCES finanzas2.cont_linea_negocio(id);
+                END IF;
             END $$;
         """)
 
