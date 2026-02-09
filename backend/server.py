@@ -447,31 +447,31 @@ async def delete_categoria(id: int, empresa_id: int = Depends(get_empresa_id)):
 # CENTROS DE COSTO
 # =====================
 @api_router.get("/centros-costo", response_model=List[CentroCosto])
-async def list_centros_costo():
+async def list_centros_costo(empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
-        rows = await conn.fetch("SELECT * FROM finanzas2.cont_centro_costo ORDER BY nombre")
+        rows = await conn.fetch("SELECT * FROM finanzas2.cont_centro_costo WHERE empresa_id = $1 ORDER BY nombre", empresa_id)
         return [dict(r) for r in rows]
 
 @api_router.post("/centros-costo", response_model=CentroCosto)
-async def create_centro_costo(data: CentroCostoCreate):
+async def create_centro_costo(data: CentroCostoCreate, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
         row = await conn.fetchrow("""
-            INSERT INTO finanzas2.cont_centro_costo (codigo, nombre, descripcion, activo)
-            VALUES ($1, $2, $3, $4)
+            INSERT INTO finanzas2.cont_centro_costo (empresa_id, codigo, nombre, descripcion, activo)
+            VALUES ($1, $2, $3, $4, $5)
             RETURNING *
-        """, data.codigo, data.nombre, data.descripcion, data.activo)
+        """, empresa_id, data.codigo, data.nombre, data.descripcion, data.activo)
         return dict(row)
 
 @api_router.delete("/centros-costo/{id}")
-async def delete_centro_costo(id: int):
+async def delete_centro_costo(id: int, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
-        result = await conn.execute("DELETE FROM finanzas2.cont_centro_costo WHERE id = $1", id)
+        result = await conn.execute("DELETE FROM finanzas2.cont_centro_costo WHERE id = $1 AND empresa_id = $2", id, empresa_id)
         if result == "DELETE 0":
             raise HTTPException(404, "Centro de costo not found")
         return {"message": "Centro de costo deleted"}
@@ -480,31 +480,31 @@ async def delete_centro_costo(id: int):
 # LINEAS DE NEGOCIO
 # =====================
 @api_router.get("/lineas-negocio", response_model=List[LineaNegocio])
-async def list_lineas_negocio():
+async def list_lineas_negocio(empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
-        rows = await conn.fetch("SELECT * FROM finanzas2.cont_linea_negocio ORDER BY nombre")
+        rows = await conn.fetch("SELECT * FROM finanzas2.cont_linea_negocio WHERE empresa_id = $1 ORDER BY nombre", empresa_id)
         return [dict(r) for r in rows]
 
 @api_router.post("/lineas-negocio", response_model=LineaNegocio)
-async def create_linea_negocio(data: LineaNegocioCreate):
+async def create_linea_negocio(data: LineaNegocioCreate, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
         row = await conn.fetchrow("""
-            INSERT INTO finanzas2.cont_linea_negocio (codigo, nombre, descripcion, activo)
-            VALUES ($1, $2, $3, $4)
+            INSERT INTO finanzas2.cont_linea_negocio (empresa_id, codigo, nombre, descripcion, activo)
+            VALUES ($1, $2, $3, $4, $5)
             RETURNING *
-        """, data.codigo, data.nombre, data.descripcion, data.activo)
+        """, empresa_id, data.codigo, data.nombre, data.descripcion, data.activo)
         return dict(row)
 
 @api_router.delete("/lineas-negocio/{id}")
-async def delete_linea_negocio(id: int):
+async def delete_linea_negocio(id: int, empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
-        result = await conn.execute("DELETE FROM finanzas2.cont_linea_negocio WHERE id = $1", id)
+        result = await conn.execute("DELETE FROM finanzas2.cont_linea_negocio WHERE id = $1 AND empresa_id = $2", id, empresa_id)
         if result == "DELETE 0":
             raise HTTPException(404, "Línea de negocio not found")
         return {"message": "Línea de negocio deleted"}
