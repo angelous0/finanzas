@@ -2800,7 +2800,7 @@ async def get_planilla(id: int, empresa_id: int = None) -> dict:
 
 @api_router.get("/planillas/{id}", response_model=Planilla)
 async def get_planilla_endpoint(id: int, empresa_id: int = Depends(get_empresa_id)):
-    return await get_planilla(id)
+    return await get_planilla(id, empresa_id)
 
 @api_router.post("/planillas/{id}/pagar", response_model=Planilla)
 async def pagar_planilla(id: int, cuenta_financiera_id: int = Query(...), empresa_id: int = Depends(get_empresa_id)):
@@ -2858,7 +2858,7 @@ async def pagar_planilla(id: int, cuenta_financiera_id: int = Query(...), empres
                 UPDATE finanzas2.cont_planilla SET estado = 'pagada', pago_id = $1 WHERE id = $2
             """, pago_id, id)
             
-            return await get_planilla(id)
+            return await get_planilla(id, empresa_id)
 
 @api_router.delete("/planillas/{id}")
 async def delete_planilla(id: int, empresa_id: int = Depends(get_empresa_id)):
