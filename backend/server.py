@@ -923,9 +923,9 @@ async def list_ordenes_compra(
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
         
-        conditions = ["1=1"]
-        params = []
-        idx = 1
+        conditions = ["oc.empresa_id = $1"]
+        params = [empresa_id]
+        idx = 2
         
         if estado:
             conditions.append(f"oc.estado = ${idx}")
@@ -977,8 +977,8 @@ async def get_orden_compra(id: int, empresa_id: int = Depends(get_empresa_id)):
             FROM finanzas2.cont_oc oc
             LEFT JOIN finanzas2.cont_tercero t ON oc.proveedor_id = t.id
             LEFT JOIN finanzas2.cont_moneda m ON oc.moneda_id = m.id
-            WHERE oc.id = $1
-        """, id)
+            WHERE oc.id = $1 AND oc.empresa_id = $2
+        """, id, empresa_id)
         
         if not row:
             raise HTTPException(404, "Orden de compra not found")
@@ -1227,9 +1227,9 @@ async def list_facturas_proveedor(
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
         
-        conditions = ["1=1"]
-        params = []
-        idx = 1
+        conditions = ["fp.empresa_id = $1"]
+        params = [empresa_id]
+        idx = 2
         
         if estado:
             conditions.append(f"fp.estado = ${idx}")
@@ -1287,8 +1287,8 @@ async def get_factura_proveedor(id: int, empresa_id: int) -> dict:
             FROM finanzas2.cont_factura_proveedor fp
             LEFT JOIN finanzas2.cont_tercero t ON fp.proveedor_id = t.id
             LEFT JOIN finanzas2.cont_moneda m ON fp.moneda_id = m.id
-            WHERE fp.id = $1
-        """, id)
+            WHERE fp.id = $1 AND fp.empresa_id = $2
+        """, id, empresa_id)
         
         if not row:
             raise HTTPException(404, "Factura not found")
@@ -1353,10 +1353,10 @@ async def create_factura_proveedor(data: FacturaProveedorCreate, empresa_id: int
             for linea in data.lineas:
                 await conn.execute("""
                     INSERT INTO finanzas2.cont_factura_proveedor_linea 
-                    (factura_id, categoria_id, articulo_id, descripcion, linea_negocio_id, 
+                    (empresa_id, factura_id, categoria_id, articulo_id, descripcion, linea_negocio_id, 
                      centro_costo_id, importe, igv_aplica)
-                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-                """, factura_id, linea.categoria_id, linea.articulo_id, linea.descripcion,
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+                """, empresa_id, factura_id, linea.categoria_id, linea.articulo_id, linea.descripcion,
                     linea.linea_negocio_id, linea.centro_costo_id, linea.importe, linea.igv_aplica)
             
             # Create CxP
@@ -1563,9 +1563,9 @@ async def list_pagos(
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
         
-        conditions = ["1=1"]
-        params = []
-        idx = 1
+        conditions = ["p.empresa_id = $1"]
+        params = [empresa_id]
+        idx = 2
         
         if tipo:
             conditions.append(f"p.tipo = ${idx}")
@@ -2110,9 +2110,9 @@ async def list_gastos(
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
         
-        conditions = ["1=1"]
-        params = []
-        idx = 1
+        conditions = ["g.empresa_id = $1"]
+        params = [empresa_id]
+        idx = 2
         
         if fecha_desde:
             conditions.append(f"g.fecha >= ${idx}")
@@ -2175,9 +2175,9 @@ async def create_gasto(data: GastoCreate, empresa_id: int = Depends(get_empresa_
             # Create gasto first
             gasto = await conn.fetchrow("""
                 INSERT INTO finanzas2.cont_gasto 
-                (numero, fecha, proveedor_id, beneficiario_nombre, moneda_id, subtotal, igv, total,
+                (empresa_id, numero, fecha, proveedor_id, beneficiario_nombre, moneda_id, subtotal, igv, total,
                  tipo_documento, numero_documento, notas)
-                VALUES ($1, TO_DATE($2, 'YYYY-MM-DD'), $3, $4, $5, $6, $7, $8, $9, $10, $11)
+                VALUES ($1, $2, TO_DATE($3, 'YYYY-MM-DD'), $4, $5, $6, $7, $8, $9, $10, $11, $12)
                 RETURNING id
             """, numero, safe_date_param(data.fecha), data.proveedor_id, data.beneficiario_nombre, data.moneda_id,
                 subtotal, igv, total, data.tipo_documento, data.numero_documento, data.notas)
@@ -2188,9 +2188,9 @@ async def create_gasto(data: GastoCreate, empresa_id: int = Depends(get_empresa_
             for linea in data.lineas:
                 await conn.execute("""
                     INSERT INTO finanzas2.cont_gasto_linea 
-                    (gasto_id, categoria_id, descripcion, linea_negocio_id, centro_costo_id, importe, igv_aplica)
-                    VALUES ($1, $2, $3, $4, $5, $6, $7)
-                """, gasto_id, linea.categoria_id, linea.descripcion, linea.linea_negocio_id,
+                    (empresa_id, gasto_id, categoria_id, descripcion, linea_negocio_id, centro_costo_id, importe, igv_aplica)
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+                """, empresa_id, gasto_id, linea.categoria_id, linea.descripcion, linea.linea_negocio_id,
                     linea.centro_costo_id, linea.importe, linea.igv_aplica)
             
             # Create pago(s)
