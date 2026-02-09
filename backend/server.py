@@ -2826,15 +2826,27 @@ async def pagar_planilla(id: int, cuenta_financiera_id: int = Query(...), empres
             if planilla['estado'] == 'pagada':
                 raise HTTPException(400, "Planilla already paid")
             
+            # Get centro_costo and linea_negocio from first employee with details
+            emp_info = await conn.fetchrow("""
+                SELECT ed.centro_costo_id, ed.linea_negocio_id
+                FROM finanzas2.cont_planilla_detalle pd
+                JOIN finanzas2.cont_empleado_detalle ed ON pd.empleado_id = ed.tercero_id
+                WHERE pd.planilla_id = $1 AND (ed.centro_costo_id IS NOT NULL OR ed.linea_negocio_id IS NOT NULL)
+                LIMIT 1
+            """, id)
+            
+            cc_id = emp_info['centro_costo_id'] if emp_info else None
+            ln_id = emp_info['linea_negocio_id'] if emp_info else None
+            
             # Create pago
             pago_numero = await generate_pago_number(conn, 'egreso', empresa_id)
             pago = await conn.fetchrow("""
                 INSERT INTO finanzas2.cont_pago 
-                (numero, tipo, fecha, cuenta_financiera_id, monto_total, notas, empresa_id)
-                VALUES ($1, 'egreso', $2, $3, $4, $5, $6)
+                (numero, tipo, fecha, cuenta_financiera_id, monto_total, notas, centro_costo_id, linea_negocio_id, empresa_id)
+                VALUES ($1, 'egreso', $2, $3, $4, $5, $6, $7, $8)
                 RETURNING id
             """, pago_numero, datetime.now().date(), cuenta_financiera_id, 
-                planilla['total_neto'], f"Pago planilla {planilla['periodo']}", empresa_id)
+                planilla['total_neto'], f"Pago planilla {planilla['periodo']}", cc_id, ln_id, empresa_id)
             
             pago_id = pago['id']
             
