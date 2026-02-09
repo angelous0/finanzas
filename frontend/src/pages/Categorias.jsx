@@ -11,6 +11,7 @@ export const Categorias = () => {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
   const [filtroTipo, setFiltroTipo] = useState('');
   
   const [formData, setFormData] = useState({
@@ -36,6 +37,8 @@ export const Categorias = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (submitting) return;
+    setSubmitting(true);
     try {
       const payload = { ...formData, padre_id: formData.padre_id || null };
       if (editingId) {
@@ -50,6 +53,8 @@ export const Categorias = () => {
       loadData();
     } catch (error) {
       toast.error(editingId ? 'Error al actualizar' : 'Error al crear');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -275,8 +280,8 @@ export const Categorias = () => {
                 <button type="button" className="btn btn-outline" onClick={() => setShowModal(false)}>
                   Cancelar
                 </button>
-                <button data-testid="submit-categoria-btn" type="submit" className="btn btn-primary">
-                  {editingId ? 'Guardar' : 'Crear'}
+                <button data-testid="submit-categoria-btn" type="submit" className="btn btn-primary" disabled={submitting}>
+                  {submitting ? 'Guardando...' : (editingId ? 'Guardar' : 'Crear')}
                 </button>
               </div>
             </form>
