@@ -2383,7 +2383,7 @@ async def create_adelanto(data: AdelantoCreate, empresa_id: int = Depends(get_em
             row = await conn.fetchrow("""
                 INSERT INTO finanzas2.cont_adelanto_empleado 
                 (empleado_id, fecha, monto, motivo, pagado, pago_id, empresa_id)
-                VALUES ($1, TO_DATE($2, 'YYYY-MM-DD'), $3, $4, $5, $6)
+                VALUES ($1, TO_DATE($2, 'YYYY-MM-DD'), $3, $4, $5, $6, $7)
                 RETURNING *
             """, data.empleado_id, safe_date_param(data.fecha), data.monto, data.motivo, 
                 data.pagar, pago_id, empresa_id)
