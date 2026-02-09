@@ -206,6 +206,55 @@ async def seed_data():
         
         logger.info("Seed data created successfully")
 
+
+async def sync_correlativos():
+    """Sync cont_correlativos with existing document numbers on startup.
+    This ensures the sequence counters are >= max existing numbers."""
+    pool = await get_pool()
+    async with pool.acquire() as conn:
+        await conn.execute("SET search_path TO finanzas2, public")
+        year = datetime.now().year
+
+        # Map: (table, numero_col, tipo_documento, prefix_template)
+        doc_types = [
+            ('cont_oc', 'numero', 'oc', f'OC-{year}-'),
+            ('cont_factura_proveedor', 'numero', 'factura_proveedor', f'FP-{year}-'),
+            ('cont_pago', 'numero', 'pago_ingreso', f'PAG-I-{year}-'),
+            ('cont_pago', 'numero', 'pago_egreso', f'PAG-E-{year}-'),
+            ('cont_gasto', 'numero', 'gasto', f'GAS-{year}-'),
+        ]
+
+        for table, col, tipo_doc, prefix in doc_types:
+            # For pago, filter by tipo
+            tipo_filter = ""
+            if tipo_doc == 'pago_ingreso':
+                tipo_filter = "AND tipo = 'ingreso'"
+            elif tipo_doc == 'pago_egreso':
+                tipo_filter = "AND tipo = 'egreso'"
+
+            rows = await conn.fetch(f"""
+                SELECT empresa_id, MAX(
+                    CASE WHEN {col} LIKE $1 || '%' 
+                    THEN CAST(SPLIT_PART({col}, '-', {len(prefix.split('-'))}) AS INTEGER) 
+                    ELSE 0 END
+                ) as max_num
+                FROM finanzas2.{table}
+                WHERE {col} LIKE $1 || '%' {tipo_filter}
+                GROUP BY empresa_id
+            """, prefix)
+
+            for row in rows:
+                if row['max_num'] and row['max_num'] > 0:
+                    await conn.execute("""
+                        INSERT INTO finanzas2.cont_correlativos (empresa_id, tipo_documento, prefijo, ultimo_numero, updated_at)
+                        VALUES ($1, $2, $3, $4, NOW())
+                        ON CONFLICT (empresa_id, tipo_documento, prefijo)
+                        DO UPDATE SET ultimo_numero = GREATEST(finanzas2.cont_correlativos.ultimo_numero, $4),
+                                      updated_at = NOW()
+                    """, row['empresa_id'], tipo_doc, prefix, row['max_num'])
+
+        logger.info("Correlatives synced with existing data")
+
 # =====================
 # HEALTH CHECK
 # =====================
