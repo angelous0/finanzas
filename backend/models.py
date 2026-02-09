@@ -73,6 +73,7 @@ class CategoriaUpdate(BaseModel):
 
 class Categoria(CategoriaBase):
     id: int
+    empresa_id: Optional[int] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
@@ -136,6 +137,7 @@ class CuentaFinancieraUpdate(BaseModel):
 
 class CuentaFinanciera(CuentaFinancieraBase):
     id: int
+    empresa_id: Optional[int] = None
     moneda_codigo: Optional[str] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
@@ -180,6 +182,7 @@ class TerceroUpdate(BaseModel):
 
 class Tercero(TerceroBase):
     id: int
+    empresa_id: Optional[int] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 
@@ -258,6 +261,7 @@ class OCUpdate(BaseModel):
 
 class OC(OCBase):
     id: int
+    empresa_id: Optional[int] = None
     numero: str
     estado: str = "borrador"
     subtotal: float = 0
@@ -323,6 +327,7 @@ class FacturaProveedorUpdate(BaseModel):
 
 class FacturaProveedor(FacturaProveedorBase):
     id: int
+    empresa_id: Optional[int] = None
     numero: str
     estado: str = "pendiente"
     subtotal: float = 0
@@ -383,6 +388,7 @@ class PagoCreate(PagoBase):
 
 class Pago(PagoBase):
     id: int
+    empresa_id: Optional[int] = None
     numero: str
     monto_total: float
     cuenta_nombre: Optional[str] = None
@@ -415,6 +421,7 @@ class LetraUpdate(BaseModel):
 
 class Letra(LetraBase):
     id: int
+    empresa_id: Optional[int] = None
     numero: str
     estado: str = "pendiente"
     saldo_pendiente: float
@@ -477,6 +484,7 @@ class GastoCreate(GastoBase):
 
 class Gasto(GastoBase):
     id: int
+    empresa_id: Optional[int] = None
     numero: str
     subtotal: float = 0
     igv: float = 0
@@ -519,6 +527,7 @@ class PlanillaCreate(PlanillaBase):
 
 class Planilla(PlanillaBase):
     id: int
+    empresa_id: Optional[int] = None
     total_bruto: float = 0
     total_adelantos: float = 0
     total_descuentos: float = 0
@@ -545,6 +554,7 @@ class AdelantoCreate(AdelantoBase):
 
 class Adelanto(AdelantoBase):
     id: int
+    empresa_id: Optional[int] = None
     pagado: bool = False
     descontado: bool = False
     planilla_id: Optional[int] = None
