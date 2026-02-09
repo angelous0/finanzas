@@ -2582,7 +2582,7 @@ async def create_planilla(data: PlanillaCreate, empresa_id: int = Depends(get_em
                 INSERT INTO finanzas2.cont_planilla 
                 (periodo, fecha_inicio, fecha_fin, total_bruto, total_adelantos, 
                  total_descuentos, total_neto, estado, empresa_id)
-                VALUES ($1, TO_DATE($2, 'YYYY-MM-DD'), TO_DATE($3, 'YYYY-MM-DD'), $4, $5, $6, $7, 'borrador')
+                VALUES ($1, TO_DATE($2, 'YYYY-MM-DD'), TO_DATE($3, 'YYYY-MM-DD'), $4, $5, $6, $7, 'borrador', $8)
                 RETURNING *
             """, data.periodo, safe_date_param(data.fecha_inicio), safe_date_param(data.fecha_fin), total_bruto,
                 total_adelantos, total_descuentos, total_neto, empresa_id)
