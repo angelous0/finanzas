@@ -682,6 +682,19 @@ async def create_schema():
             END $$;
         """)
 
+        # ── Add columns if missing (migrations) ──
+        await conn.execute("""
+            DO $$
+            BEGIN
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='finanzas2' AND table_name='cont_empleado_detalle' AND column_name='centro_costo_id') THEN
+                    ALTER TABLE finanzas2.cont_empleado_detalle ADD COLUMN centro_costo_id INTEGER REFERENCES finanzas2.cont_centro_costo(id);
+                END IF;
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='finanzas2' AND table_name='cont_empleado_detalle' AND column_name='linea_negocio_id') THEN
+                    ALTER TABLE finanzas2.cont_empleado_detalle ADD COLUMN linea_negocio_id INTEGER REFERENCES finanzas2.cont_linea_negocio(id);
+                END IF;
+            END $$;
+        """)
+
         # ── Indexes ──
         index_stmts = [
             "CREATE INDEX IF NOT EXISTS idx_cont_venta_pos_pago_venta ON finanzas2.cont_venta_pos_pago(venta_pos_id)",
