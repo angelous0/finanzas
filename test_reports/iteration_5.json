@@ -1,0 +1,82 @@
+{
+  "summary": "Tested category hierarchy feature (Padre > Hijo) in Gastos and Factura Proveedor forms. Found and FIXED a bug in backend models where categoria_padre_id and categoria_padre_nombre were not exposed in API responses.",
+  "test_date": "2026-02-09",
+  
+  "features_tested": {
+    "API_categoria_nombre_completo": {
+      "description": "GET /api/categorias?tipo=egreso returns nombre_completo field",
+      "status": "PASS",
+      "details": "22 categories returned, all with nombre_completo field. Sub-categories show 'Padre > Hijo' format (e.g., 'Gasto de Distribución > Almacenaje y Depósito')"
+    },
+    "Gastos_modal_width": {
+      "description": "Gastos form (Nuevo Gasto modal) should be wider than 600px",
+      "status": "PASS",
+      "details": "Modal has modal-xl class with max-width: 1100px (verified at 1100px actual width)"
+    },
+    "Gastos_category_selector_hierarchy": {
+      "description": "Gastos form category selector shows hierarchical names",
+      "status": "PASS",
+      "details": "Category dropdown shows 12 hierarchical options like 'Gasto de Distribución > Almacenaje y Depósito'. Uses nombre_completo || nombre fallback."
+    },
+    "Factura_category_selector_hierarchy": {
+      "description": "Factura Proveedor form category selector (TableSearchSelect) shows hierarchical names",
+      "status": "PASS",
+      "details": "TableSearchSelect uses displayKey='nombre_completo' and shows hierarchy in dropdown options."
+    },
+    "Gastos_detail_view_hierarchy": {
+      "description": "Gastos detail view shows category hierarchy in Padre > Hijo format",
+      "status": "PASS (after fix)",
+      "details": "Detail view displays 'Gasto de Distribución > Almacenaje y Depósito' format. FIX APPLIED: Added categoria_padre_id and categoria_padre_nombre to GastoLinea model."
+    },
+    "Factura_detail_view_hierarchy": {
+      "description": "Factura detail view shows category hierarchy in Padre > Hijo format",
+      "status": "PASS (after fix)",
+      "details": "Frontend code uses categoria_padre_nombre correctly. FIX APPLIED: Added categoria_padre_id and categoria_padre_nombre to FacturaLinea model."
+    }
+  },
+  
+  "backend_issues": {
+    "critical": [],
+    "minor": [],
+    "fixed": [
+      {
+        "issue": "GastoLinea and FacturaLinea Pydantic models were missing categoria_padre_id and categoria_padre_nombre fields",
+        "file": "/app/backend/models.py",
+        "lines": "449-454 (GastoLinea), 288-295 (FacturaLinea)",
+        "fix_applied": "Added categoria_padre_id: Optional[int] = None and categoria_padre_nombre: Optional[str] = None to both models"
+      }
+    ]
+  },
+  
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  
+  "test_report_links": [
+    "/app/backend/tests/test_hierarchy.py",
+    "/app/test_reports/pytest/pytest_hierarchy_iter5.xml"
+  ],
+  
+  "action_items": [],
+  
+  "critical_code_review_comments": [
+    "Backend SQL queries were correct (joining parent category), but Pydantic models were filtering out the hierarchy fields"
+  ],
+  
+  "updated_files": [
+    "/app/backend/models.py"
+  ],
+  
+  "success_rate": {
+    "backend": "100% (4/4 tests passed)",
+    "frontend": "100% (all hierarchy features verified)"
+  },
+  
+  "seed_data_creation": "Test gasto GAS-2026-00003 with sub-category was created and deleted during testing",
+  
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Category hierarchy feature is now complete. Backend models were updated to expose categoria_padre_id and categoria_padre_nombre fields. All forms (Gastos, Factura Proveedor) and detail views now correctly display hierarchical categories in 'Padre > Hijo' format."
+}
