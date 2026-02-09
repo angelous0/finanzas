@@ -21,6 +21,7 @@ export const PagarFacturas = () => {
   const [facturas, setFacturas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [cuentasFinancieras, setCuentasFinancieras] = useState([]);
   const [facturaAPagar, setFacturaAPagar] = useState(null);
   
@@ -98,7 +99,7 @@ export const PagarFacturas = () => {
 
   const handlePagar = async (e) => {
     e.preventDefault();
-    if (!facturaAPagar) return;
+    if (!facturaAPagar || submitting) return;
 
     const totalPago = getTotalPago();
     
@@ -112,6 +113,7 @@ export const PagarFacturas = () => {
       return;
     }
 
+    setSubmitting(true);
     try {
       await createPago({
         tipo: 'egreso',
@@ -139,6 +141,8 @@ export const PagarFacturas = () => {
     } catch (error) {
       console.error('Error creating pago:', error);
       toast.error(error.response?.data?.detail || 'Error al registrar pago');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -401,10 +405,10 @@ export const PagarFacturas = () => {
                 <button 
                   type="submit" 
                   className="btn btn-primary"
-                  disabled={getTotalPago() > facturaAPagar.saldo_pendiente || getTotalPago() <= 0}
+                  disabled={submitting || getTotalPago() > facturaAPagar.saldo_pendiente || getTotalPago() <= 0}
                 >
                   <CreditCard size={18} />
-                  Registrar Pago
+                  {submitting ? 'Registrando...' : 'Registrar Pago'}
                 </button>
               </div>
             </form>
