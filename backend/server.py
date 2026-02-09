@@ -3026,7 +3026,7 @@ async def marcar_credito_venta_pos(id: int, fecha_vencimiento: Optional[date] = 
             cxc = await conn.fetchrow("""
                 INSERT INTO finanzas2.cont_cxc 
                 (venta_pos_id, monto_original, saldo_pendiente, fecha_vencimiento, estado, empresa_id)
-                VALUES ($1, $2, $2, TO_DATE($3, 'YYYY-MM-DD'), 'pendiente')
+                VALUES ($1, $2, $2, TO_DATE($3, 'YYYY-MM-DD'), 'pendiente', $4)
                 RETURNING id
             """, id, venta['amount_total'], safe_date_param(fecha_vencimiento or (datetime.now().date() + timedelta(days=30))), empresa_id)
             
