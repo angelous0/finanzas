@@ -576,6 +576,140 @@ async def delete_cuenta_financiera(id: int, empresa_id: int = Depends(get_empres
             raise HTTPException(404, "Cuenta financiera not found")
         return {"message": "Cuenta financiera deleted"}
 
+@api_router.get("/cuentas-financieras/{id}/kardex")
+async def get_kardex_cuenta(
+    id: int,
+    fecha_desde: Optional[date] = None,
+    fecha_hasta: Optional[date] = None,
+    empresa_id: int = Depends(get_empresa_id),
+):
+    """Kardex bancario: historial de movimientos de una cuenta con saldo acumulado."""
+    pool = await get_pool()
+    async with pool.acquire() as conn:
+        await conn.execute("SET search_path TO finanzas2, public")
+        
+        cuenta = await conn.fetchrow(
+            "SELECT * FROM finanzas2.cont_cuenta_financiera WHERE id = $1 AND empresa_id = $2", id, empresa_id)
+        if not cuenta:
+            raise HTTPException(404, "Cuenta no encontrada")
+        
+        conditions = ["pd.cuenta_financiera_id = $1", "pd.empresa_id = $2"]
+        params = [id, empresa_id]
+        idx = 3
+        
+        if fecha_desde:
+            conditions.append(f"p.fecha >= ${idx}")
+            params.append(fecha_desde)
+            idx += 1
+        if fecha_hasta:
+            conditions.append(f"p.fecha <= ${idx}")
+            params.append(fecha_hasta)
+            idx += 1
+        
+        rows = await conn.fetch(f"""
+            SELECT p.id as pago_id, p.numero, p.tipo, p.fecha, p.notas,
+                   pd.medio_pago, pd.monto, pd.referencia
+            FROM finanzas2.cont_pago_detalle pd
+            JOIN finanzas2.cont_pago p ON pd.pago_id = p.id
+            WHERE {' AND '.join(conditions)}
+            ORDER BY p.fecha ASC, pd.id ASC
+        """, *params)
+        
+        saldo_inicial = float(cuenta['saldo_actual'])
+        # Compute what saldo_inicial was BEFORE the filtered period
+        # by getting all movements before fecha_desde
+        if fecha_desde:
+            pre_ingresos = await conn.fetchval("""
+                SELECT COALESCE(SUM(pd.monto), 0) FROM finanzas2.cont_pago_detalle pd
+                JOIN finanzas2.cont_pago p ON pd.pago_id = p.id
+                WHERE pd.cuenta_financiera_id = $1 AND pd.empresa_id = $2 AND p.tipo = 'ingreso' AND p.fecha < $3
+            """, id, empresa_id, fecha_desde) or 0
+            pre_egresos = await conn.fetchval("""
+                SELECT COALESCE(SUM(pd.monto), 0) FROM finanzas2.cont_pago_detalle pd
+                JOIN finanzas2.cont_pago p ON pd.pago_id = p.id
+                WHERE pd.cuenta_financiera_id = $1 AND pd.empresa_id = $2 AND p.tipo = 'egreso' AND p.fecha < $3
+            """, id, empresa_id, fecha_desde) or 0
+            # saldo_inicial for this period = initial deposit + pre_ingresos - pre_egresos
+            # But we don't know the original deposit, so use: current saldo - all movements + pre movements
+            # Simpler: just accumulate from saldo_actual of the account as starting point
+            # Actually, compute saldo_inicio = saldo_actual_original + sum(pre_ingresos) - sum(pre_egresos)
+            # Since saldo_actual in DB is the ORIGINAL (not recalculated), use it
+            saldo_periodo = float(saldo_inicial) + float(pre_ingresos) - float(pre_egresos)
+        else:
+            saldo_periodo = float(saldo_inicial)
+        
+        movimientos = []
+        saldo = saldo_periodo
+        for r in rows:
+            monto = float(r['monto'])
+            if r['tipo'] == 'ingreso':
+                saldo += monto
+            else:
+                saldo -= monto
+            movimientos.append({
+                "fecha": str(r['fecha']),
+                "numero": r['numero'],
+                "tipo": r['tipo'],
+                "concepto": r['notas'] or r['medio_pago'],
+                "medio_pago": r['medio_pago'],
+                "referencia": r['referencia'],
+                "ingreso": monto if r['tipo'] == 'ingreso' else 0,
+                "egreso": monto if r['tipo'] == 'egreso' else 0,
+                "saldo": round(saldo, 2)
+            })
+        
+        # Compute real balance
+        total_ingresos = sum(m['ingreso'] for m in movimientos)
+        total_egresos = sum(m['egreso'] for m in movimientos)
+        
+        return {
+            "cuenta": dict(cuenta),
+            "saldo_inicial": round(saldo_periodo, 2),
+            "total_ingresos": round(total_ingresos, 2),
+            "total_egresos": round(total_egresos, 2),
+            "saldo_final": round(saldo, 2),
+            "movimientos": movimientos
+        }
+
+@api_router.post("/cuentas-financieras/recalcular-saldos")
+async def recalcular_saldos(empresa_id: int = Depends(get_empresa_id)):
+    """Recalculate real balance for all accounts based on pago_detalle movements."""
+    pool = await get_pool()
+    async with pool.acquire() as conn:
+        await conn.execute("SET search_path TO finanzas2, public")
+        
+        cuentas = await conn.fetch(
+            "SELECT id, saldo_actual FROM finanzas2.cont_cuenta_financiera WHERE empresa_id = $1", empresa_id)
+        
+        results = []
+        for cuenta in cuentas:
+            cid = cuenta['id']
+            original = float(cuenta['saldo_actual'])
+            
+            ingresos = await conn.fetchval("""
+                SELECT COALESCE(SUM(pd.monto), 0) FROM finanzas2.cont_pago_detalle pd
+                JOIN finanzas2.cont_pago p ON pd.pago_id = p.id
+                WHERE pd.cuenta_financiera_id = $1 AND pd.empresa_id = $2 AND p.tipo = 'ingreso'
+            """, cid, empresa_id) or 0
+            
+            egresos = await conn.fetchval("""
+                SELECT COALESCE(SUM(pd.monto), 0) FROM finanzas2.cont_pago_detalle pd
+                JOIN finanzas2.cont_pago p ON pd.pago_id = p.id
+                WHERE pd.cuenta_financiera_id = $1 AND pd.empresa_id = $2 AND p.tipo = 'egreso'
+            """, cid, empresa_id) or 0
+            
+            nuevo_saldo = original + float(ingresos) - float(egresos)
+            
+            await conn.execute("""
+                UPDATE finanzas2.cont_cuenta_financiera SET saldo_actual = $1, updated_at = NOW()
+                WHERE id = $2 AND empresa_id = $3
+            """, nuevo_saldo, cid, empresa_id)
+            
+            results.append({"cuenta_id": cid, "saldo_anterior": original, "saldo_nuevo": round(nuevo_saldo, 2)})
+        
+        return {"message": f"Saldos recalculados para {len(results)} cuentas", "cuentas": results}
+
+
 # =====================
 # TERCEROS (Proveedores, Clientes, Personal)
 # =====================
