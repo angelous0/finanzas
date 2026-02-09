@@ -352,7 +352,7 @@ export default function Gastos() {
               ${(gasto.lineas || []).map((linea, i) => `
               <tr>
                 <td>${i + 1}</td>
-                <td>${linea.categoria_nombre || '-'}</td>
+                <td>${linea.categoria_padre_nombre ? `${linea.categoria_padre_nombre} > ${linea.categoria_nombre}` : (linea.categoria_nombre || '-')}</td>
                 <td>${linea.descripcion || '-'}</td>
                 <td class="text-right currency">${formatCurrency(linea.importe, moneda?.simbolo || 'S/')}</td>
               </tr>
