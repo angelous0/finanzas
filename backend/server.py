@@ -213,7 +213,7 @@ async def health():
 # DASHBOARD
 # =====================
 @api_router.get("/dashboard/kpis", response_model=DashboardKPIs)
-async def get_dashboard_kpis():
+async def get_dashboard_kpis(empresa_id: int = Depends(get_empresa_id)):
     pool = await get_pool()
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
@@ -221,53 +221,53 @@ async def get_dashboard_kpis():
         # Total CxP pendiente
         total_cxp = await conn.fetchval("""
             SELECT COALESCE(SUM(saldo_pendiente), 0) 
-            FROM finanzas2.cont_cxp WHERE estado NOT IN ('pagado', 'anulada')
-        """) or 0
+            FROM finanzas2.cont_cxp WHERE estado NOT IN ('pagado', 'anulada') AND empresa_id = $1
+        """, empresa_id) or 0
         
         # Total CxC pendiente
         total_cxc = await conn.fetchval("""
             SELECT COALESCE(SUM(saldo_pendiente), 0) 
-            FROM finanzas2.cont_cxc WHERE estado NOT IN ('pagado', 'anulada')
-        """) or 0
+            FROM finanzas2.cont_cxc WHERE estado NOT IN ('pagado', 'anulada') AND empresa_id = $1
+        """, empresa_id) or 0
         
         # Total letras pendientes
         total_letras = await conn.fetchval("""
             SELECT COALESCE(SUM(saldo_pendiente), 0) 
-            FROM finanzas2.cont_letra WHERE estado IN ('pendiente', 'parcial')
-        """) or 0
+            FROM finanzas2.cont_letra WHERE estado IN ('pendiente', 'parcial') AND empresa_id = $1
+        """, empresa_id) or 0
         
         # Saldo bancos
         saldo_bancos = await conn.fetchval("""
             SELECT COALESCE(SUM(saldo_actual), 0) 
-            FROM finanzas2.cont_cuenta_financiera WHERE activo = TRUE
-        """) or 0
+            FROM finanzas2.cont_cuenta_financiera WHERE activo = TRUE AND empresa_id = $1
+        """, empresa_id) or 0
         
         # Ventas del mes
         inicio_mes = datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
         ventas_mes = await conn.fetchval("""
             SELECT COALESCE(SUM(amount_total), 0) 
             FROM finanzas2.cont_venta_pos 
-            WHERE date_order >= $1 AND estado_local != 'descartado'
-        """, inicio_mes) or 0
+            WHERE date_order >= $1 AND estado_local != 'descartado' AND empresa_id = $2
+        """, inicio_mes, empresa_id) or 0
         
         # Gastos del mes
         gastos_mes = await conn.fetchval("""
             SELECT COALESCE(SUM(total), 0) 
-            FROM finanzas2.cont_gasto WHERE fecha >= $1
-        """, inicio_mes.date()) or 0
+            FROM finanzas2.cont_gasto WHERE fecha >= $1 AND empresa_id = $2
+        """, inicio_mes.date(), empresa_id) or 0
         
         # Facturas pendientes
         facturas_pendientes = await conn.fetchval("""
             SELECT COUNT(*) FROM finanzas2.cont_factura_proveedor 
-            WHERE estado IN ('pendiente', 'parcial')
-        """) or 0
+            WHERE estado IN ('pendiente', 'parcial') AND empresa_id = $1
+        """, empresa_id) or 0
         
         # Letras por vencer (próximos 7 días)
         fecha_limite = datetime.now().date() + timedelta(days=7)
         letras_por_vencer = await conn.fetchval("""
             SELECT COUNT(*) FROM finanzas2.cont_letra 
-            WHERE estado IN ('pendiente', 'parcial') AND fecha_vencimiento <= $1
-        """, fecha_limite) or 0
+            WHERE estado IN ('pendiente', 'parcial') AND fecha_vencimiento <= $1 AND empresa_id = $2
+        """, fecha_limite, empresa_id) or 0
         
         return DashboardKPIs(
             total_cxp=float(total_cxp),
