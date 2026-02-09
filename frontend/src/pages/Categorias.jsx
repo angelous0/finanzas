@@ -1,24 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { getCategorias, createCategoria, deleteCategoria } from '../services/api';
-import { Plus, Trash2, Tags, X } from 'lucide-react';
+import { getCategorias, createCategoria, updateCategoria, deleteCategoria } from '../services/api';
+import { Plus, Trash2, Tags, X, Edit2, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 
 export const Categorias = () => {
   const [categorias, setCategorias] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [editingId, setEditingId] = useState(null);
   const [filtroTipo, setFiltroTipo] = useState('');
   
   const [formData, setFormData] = useState({
-    codigo: '',
     nombre: '',
     tipo: 'egreso',
+    padre_id: null,
     descripcion: ''
   });
 
-  useEffect(() => {
-    loadData();
-  }, [filtroTipo]);
+  useEffect(() => { loadData(); }, [filtroTipo]);
 
   const loadData = async () => {
     try {
@@ -26,7 +25,6 @@ export const Categorias = () => {
       const response = await getCategorias(filtroTipo || undefined);
       setCategorias(response.data);
     } catch (error) {
-      console.error('Error loading categorias:', error);
       toast.error('Error al cargar categorías');
     } finally {
       setLoading(false);
@@ -36,37 +34,104 @@ export const Categorias = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await createCategoria(formData);
-      toast.success('Categoría creada');
+      const payload = { ...formData, padre_id: formData.padre_id || null };
+      if (editingId) {
+        await updateCategoria(editingId, payload);
+        toast.success('Categoría actualizada');
+      } else {
+        await createCategoria(payload);
+        toast.success('Categoría creada');
+      }
       setShowModal(false);
       resetForm();
       loadData();
     } catch (error) {
-      console.error('Error creating:', error);
-      toast.error('Error al crear categoría');
+      toast.error(editingId ? 'Error al actualizar' : 'Error al crear');
     }
   };
 
+  const handleEdit = (cat) => {
+    setEditingId(cat.id);
+    setFormData({
+      nombre: cat.nombre || '',
+      tipo: cat.tipo || 'egreso',
+      padre_id: cat.padre_id || null,
+      descripcion: cat.descripcion || ''
+    });
+    setShowModal(true);
+  };
+
   const handleDelete = async (id) => {
+    const hijos = categorias.filter(c => c.padre_id === id);
+    if (hijos.length > 0) {
+      toast.error('No se puede eliminar: tiene subcategorías');
+      return;
+    }
     if (!window.confirm('¿Eliminar esta categoría?')) return;
     try {
       await deleteCategoria(id);
       toast.success('Categoría eliminada');
       loadData();
     } catch (error) {
-      console.error('Error deleting:', error);
-      toast.error('Error al eliminar categoría');
+      toast.error('Error al eliminar');
     }
   };
 
   const resetForm = () => {
-    setFormData({
-      codigo: '',
-      nombre: '',
-      tipo: 'egreso',
-      descripcion: ''
-    });
+    setEditingId(null);
+    setFormData({ nombre: '', tipo: 'egreso', padre_id: null, descripcion: '' });
   };
+
+  const getNombrePadre = (padreId) => {
+    const padre = categorias.find(c => c.id === padreId);
+    return padre ? padre.nombre : '-';
+  };
+
+  // Build tree structure for visual display
+  const padres = categorias.filter(c => !c.padre_id);
+  const getHijos = (padreId) => categorias.filter(c => c.padre_id === padreId);
+  // Categories without a parent that exists in list (orphans with padre_id pointing to deleted/other)
+  const huerfanos = categorias.filter(c => c.padre_id && !categorias.find(p => p.id === c.padre_id));
+
+  const renderRow = (cat, level = 0) => (
+    <tr key={cat.id} data-testid={`categoria-row-${cat.id}`}>
+      <td style={{ fontWeight: 500, paddingLeft: `${1 + level * 1.5}rem` }}>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+          {level > 0 && <ChevronRight size={14} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />}
+          {cat.nombre}
+        </span>
+      </td>
+      <td>
+        <span className={`badge ${cat.tipo === 'ingreso' ? 'badge-success' : 'badge-error'}`}>
+          {cat.tipo}
+        </span>
+      </td>
+      <td style={{ color: cat.padre_id ? 'var(--text-primary)' : 'var(--text-muted)' }}>
+        {cat.padre_id ? getNombrePadre(cat.padre_id) : '-'}
+      </td>
+      <td>{cat.descripcion || '-'}</td>
+      <td className="text-center">
+        <div style={{ display: 'flex', gap: '0.25rem', justifyContent: 'center' }}>
+          <button
+            data-testid={`edit-categoria-${cat.id}`}
+            className="btn btn-outline btn-sm btn-icon"
+            onClick={() => handleEdit(cat)}
+            title="Editar"
+          >
+            <Edit2 size={14} />
+          </button>
+          <button 
+            data-testid={`delete-categoria-${cat.id}`}
+            className="btn btn-outline btn-sm btn-icon"
+            onClick={() => handleDelete(cat.id)}
+            title="Eliminar"
+          >
+            <Trash2 size={14} />
+          </button>
+        </div>
+      </td>
+    </tr>
+  );
 
   return (
     <div data-testid="categorias-page">
@@ -76,6 +141,7 @@ export const Categorias = () => {
           <p className="page-subtitle">{categorias.length} categorías</p>
         </div>
         <button 
+          data-testid="new-categoria-btn"
           className="btn btn-primary"
           onClick={() => { resetForm(); setShowModal(true); }}
         >
@@ -87,6 +153,7 @@ export const Categorias = () => {
       <div className="page-content">
         <div className="filters-bar">
           <select 
+            data-testid="filter-tipo"
             className="form-input form-select filter-input"
             value={filtroTipo}
             onChange={(e) => setFiltroTipo(e.target.value)}
@@ -100,9 +167,7 @@ export const Categorias = () => {
         <div className="card">
           <div className="data-table-wrapper">
             {loading ? (
-              <div className="loading">
-                <div className="loading-spinner"></div>
-              </div>
+              <div className="loading"><div className="loading-spinner"></div></div>
             ) : categorias.length === 0 ? (
               <div className="empty-state">
                 <Tags className="empty-state-icon" />
@@ -112,34 +177,21 @@ export const Categorias = () => {
               <table className="data-table">
                 <thead>
                   <tr>
-                    <th>Código</th>
                     <th>Nombre</th>
                     <th>Tipo</th>
+                    <th>Categoría Padre</th>
                     <th>Descripción</th>
                     <th className="text-center">Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {categorias.map((cat) => (
-                    <tr key={cat.id}>
-                      <td style={{ fontFamily: "'JetBrains Mono', monospace" }}>{cat.codigo || '-'}</td>
-                      <td style={{ fontWeight: 500 }}>{cat.nombre}</td>
-                      <td>
-                        <span className={`badge ${cat.tipo === 'ingreso' ? 'badge-success' : 'badge-error'}`}>
-                          {cat.tipo}
-                        </span>
-                      </td>
-                      <td>{cat.descripcion || '-'}</td>
-                      <td className="text-center">
-                        <button 
-                          className="btn btn-outline btn-sm btn-icon"
-                          onClick={() => handleDelete(cat.id)}
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </td>
-                    </tr>
+                  {padres.map((padre) => (
+                    <React.Fragment key={padre.id}>
+                      {renderRow(padre, 0)}
+                      {getHijos(padre.id).map((hijo) => renderRow(hijo, 1))}
+                    </React.Fragment>
                   ))}
+                  {huerfanos.map((cat) => renderRow(cat, 0))}
                 </tbody>
               </table>
             )}
@@ -151,7 +203,7 @@ export const Categorias = () => {
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h2 className="modal-title">Nueva Categoría</h2>
+              <h2 className="modal-title">{editingId ? 'Editar Categoría' : 'Nueva Categoría'}</h2>
               <button className="modal-close" onClick={() => setShowModal(false)}>
                 <X size={20} />
               </button>
@@ -159,34 +211,10 @@ export const Categorias = () => {
             
             <form onSubmit={handleSubmit}>
               <div className="modal-body">
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                  <div className="form-group">
-                    <label className="form-label">Código</label>
-                    <input
-                      type="text"
-                      className="form-input"
-                      value={formData.codigo}
-                      onChange={(e) => setFormData(prev => ({ ...prev, codigo: e.target.value }))}
-                      placeholder="EGR-001"
-                    />
-                  </div>
-                  
-                  <div className="form-group">
-                    <label className="form-label required">Tipo</label>
-                    <select
-                      className="form-input form-select"
-                      value={formData.tipo}
-                      onChange={(e) => setFormData(prev => ({ ...prev, tipo: e.target.value }))}
-                    >
-                      <option value="egreso">Egreso</option>
-                      <option value="ingreso">Ingreso</option>
-                    </select>
-                  </div>
-                </div>
-
                 <div className="form-group">
                   <label className="form-label required">Nombre</label>
                   <input
+                    data-testid="categoria-nombre-input"
                     type="text"
                     className="form-input"
                     value={formData.nombre}
@@ -195,9 +223,43 @@ export const Categorias = () => {
                   />
                 </div>
 
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <div className="form-group">
+                    <label className="form-label required">Tipo</label>
+                    <select
+                      data-testid="categoria-tipo-select"
+                      className="form-input form-select"
+                      value={formData.tipo}
+                      onChange={(e) => setFormData(prev => ({ ...prev, tipo: e.target.value }))}
+                    >
+                      <option value="egreso">Egreso</option>
+                      <option value="ingreso">Ingreso</option>
+                    </select>
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label">Categoría Padre</label>
+                    <select
+                      data-testid="categoria-padre-select"
+                      className="form-input form-select"
+                      value={formData.padre_id || ''}
+                      onChange={(e) => setFormData(prev => ({ ...prev, padre_id: e.target.value ? parseInt(e.target.value) : null }))}
+                    >
+                      <option value="">Sin padre (raíz)</option>
+                      {categorias
+                        .filter(c => !c.padre_id && c.id !== editingId)
+                        .map(c => (
+                          <option key={c.id} value={c.id}>{c.nombre}</option>
+                        ))
+                      }
+                    </select>
+                  </div>
+                </div>
+
                 <div className="form-group">
                   <label className="form-label">Descripción</label>
                   <textarea
+                    data-testid="categoria-descripcion-input"
                     className="form-input"
                     rows={2}
                     value={formData.descripcion}
@@ -210,8 +272,8 @@ export const Categorias = () => {
                 <button type="button" className="btn btn-outline" onClick={() => setShowModal(false)}>
                   Cancelar
                 </button>
-                <button type="submit" className="btn btn-primary">
-                  Crear
+                <button data-testid="submit-categoria-btn" type="submit" className="btn btn-primary">
+                  {editingId ? 'Guardar' : 'Crear'}
                 </button>
               </div>
             </form>
