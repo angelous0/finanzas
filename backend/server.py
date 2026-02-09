@@ -79,6 +79,21 @@ app = FastAPI(title="Finanzas 4.0 API", version="1.0.0")
 
 api_router = APIRouter(prefix="/api")
 
+
+# =====================
+# EMPRESA_ID DEPENDENCY
+# =====================
+async def get_empresa_id(
+    empresa_id: Optional[int] = Query(None),
+    x_empresa_id: Optional[str] = Header(None),
+) -> int:
+    """Extract empresa_id from query param (priority) or X-Empresa-Id header.
+    Blocks the request if neither is provided."""
+    eid = empresa_id or (int(x_empresa_id) if x_empresa_id else None)
+    if not eid:
+        raise HTTPException(400, "empresa_id es requerido")
+    return eid
+
 # =====================
 # STARTUP / SHUTDOWN
 # =====================
