@@ -1144,12 +1144,12 @@ async def generar_factura_desde_oc(id: int, empresa_id: int = Depends(get_empres
             # Create factura
             factura = await conn.fetchrow("""
                 INSERT INTO finanzas2.cont_factura_proveedor 
-                (numero, proveedor_id, moneda_id, fecha_factura, fecha_vencimiento, 
+                (empresa_id, numero, proveedor_id, moneda_id, fecha_factura, fecha_vencimiento, 
                  terminos_dias, tipo_documento, estado, subtotal, igv, total, saldo_pendiente, 
                  notas, oc_origen_id)
-                VALUES ($1, $2, $3, TO_DATE($4, 'YYYY-MM-DD'), TO_DATE($5, 'YYYY-MM-DD'), $6, 'factura', 'pendiente', $7, $8, $9, $9, $10, $11)
+                VALUES ($1, $2, $3, $4, TO_DATE($5, 'YYYY-MM-DD'), TO_DATE($6, 'YYYY-MM-DD'), $7, 'factura', 'pendiente', $8, $9, $10, $10, $11, $12)
                 RETURNING *
-            """, numero, oc['proveedor_id'], oc['moneda_id'], safe_date_param(datetime.now().date()),
+            """, empresa_id, numero, oc['proveedor_id'], oc['moneda_id'], safe_date_param(datetime.now().date()),
                 safe_date_param(datetime.now().date() + timedelta(days=30)), 30,
                 oc['subtotal'], oc['igv'], oc['total'], oc['notas'], id)
             
@@ -1160,23 +1160,23 @@ async def generar_factura_desde_oc(id: int, empresa_id: int = Depends(get_empres
             for linea in oc_lineas:
                 await conn.execute("""
                     INSERT INTO finanzas2.cont_factura_proveedor_linea 
-                    (factura_id, articulo_id, descripcion, importe, igv_aplica)
-                    VALUES ($1, $2, $3, $4, $5)
-                """, factura_id, linea['articulo_id'], linea['descripcion'], 
+                    (empresa_id, factura_id, articulo_id, descripcion, importe, igv_aplica)
+                    VALUES ($1, $2, $3, $4, $5, $6)
+                """, empresa_id, factura_id, linea['articulo_id'], linea['descripcion'], 
                     linea['subtotal'], linea['igv_aplica'])
             
             # Create CxP
             await conn.execute("""
                 INSERT INTO finanzas2.cont_cxp 
-                (factura_id, proveedor_id, monto_original, saldo_pendiente, fecha_vencimiento, estado)
-                VALUES ($1, $2, $3, $3, $4, 'pendiente')
-            """, factura_id, oc['proveedor_id'], oc['total'], 
+                (empresa_id, factura_id, proveedor_id, monto_original, saldo_pendiente, fecha_vencimiento, estado)
+                VALUES ($1, $2, $3, $4, $4, $5, 'pendiente')
+            """, empresa_id, factura_id, oc['proveedor_id'], oc['total'], 
                 datetime.now().date() + timedelta(days=30))
             
             # Update OC
             await conn.execute("""
-                UPDATE finanzas2.cont_oc SET estado = 'facturada', factura_generada_id = $1 WHERE id = $2
-            """, factura_id, id)
+                UPDATE finanzas2.cont_oc SET estado = 'facturada', factura_generada_id = $1 WHERE id = $2 AND empresa_id = $3
+            """, factura_id, id, empresa_id)
             
             # Get full factura within transaction
             f_row = await conn.fetchrow("""
