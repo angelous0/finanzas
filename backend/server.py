@@ -1019,10 +1019,10 @@ async def create_orden_compra(data: OCCreate, empresa_id: int = Depends(get_empr
             
             row = await conn.fetchrow("""
                 INSERT INTO finanzas2.cont_oc 
-                (numero, fecha, proveedor_id, moneda_id, estado, subtotal, igv, total, notas)
-                VALUES ($1, $2, $3, $4, 'borrador', $5, $6, $7, $8)
+                (empresa_id, numero, fecha, proveedor_id, moneda_id, estado, subtotal, igv, total, notas)
+                VALUES ($1, $2, $3, $4, $5, 'borrador', $6, $7, $8, $9)
                 RETURNING *
-            """, numero, data.fecha, data.proveedor_id, data.moneda_id, subtotal, igv, total, data.notas)
+            """, empresa_id, numero, data.fecha, data.proveedor_id, data.moneda_id, subtotal, igv, total, data.notas)
             
             oc_id = row['id']
             
@@ -1047,9 +1047,9 @@ async def create_orden_compra(data: OCCreate, empresa_id: int = Depends(get_empr
                 
                 await conn.execute("""
                     INSERT INTO finanzas2.cont_oc_linea 
-                    (oc_id, articulo_id, descripcion, cantidad, precio_unitario, igv_aplica, subtotal)
-                    VALUES ($1, $2, $3, $4, $5, $6, $7)
-                """, oc_id, articulo_id_value, linea.descripcion, linea.cantidad, 
+                    (empresa_id, oc_id, articulo_id, descripcion, cantidad, precio_unitario, igv_aplica, subtotal)
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+                """, empresa_id, oc_id, articulo_id_value, linea.descripcion, linea.cantidad, 
                     linea.precio_unitario, linea.igv_aplica, linea_subtotal)
             
             # Get full OC with joins within transaction
