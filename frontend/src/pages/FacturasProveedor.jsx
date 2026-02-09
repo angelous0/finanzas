@@ -37,6 +37,7 @@ export const FacturasProveedor = () => {
   const [facturas, setFacturas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [proveedores, setProveedores] = useState([]);
   const [monedas, setMonedas] = useState([]);
   const [categorias, setCategorias] = useState([]);
@@ -333,6 +334,7 @@ export const FacturasProveedor = () => {
 
   const handleSubmit = async (e, createNew = false) => {
     e.preventDefault();
+    if (submitting) return;
     
     try {
       const dataToSend = {
@@ -357,6 +359,8 @@ export const FacturasProveedor = () => {
         toast.error('La fecha de factura es requerida');
         return;
       }
+      
+      setSubmitting(true);
       
       if (editingFactura) {
         // Update existing factura
@@ -390,6 +394,8 @@ export const FacturasProveedor = () => {
       } else {
         toast.error('Error al guardar factura');
       }
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -1623,17 +1629,18 @@ export const FacturasProveedor = () => {
                   Cancelar
                 </button>
                 <div style={{ display: 'flex', gap: '0.75rem' }}>
-                  <button type="submit" className="btn btn-secondary" data-testid="guardar-factura-btn">
+                  <button type="submit" className="btn btn-secondary" data-testid="guardar-factura-btn" disabled={submitting}>
                     <FileText size={16} />
-                    Guardar
+                    {submitting ? 'Guardando...' : 'Guardar'}
                   </button>
                   <button 
                     type="button" 
                     className="btn btn-primary" 
                     onClick={(e) => handleSubmit(e, true)}
                     data-testid="guardar-crear-btn"
+                    disabled={submitting}
                   >
-                    Guardar y crear nueva
+                    {submitting ? 'Guardando...' : 'Guardar y crear nueva'}
                   </button>
                 </div>
               </div>
