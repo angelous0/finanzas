@@ -16,6 +16,9 @@ export const CuentasBancarias = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [monedas, setMonedas] = useState([]);
+  const [kardex, setKardex] = useState(null);
+  const [kardexCuentaId, setKardexCuentaId] = useState(null);
+  const [kardexLoading, setKardexLoading] = useState(false);
   
   const [formData, setFormData] = useState({
     nombre: '',
