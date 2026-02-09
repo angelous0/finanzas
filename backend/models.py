@@ -190,7 +190,7 @@ class Tercero(TerceroBase):
 # EMPLEADO DETALLE
 # =====================
 class EmpleadoDetalleBase(BaseModel):
-    tercero_id: int
+    tercero_id: Optional[int] = None  # Optional in Create, set from URL path
     fecha_ingreso: Optional[date] = None
     cargo: Optional[str] = None
     salario_base: Optional[float] = None
@@ -200,8 +200,16 @@ class EmpleadoDetalleBase(BaseModel):
     linea_negocio_id: Optional[int] = None
     activo: bool = True
 
-class EmpleadoDetalleCreate(EmpleadoDetalleBase):
-    pass
+class EmpleadoDetalleCreate(BaseModel):
+    # tercero_id comes from URL path, not body
+    fecha_ingreso: Optional[date] = None
+    cargo: Optional[str] = None
+    salario_base: Optional[float] = None
+    cuenta_bancaria: Optional[str] = None
+    banco: Optional[str] = None
+    centro_costo_id: Optional[int] = None
+    linea_negocio_id: Optional[int] = None
+    activo: bool = True
 
 class EmpleadoDetalle(EmpleadoDetalleBase):
     id: int
