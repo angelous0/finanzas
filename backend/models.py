@@ -340,6 +340,11 @@ class FacturaProveedorUpdate(BaseModel):
     terminos_dias: Optional[int] = None
     tipo_documento: Optional[str] = None
     impuestos_incluidos: Optional[bool] = None
+    tipo_comprobante_sunat: Optional[str] = None
+    base_gravada: Optional[float] = None
+    igv_sunat: Optional[float] = None
+    base_no_gravada: Optional[float] = None
+    isc: Optional[float] = None
     notas: Optional[str] = None
 
 class FacturaProveedor(FacturaProveedorBase):
