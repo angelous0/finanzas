@@ -548,8 +548,23 @@ export default function Gastos() {
                       type="date"
                       className="form-input"
                       value={formData.fecha}
-                      onChange={(e) => setFormData({ ...formData, fecha: e.target.value })}
+                      onChange={(e) => {
+                        const newFecha = e.target.value;
+                        const updates = { fecha: newFecha };
+                        if (!fechaContableManual) updates.fecha_contable = newFecha;
+                        setFormData(prev => ({ ...prev, ...updates }));
+                      }}
                       required
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Fecha Contable</label>
+                    <input
+                      type="date"
+                      className="form-input"
+                      value={formData.fecha_contable}
+                      onChange={(e) => { setFechaContableManual(true); setFormData(prev => ({ ...prev, fecha_contable: e.target.value })); }}
+                      data-testid="gasto-fecha-contable"
                     />
                   </div>
                   <div className="form-group">
