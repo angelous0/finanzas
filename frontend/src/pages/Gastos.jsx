@@ -131,10 +131,33 @@ export default function Gastos() {
   };
 
   const calcularTotales = () => {
-    const subtotal = lineasGasto.reduce((sum, l) => sum + (parseFloat(l.importe) || 0), 0);
-    const igv = lineasGasto.reduce((sum, l) => l.igv_aplica ? sum + (parseFloat(l.importe) || 0) * 0.18 : sum, 0);
-    const total = subtotal + igv;
-    return { subtotal, igv, total };
+    let subtotal = 0;
+    let igv = 0;
+    let base_gravada = 0;
+    let igv_sunat = 0;
+    let base_no_gravada = 0;
+
+    lineasGasto.forEach(l => {
+      const importe = parseFloat(l.importe) || 0;
+      if (l.igv_aplica) {
+        subtotal += importe;
+        igv += importe * 0.18;
+        base_gravada += importe;
+        igv_sunat += importe * 0.18;
+      } else {
+        subtotal += importe;
+        base_no_gravada += importe;
+      }
+    });
+
+    return {
+      subtotal,
+      igv,
+      total: subtotal + igv,
+      base_gravada: parseFloat(base_gravada.toFixed(2)),
+      igv_sunat: parseFloat(igv_sunat.toFixed(2)),
+      base_no_gravada: parseFloat(base_no_gravada.toFixed(2))
+    };
   };
 
   const calcularTotalPagos = () => {
