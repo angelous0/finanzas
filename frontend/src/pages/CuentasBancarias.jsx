@@ -65,10 +65,14 @@ export const CuentasBancarias = () => {
       const payload = {
         ...formData,
         moneda_id: parseInt(formData.moneda_id),
-        saldo_actual: parseFloat(formData.saldo_actual) || 0
+        saldo_inicial: parseFloat(formData.saldo_inicial) || 0,
+        saldo_actual: parseFloat(formData.saldo_inicial) || 0
       };
       if (editingId) {
-        await updateCuentaFinanciera(editingId, payload);
+        // When editing, only send saldo_inicial - backend will recalculate saldo_actual
+        const editPayload = { ...payload };
+        delete editPayload.saldo_actual;
+        await updateCuentaFinanciera(editingId, editPayload);
         toast.success('Cuenta actualizada');
       } else {
         await createCuentaFinanciera(payload);
