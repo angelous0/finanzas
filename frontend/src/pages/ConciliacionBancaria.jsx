@@ -872,10 +872,9 @@ export const ConciliacionBancaria = () => {
                 <thead>
                   <tr>
                     <th>Fecha</th>
-                    <th>Referencia</th>
+                    <th>Nro Operación</th>
                     <th>Descripción</th>
                     <th className="text-right">Monto</th>
-                    <th className="text-right">Saldo</th>
                     <th className="text-center">Estado</th>
                   </tr>
                 </thead>
