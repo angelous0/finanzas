@@ -100,6 +100,7 @@ export const FacturasProveedor = () => {
     beneficiario_nombre: '',
     moneda_id: '',
     fecha_factura: new Date().toISOString().split('T')[0],
+    fecha_contable: new Date().toISOString().split('T')[0],
     fecha_vencimiento: '',
     terminos_dias: 30,
     tipo_documento: 'factura',
@@ -109,6 +110,7 @@ export const FacturasProveedor = () => {
     lineas: [{ categoria_id: '', descripcion: '', linea_negocio_id: '', centro_costo_id: '', importe: 0, igv_aplica: true }],
     articulos: []
   });
+  const [fechaContableManual, setFechaContableManual] = useState(false);
 
   useEffect(() => {
     loadData();
