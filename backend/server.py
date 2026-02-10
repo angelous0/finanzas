@@ -4952,6 +4952,11 @@ async def export_compraapp(
         for f in facturas:
             f = dict(f) if not isinstance(f, dict) else f
             vou_fecha = f.get('fecha_contable') or f.get('fecha_factura')
+            cta_gasto = cat_account_map.get(f['id'], default_cta_gastos)
+            igv_val = fmt_num(f['igv_sunat'])
+            cta_igv = default_cta_igv if igv_val > 0 else ''
+            saldo = float(f.get('saldo_pendiente') or 0)
+            cta_xpagar = default_cta_xpagar if saldo > 0 else ''
             ws.cell(row=row_num, column=1, value=VOU_ORIGEN).border = thin_border
             ws.cell(row=row_num, column=2, value=f.get('vou_numero') or "").border = thin_border
             ws.cell(row=row_num, column=3, value=fmt_date(vou_fecha)).border = thin_border
@@ -4963,13 +4968,21 @@ async def export_compraapp(
             ws.cell(row=row_num, column=9, value=fmt_num(f['base_gravada'])).border = thin_border
             ws.cell(row=row_num, column=10, value=fmt_num(f['base_no_gravada'])).border = thin_border
             ws.cell(row=row_num, column=11, value=fmt_num(f['isc'])).border = thin_border
-            ws.cell(row=row_num, column=12, value=fmt_num(f['igv_sunat'])).border = thin_border
+            ws.cell(row=row_num, column=12, value=igv_val).border = thin_border
+            ws.cell(row=row_num, column=13, value=cta_gasto).border = thin_border
+            ws.cell(row=row_num, column=14, value=cta_igv).border = thin_border
+            ws.cell(row=row_num, column=15, value=cta_xpagar).border = thin_border
             row_num += 1
 
         # Write gastos
         for g in gastos:
             g = dict(g) if not isinstance(g, dict) else g
             vou_fecha = g.get('fecha_contable') or g.get('fecha')
+            cta_gasto = gasto_cat_account_map.get(g['id'], default_cta_gastos)
+            igv_val = fmt_num(g['igv_sunat'])
+            cta_igv = default_cta_igv if igv_val > 0 else ''
+            # Gastos don't have saldo_pendiente, use total as xpagar
+            cta_xpagar = default_cta_xpagar if float(g.get('total') or 0) > 0 else ''
             ws.cell(row=row_num, column=1, value=VOU_ORIGEN).border = thin_border
             ws.cell(row=row_num, column=2, value=g.get('vou_numero') or "").border = thin_border
             ws.cell(row=row_num, column=3, value=fmt_date(vou_fecha)).border = thin_border
@@ -4981,7 +4994,10 @@ async def export_compraapp(
             ws.cell(row=row_num, column=9, value=fmt_num(g['base_gravada'])).border = thin_border
             ws.cell(row=row_num, column=10, value=fmt_num(g['base_no_gravada'])).border = thin_border
             ws.cell(row=row_num, column=11, value=fmt_num(g['isc'])).border = thin_border
-            ws.cell(row=row_num, column=12, value=fmt_num(g['igv_sunat'])).border = thin_border
+            ws.cell(row=row_num, column=12, value=igv_val).border = thin_border
+            ws.cell(row=row_num, column=13, value=cta_gasto).border = thin_border
+            ws.cell(row=row_num, column=14, value=cta_igv).border = thin_border
+            ws.cell(row=row_num, column=15, value=cta_xpagar).border = thin_border
             row_num += 1
 
         # Auto-adjust column widths
