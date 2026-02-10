@@ -42,6 +42,8 @@ import FlujoCaja from './pages/FlujoCaja';
 import EstadoResultados from './pages/EstadoResultados';
 import Articulos from './pages/Articulos';
 import ReportePagos from './pages/ReportePagos';
+import CuentasContables from './pages/CuentasContables';
+import ConfigContable from './pages/ConfigContable';
 
 function EmpresaGuard({ children }) {
   const { empresas, empresaActual, loading, reloadEmpresas } = useEmpresa();
