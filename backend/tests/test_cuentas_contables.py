@@ -86,9 +86,16 @@ class TestCuentasContablesCRUD:
 
     def test_duplicate_codigo_fails(self):
         """Creating cuenta with duplicate codigo should fail"""
+        # First cleanup any existing test data
+        cuentas_resp = requests.get(f"{BASE_URL}/api/cuentas-contables", headers=HEADERS)
+        if cuentas_resp.status_code == 200:
+            for c in cuentas_resp.json():
+                if c.get("codigo") == "TEST_DUP123":
+                    requests.delete(f"{BASE_URL}/api/cuentas-contables/{c['id']}", headers=HEADERS)
+        
         payload = {"codigo": "TEST_DUP123", "nombre": "Primera", "tipo": "GASTO", "es_activa": True}
         resp1 = requests.post(f"{BASE_URL}/api/cuentas-contables", headers=HEADERS, json=payload)
-        assert resp1.status_code == 200
+        assert resp1.status_code == 200, f"First creation failed: {resp1.status_code} {resp1.text}"
         cuenta_id = resp1.json()["id"]
         
         # Try duplicate
