@@ -4642,6 +4642,92 @@ async def reporte_balance_general(empresa_id: int = Depends(get_empresa_id)):
             "patrimonio": patrimonio
         }
 
+# =============================================
+# CUENTAS CONTABLES (Plan de Cuentas)
+# =============================================
+@api_router.get("/cuentas-contables", response_model=List[CuentaContable])
+async def list_cuentas_contables(empresa_id: int = Depends(get_empresa_id)):
+    pool = await get_pool()
+    async with pool.acquire() as conn:
+        rows = await conn.fetch(
+            "SELECT * FROM finanzas2.cont_cuenta WHERE empresa_id = $1 ORDER BY codigo",
+            empresa_id
+        )
+        return [dict(r) for r in rows]
+
+@api_router.post("/cuentas-contables", response_model=CuentaContable)
+async def create_cuenta_contable(data: CuentaContableCreate, empresa_id: int = Depends(get_empresa_id)):
+    pool = await get_pool()
+    async with pool.acquire() as conn:
+        row = await conn.fetchrow("""
+            INSERT INTO finanzas2.cont_cuenta (empresa_id, codigo, nombre, tipo, es_activa)
+            VALUES ($1, $2, $3, $4, $5)
+            RETURNING *
+        """, empresa_id, data.codigo, data.nombre, data.tipo, data.es_activa)
+        return dict(row)
+
+@api_router.put("/cuentas-contables/{id}", response_model=CuentaContable)
+async def update_cuenta_contable(id: int, data: CuentaContableUpdate, empresa_id: int = Depends(get_empresa_id)):
+    pool = await get_pool()
+    async with pool.acquire() as conn:
+        updates = []
+        values = []
+        idx = 1
+        for field in ['codigo', 'nombre', 'tipo', 'es_activa']:
+            val = getattr(data, field, None)
+            if val is not None:
+                updates.append(f"{field} = ${idx}")
+                values.append(val)
+                idx += 1
+        if not updates:
+            raise HTTPException(400, "No hay campos para actualizar")
+        values.extend([empresa_id, id])
+        row = await conn.fetchrow(
+            f"UPDATE finanzas2.cont_cuenta SET {', '.join(updates)}, updated_at = NOW() WHERE empresa_id = ${idx} AND id = ${idx+1} RETURNING *",
+            *values
+        )
+        if not row:
+            raise HTTPException(404, "Cuenta no encontrada")
+        return dict(row)
+
+@api_router.delete("/cuentas-contables/{id}")
+async def delete_cuenta_contable(id: int, empresa_id: int = Depends(get_empresa_id)):
+    pool = await get_pool()
+    async with pool.acquire() as conn:
+        result = await conn.execute(
+            "DELETE FROM finanzas2.cont_cuenta WHERE id = $1 AND empresa_id = $2", id, empresa_id
+        )
+        if result == "DELETE 0":
+            raise HTTPException(404, "Cuenta no encontrada")
+        return {"ok": True}
+
+# =============================================
+# CONFIG CONTABLE POR EMPRESA
+# =============================================
+@api_router.get("/config-contable", response_model=ConfigEmpresaContable)
+async def get_config_contable(empresa_id: int = Depends(get_empresa_id)):
+    pool = await get_pool()
+    async with pool.acquire() as conn:
+        row = await conn.fetchrow(
+            "SELECT * FROM finanzas2.cont_config_empresa WHERE empresa_id = $1", empresa_id
+        )
+        if not row:
+            return {"empresa_id": empresa_id, "cta_gastos_default_id": None, "cta_igv_default_id": None, "cta_xpagar_default_id": None}
+        return dict(row)
+
+@api_router.put("/config-contable", response_model=ConfigEmpresaContable)
+async def update_config_contable(data: ConfigEmpresaContable, empresa_id: int = Depends(get_empresa_id)):
+    pool = await get_pool()
+    async with pool.acquire() as conn:
+        row = await conn.fetchrow("""
+            INSERT INTO finanzas2.cont_config_empresa (empresa_id, cta_gastos_default_id, cta_igv_default_id, cta_xpagar_default_id)
+            VALUES ($1, $2, $3, $4)
+            ON CONFLICT (empresa_id) DO UPDATE SET
+                cta_gastos_default_id = $2, cta_igv_default_id = $3, cta_xpagar_default_id = $4
+            RETURNING *
+        """, empresa_id, data.cta_gastos_default_id, data.cta_igv_default_id, data.cta_xpagar_default_id)
+        return dict(row)
+
 @api_router.get("/export/compraapp")
 async def export_compraapp(
     empresa_id: int = Depends(get_empresa_id),
