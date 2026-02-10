@@ -1611,7 +1611,7 @@ async def create_factura_proveedor(data: FacturaProveedorCreate, empresa_id: int
                 RETURNING id
             """, empresa_id, numero, data.proveedor_id, data.beneficiario_nombre, data.moneda_id,
                 safe_date_param(data.fecha_factura), safe_date_param(fecha_contable), safe_date_param(fecha_vencimiento), data.terminos_dias, data.tipo_documento,
-                subtotal, igv, total, data.impuestos_incluidos, data.tipo_comprobante_sunat, data.base_gravada, data.igv_sunat, data.base_no_gravada, data.isc, data.notas)
+                subtotal, igv, total, data.impuestos_incluidos, data.tipo_comprobante_sunat, base_gravada, igv_sunat, base_no_gravada, isc_val, data.notas)
             
             factura_id = row['id']
             
