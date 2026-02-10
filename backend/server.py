@@ -4208,26 +4208,45 @@ async def desconciliar_movimientos(data: dict, empresa_id: int = Depends(get_emp
     banco_id = data.get('banco_id')
     pago_id = data.get('pago_id')
     
-    if not banco_id or not pago_id:
-        raise HTTPException(400, "Se requieren banco_id y pago_id")
+    if not banco_id and not pago_id:
+        raise HTTPException(400, "Se requiere al menos banco_id o pago_id")
     
     pool = await get_pool()
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
         
-        # Reset bank movement
-        await conn.execute("""
-            UPDATE finanzas2.cont_banco_mov_raw 
-            SET procesado = FALSE, conciliado = FALSE 
-            WHERE id = $1
-        """, banco_id)
+        # Reset bank movement if provided
+        if banco_id:
+            await conn.execute("""
+                UPDATE finanzas2.cont_banco_mov_raw 
+                SET procesado = FALSE, conciliado = FALSE 
+                WHERE id = $1
+            """, banco_id)
         
-        # Reset system payment
-        await conn.execute("""
-            UPDATE finanzas2.cont_pago 
-            SET conciliado = FALSE 
-            WHERE id = $1
-        """, pago_id)
+        # Reset system payment if provided
+        if pago_id:
+            await conn.execute("""
+                UPDATE finanzas2.cont_pago 
+                SET conciliado = FALSE 
+                WHERE id = $1
+            """, pago_id)
+        
+        # Delete the conciliacion_linea records
+        if banco_id and pago_id:
+            await conn.execute("""
+                DELETE FROM finanzas2.cont_conciliacion_linea 
+                WHERE (banco_mov_id = $1 OR pago_id = $2) AND empresa_id = $3
+            """, banco_id, pago_id, empresa_id)
+        elif pago_id:
+            await conn.execute("""
+                DELETE FROM finanzas2.cont_conciliacion_linea 
+                WHERE pago_id = $1 AND empresa_id = $2
+            """, pago_id, empresa_id)
+        elif banco_id:
+            await conn.execute("""
+                DELETE FROM finanzas2.cont_conciliacion_linea 
+                WHERE banco_mov_id = $1 AND empresa_id = $2
+            """, banco_id, empresa_id)
     
     return {"message": "Movimientos desconciliados exitosamente"}
 
