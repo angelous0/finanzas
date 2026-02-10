@@ -278,6 +278,20 @@ export const Categorias = () => {
                     onChange={(e) => setFormData(prev => ({ ...prev, descripcion: e.target.value }))}
                   />
                 </div>
+                {formData.tipo === 'egreso' && cuentasContables.length > 0 && (
+                  <div className="form-group">
+                    <label className="form-label">Cuenta de Gasto (para export)</label>
+                    <select className="form-input form-select"
+                      value={formData.cuenta_gasto_id || ''}
+                      onChange={(e) => setFormData(prev => ({ ...prev, cuenta_gasto_id: e.target.value ? parseInt(e.target.value) : null }))}
+                      data-testid="categoria-cuenta-gasto">
+                      <option value="">-- Usar default empresa --</option>
+                      {cuentasContables.map(c => (
+                        <option key={c.id} value={c.id}>{c.codigo} - {c.nombre}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
               </div>
 
               <div className="modal-footer">
