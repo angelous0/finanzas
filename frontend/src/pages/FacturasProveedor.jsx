@@ -867,6 +867,11 @@ export const FacturasProveedor = () => {
       tipo_documento: 'factura',
       numero: '',
       impuestos_incluidos: true,
+      tipo_comprobante_sunat: '01',
+      base_gravada: 0,
+      igv_sunat: 0,
+      base_no_gravada: 0,
+      isc: 0,
       notas: '',
       lineas: [{ categoria_id: '', descripcion: '', linea_negocio_id: '', centro_costo_id: '', importe: 0, igv_aplica: true }],
       articulos: []
