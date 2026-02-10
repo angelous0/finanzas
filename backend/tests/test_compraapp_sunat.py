@@ -195,6 +195,7 @@ class TestGastoSUNATFields:
     def test_create_gasto_with_sunat_fields(self):
         """Test POST /api/gastos creates gasto with SUNAT fields"""
         today = date.today().isoformat()
+        unique_id = uuid.uuid4().hex[:8]
         
         gasto_data = {
             'fecha': today,
@@ -202,7 +203,7 @@ class TestGastoSUNATFields:
             'proveedor_id': self.proveedor_id,
             'moneda_id': self.moneda_id,
             'tipo_documento': 'boleta',
-            'numero_documento': f'TEST_B001-{date.today().strftime("%H%M%S")}',
+            'numero_documento': f'TEST_B001-{unique_id}',
             # SUNAT fields
             'tipo_comprobante_sunat': '03',  # Boleta
             'base_gravada': 500.00,
