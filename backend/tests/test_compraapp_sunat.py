@@ -20,10 +20,21 @@ from datetime import date, timedelta
 
 # Get BASE_URL from environment
 BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://compra-sunat-export.preview.emergentagent.com').rstrip('/')
+
+# Get actual empresa ID from API
+def get_empresa_id():
+    """Dynamically get the first empresa ID"""
+    response = requests.get(f"{BASE_URL}/api/empresas")
+    if response.status_code == 200 and len(response.json()) > 0:
+        return str(response.json()[0]['id'])
+    return '5'  # fallback
+
+EMPRESA_ID = get_empresa_id()
 HEADERS = {
     'Content-Type': 'application/json',
-    'X-Empresa-ID': '1'
+    'X-Empresa-ID': EMPRESA_ID
 }
+print(f"Using empresa_id: {EMPRESA_ID}")
 
 
 class TestFacturaProveedorSUNATFields:
