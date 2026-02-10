@@ -205,11 +205,13 @@ export const Adelantos = () => {
   };
 
   const handlePagar = async () => {
+    if (registrandoPago) return;
     if (!pagoData.cuenta_financiera_id) {
       toast.error('Seleccione una cuenta financiera');
       return;
     }
     
+    setRegistrandoPago(true);
     try {
       await pagarAdelanto(
         selectedAdelanto.id, 
@@ -222,6 +224,8 @@ export const Adelantos = () => {
     } catch (error) {
       console.error('Error paying adelanto:', error);
       toast.error(error.response?.data?.detail || 'Error al registrar pago');
+    } finally {
+      setRegistrandoPago(false);
     }
   };
 
