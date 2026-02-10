@@ -99,7 +99,7 @@ export const CuentasBancarias = () => {
       numero_cuenta: cuenta.numero_cuenta || '',
       cci: cuenta.cci || '',
       moneda_id: cuenta.moneda_id || '',
-      saldo_actual: cuenta.saldo_actual || 0
+      saldo_inicial: cuenta.saldo_inicial || 0
     });
     setShowModal(true);
   };
