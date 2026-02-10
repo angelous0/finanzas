@@ -595,6 +595,7 @@ export const FacturasProveedor = () => {
       beneficiario_nombre: factura.beneficiario_nombre || '',
       moneda_id: factura.moneda_id || '',
       fecha_factura: factura.fecha_factura ? factura.fecha_factura.split('T')[0] : new Date().toISOString().split('T')[0],
+      fecha_contable: factura.fecha_contable ? factura.fecha_contable.split('T')[0] : (factura.fecha_factura ? factura.fecha_factura.split('T')[0] : new Date().toISOString().split('T')[0]),
       fecha_vencimiento: factura.fecha_vencimiento ? factura.fecha_vencimiento.split('T')[0] : '',
       terminos_dias: factura.terminos_dias || 30,
       tipo_documento: factura.tipo_documento || 'factura',
