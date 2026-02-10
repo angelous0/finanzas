@@ -4807,14 +4807,14 @@ async def export_compraapp(
         cat_account_map = {}  # factura_id -> cuenta_codigo
         if fp_ids:
             cat_rows = await conn.fetch("""
-                SELECT DISTINCT fpl.factura_proveedor_id, cc.codigo as cta_codigo, cc.id as cta_id
+                SELECT DISTINCT fpl.factura_id, cc.codigo as cta_codigo, cc.id as cta_id
                 FROM finanzas2.cont_factura_proveedor_linea fpl
                 LEFT JOIN finanzas2.cont_categoria cat ON fpl.categoria_id = cat.id
                 LEFT JOIN finanzas2.cont_cuenta cc ON cat.cuenta_gasto_id = cc.id
-                WHERE fpl.factura_proveedor_id = ANY($1) AND cc.id IS NOT NULL
+                WHERE fpl.factura_id = ANY($1) AND cc.id IS NOT NULL
             """, fp_ids)
             for cr in cat_rows:
-                cat_account_map[cr['factura_proveedor_id']] = cr['cta_codigo']
+                cat_account_map[cr['factura_id']] = cr['cta_codigo']
 
         # Same for gastos
         g_ids = [g['id'] for g in gastos]
