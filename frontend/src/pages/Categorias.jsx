@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getCategorias, createCategoria, updateCategoria, deleteCategoria } from '../services/api';
+import { getCategorias, createCategoria, updateCategoria, deleteCategoria, getCuentasContables } from '../services/api';
 import { useEmpresa } from '../context/EmpresaContext';
 import { Plus, Trash2, Tags, X, Edit2, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
