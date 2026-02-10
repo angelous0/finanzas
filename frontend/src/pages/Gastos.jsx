@@ -151,6 +151,11 @@ export default function Gastos() {
       moneda_id: monedas[0]?.id || '',
       tipo_documento: 'boleta',
       numero_documento: '',
+      tipo_comprobante_sunat: '03',
+      base_gravada: 0,
+      igv_sunat: 0,
+      base_no_gravada: 0,
+      isc: 0,
       notas: ''
     });
     setFechaContableManual(false);
