@@ -57,6 +57,7 @@ export default function Gastos() {
   // Form state
   const [formData, setFormData] = useState({
     fecha: new Date().toISOString().split('T')[0],
+    fecha_contable: new Date().toISOString().split('T')[0],
     proveedor_id: '',
     beneficiario_nombre: '',
     moneda_id: '',
@@ -64,6 +65,7 @@ export default function Gastos() {
     numero_documento: '',
     notas: ''
   });
+  const [fechaContableManual, setFechaContableManual] = useState(false);
   
   // Line items
   const [lineasGasto, setLineasGasto] = useState([{
