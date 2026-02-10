@@ -117,14 +117,16 @@ export const FacturasProveedor = () => {
   }, [filtroEstado, filtroProveedorId, filtroFecha, empresaActual]);
 
   // Calculate fecha_vencimiento when fecha_factura or terminos change
+  // Also sync fecha_contable if not manually edited
   useEffect(() => {
     if (formData.fecha_factura && formData.terminos_dias) {
       const fecha = new Date(formData.fecha_factura);
       fecha.setDate(fecha.getDate() + parseInt(formData.terminos_dias));
-      setFormData(prev => ({ 
-        ...prev, 
-        fecha_vencimiento: fecha.toISOString().split('T')[0] 
-      }));
+      const updates = { fecha_vencimiento: fecha.toISOString().split('T')[0] };
+      if (!fechaContableManual) {
+        updates.fecha_contable = formData.fecha_factura;
+      }
+      setFormData(prev => ({ ...prev, ...updates }));
     }
   }, [formData.fecha_factura, formData.terminos_dias]);
 
