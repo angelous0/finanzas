@@ -67,7 +67,8 @@ export const Categorias = () => {
       nombre: cat.nombre || '',
       tipo: cat.tipo || 'egreso',
       padre_id: cat.padre_id || null,
-      descripcion: cat.descripcion || ''
+      descripcion: cat.descripcion || '',
+      cuenta_gasto_id: cat.cuenta_gasto_id || null
     });
     setShowModal(true);
   };
