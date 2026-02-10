@@ -713,6 +713,43 @@ async def create_schema():
             END $$;
         """)
 
+        # ── compraAPP columns (SUNAT tax breakdown) ──
+        await conn.execute("""
+            DO $$
+            BEGIN
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='finanzas2' AND table_name='cont_factura_proveedor' AND column_name='tipo_comprobante_sunat') THEN
+                    ALTER TABLE finanzas2.cont_factura_proveedor ADD COLUMN tipo_comprobante_sunat VARCHAR(2);
+                END IF;
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='finanzas2' AND table_name='cont_factura_proveedor' AND column_name='base_gravada') THEN
+                    ALTER TABLE finanzas2.cont_factura_proveedor ADD COLUMN base_gravada NUMERIC(18,8) DEFAULT 0;
+                END IF;
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='finanzas2' AND table_name='cont_factura_proveedor' AND column_name='igv_sunat') THEN
+                    ALTER TABLE finanzas2.cont_factura_proveedor ADD COLUMN igv_sunat NUMERIC(18,8) DEFAULT 0;
+                END IF;
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='finanzas2' AND table_name='cont_factura_proveedor' AND column_name='base_no_gravada') THEN
+                    ALTER TABLE finanzas2.cont_factura_proveedor ADD COLUMN base_no_gravada NUMERIC(18,8) DEFAULT 0;
+                END IF;
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='finanzas2' AND table_name='cont_factura_proveedor' AND column_name='isc') THEN
+                    ALTER TABLE finanzas2.cont_factura_proveedor ADD COLUMN isc NUMERIC(18,8) DEFAULT 0;
+                END IF;
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='finanzas2' AND table_name='cont_gasto' AND column_name='tipo_comprobante_sunat') THEN
+                    ALTER TABLE finanzas2.cont_gasto ADD COLUMN tipo_comprobante_sunat VARCHAR(2);
+                END IF;
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='finanzas2' AND table_name='cont_gasto' AND column_name='base_gravada') THEN
+                    ALTER TABLE finanzas2.cont_gasto ADD COLUMN base_gravada NUMERIC(18,8) DEFAULT 0;
+                END IF;
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='finanzas2' AND table_name='cont_gasto' AND column_name='igv_sunat') THEN
+                    ALTER TABLE finanzas2.cont_gasto ADD COLUMN igv_sunat NUMERIC(18,8) DEFAULT 0;
+                END IF;
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='finanzas2' AND table_name='cont_gasto' AND column_name='base_no_gravada') THEN
+                    ALTER TABLE finanzas2.cont_gasto ADD COLUMN base_no_gravada NUMERIC(18,8) DEFAULT 0;
+                END IF;
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='finanzas2' AND table_name='cont_gasto' AND column_name='isc') THEN
+                    ALTER TABLE finanzas2.cont_gasto ADD COLUMN isc NUMERIC(18,8) DEFAULT 0;
+                END IF;
+            END $$;
+        """)
+
         # ── Indexes ──
         index_stmts = [
             "CREATE INDEX IF NOT EXISTS idx_cont_venta_pos_pago_venta ON finanzas2.cont_venta_pos_pago(venta_pos_id)",
