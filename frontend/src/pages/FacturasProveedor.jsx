@@ -377,11 +377,16 @@ export const FacturasProveedor = () => {
     if (submitting) return;
     
     try {
+      const tots = calcularTotales();
       const dataToSend = {
         ...formData,
         proveedor_id: formData.proveedor_id ? parseInt(formData.proveedor_id) : null,
         moneda_id: formData.moneda_id ? parseInt(formData.moneda_id) : null,
         terminos_dias: parseInt(formData.terminos_dias) || 0,
+        base_gravada: tots.base_gravada,
+        igv_sunat: tots.igv_sunat,
+        base_no_gravada: tots.base_no_gravada,
+        isc: parseFloat(formData.isc) || 0,
         // Ensure dates are valid or null
         fecha_factura: formData.fecha_factura || null,
         fecha_contable: formData.fecha_contable || formData.fecha_factura || null,
