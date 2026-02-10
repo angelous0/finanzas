@@ -70,6 +70,7 @@ class CategoriaUpdate(BaseModel):
     tipo: Optional[str] = None
     padre_id: Optional[int] = None
     descripcion: Optional[str] = None
+    cuenta_gasto_id: Optional[int] = None
     activo: Optional[bool] = None
 
 class Categoria(CategoriaBase):
