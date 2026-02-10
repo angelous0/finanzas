@@ -351,6 +351,7 @@ class TestExportCompraAPP:
     def _create_gasto_with_sunat(self):
         """Helper to create a gasto with all SUNAT fields"""
         today = date.today().isoformat()
+        unique_id = uuid.uuid4().hex[:8]
         
         gasto_data = {
             'fecha': today,
@@ -358,7 +359,7 @@ class TestExportCompraAPP:
             'proveedor_id': self.proveedor_id,
             'moneda_id': self.moneda_id,
             'tipo_documento': 'factura',
-            'numero_documento': f'TEST_GEXP-{date.today().strftime("%H%M%S")}',
+            'numero_documento': f'TEST_GEXP-{unique_id}',
             'tipo_comprobante_sunat': '01',
             'base_gravada': 800.00,
             'igv_sunat': 144.00,
