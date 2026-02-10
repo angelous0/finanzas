@@ -1573,6 +1573,27 @@ async def create_factura_proveedor(data: FacturaProveedorCreate, empresa_id: int
                 igv = sum(l.importe * 0.18 for l in data.lineas if l.igv_aplica)
             total = subtotal + igv
             
+            # Calculate SUNAT tax breakdown from lines
+            base_gravada = 0.0
+            igv_sunat = 0.0
+            base_no_gravada = 0.0
+            for linea in data.lineas:
+                imp = linea.importe
+                if linea.igv_aplica:
+                    if data.impuestos_incluidos:
+                        base = imp / 1.18
+                        base_gravada += base
+                        igv_sunat += imp - base
+                    else:
+                        base_gravada += imp
+                        igv_sunat += imp * 0.18
+                else:
+                    base_no_gravada += imp
+            base_gravada = round(base_gravada, 2)
+            igv_sunat = round(igv_sunat, 2)
+            base_no_gravada = round(base_no_gravada, 2)
+            isc_val = data.isc or 0.0
+            
             # Calculate fecha_vencimiento
             fecha_vencimiento = data.fecha_vencimiento
             if not fecha_vencimiento and data.terminos_dias:
