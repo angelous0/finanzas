@@ -218,4 +218,6 @@ export const getReporteEstadoResultados = (fechaDesde, fechaHasta) =>
   api.get('/reportes/estado-resultados', { params: { fecha_desde: fechaDesde, fecha_hasta: fechaHasta } });
 export const getReporteBalanceGeneral = () => api.get('/reportes/balance-general');
 
+export const exportCompraAPP = (params) => api.get('/export/compraapp', { params, responseType: 'blob' });
+
 export default api;
