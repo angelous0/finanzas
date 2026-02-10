@@ -702,6 +702,14 @@ async def create_schema():
                 IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='finanzas2' AND table_name='cont_pago' AND column_name='linea_negocio_id') THEN
                     ALTER TABLE finanzas2.cont_pago ADD COLUMN linea_negocio_id INTEGER REFERENCES finanzas2.cont_linea_negocio(id);
                 END IF;
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='finanzas2' AND table_name='cont_factura_proveedor' AND column_name='fecha_contable') THEN
+                    ALTER TABLE finanzas2.cont_factura_proveedor ADD COLUMN fecha_contable DATE;
+                    UPDATE finanzas2.cont_factura_proveedor SET fecha_contable = fecha_factura WHERE fecha_contable IS NULL;
+                END IF;
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='finanzas2' AND table_name='cont_gasto' AND column_name='fecha_contable') THEN
+                    ALTER TABLE finanzas2.cont_gasto ADD COLUMN fecha_contable DATE;
+                    UPDATE finanzas2.cont_gasto SET fecha_contable = fecha WHERE fecha_contable IS NULL;
+                END IF;
             END $$;
         """)
 
