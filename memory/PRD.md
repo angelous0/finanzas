@@ -21,7 +21,8 @@ Sistema de gestión financiera completo con FastAPI backend + React frontend + P
 - Centro de costo y línea de negocio en empleados y pagos
 - Reporte de pagos avanzado
 - Fecha contable en facturas y gastos
-- **Export CompraAPP** (SUNAT): Campos tipo_comprobante_sunat, base_gravada, igv_sunat, base_no_gravada, isc en facturas proveedor y gastos. Endpoint GET /api/export/compraapp genera Excel.
+- **Export CompraAPP (SUNAT)**: Endpoint GET /api/export/compraapp genera Excel
+- **Campos SUNAT auto-calculados**: base_gravada, igv_sunat, base_no_gravada se calculan automáticamente desde líneas de detalle tanto en frontend (readOnly) como backend (server-side). ISC editable. Reglas: igv_aplica=true con impuestos incluidos → base=importe/1.18, igv=importe-base; sin incluidos → base=importe, igv=base*0.18; igv_aplica=false → base_no_gravada+=importe.
 
 ## Backlog
 - P1: Refactorizar server.py (6000+ líneas) usando APIRouter de FastAPI
