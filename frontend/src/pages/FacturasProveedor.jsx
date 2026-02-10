@@ -531,6 +531,8 @@ export const FacturasProveedor = () => {
     } catch (error) {
       console.error('Error registrando pago:', error);
       toast.error(error.response?.data?.detail || 'Error al registrar pago');
+    } finally {
+      setRegistrandoPago(false);
     }
   };
 
