@@ -13,7 +13,8 @@ import SearchableSelect from '../components/SearchableSelect';
 import TableSearchSelect from '../components/TableSearchSelect';
 
 const formatCurrency = (value, symbol = 'S/') => {
-  return `${symbol} ${Number(value || 0).toLocaleString('es-PE', { minimumFractionDigits: 2 })}`;
+  const s = symbol || 'S/';
+  return `${s} ${Number(value || 0).toLocaleString('es-PE', { minimumFractionDigits: 2 })}`;
 };
 
 const formatDate = (dateStr) => {
