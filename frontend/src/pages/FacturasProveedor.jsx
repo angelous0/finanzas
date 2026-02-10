@@ -2409,6 +2409,62 @@ export const FacturasProveedor = () => {
           </div>
         </div>
       )}
+
+      {/* Export CompraAPP Modal */}
+      {showExportModal && (
+        <div className="modal-overlay" onClick={() => setShowExportModal(false)}>
+          <div className="modal" style={{ maxWidth: '420px' }} onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2 className="modal-title">Exportar CompraAPP</h2>
+              <button className="modal-close" onClick={() => setShowExportModal(false)}>
+                <X size={20} />
+              </button>
+            </div>
+            <div className="modal-body">
+              <p style={{ fontSize: '0.875rem', color: '#64748b', marginBottom: '1rem' }}>
+                Exporta facturas de proveedor y gastos en formato Excel para contabilidad SUNAT.
+              </p>
+              <div className="form-grid form-grid-2">
+                <div className="form-group">
+                  <label className="form-label">Desde</label>
+                  <input
+                    type="date"
+                    className="form-input"
+                    value={exportDesde}
+                    onChange={(e) => setExportDesde(e.target.value)}
+                    data-testid="export-desde"
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Hasta</label>
+                  <input
+                    type="date"
+                    className="form-input"
+                    value={exportHasta}
+                    onChange={(e) => setExportHasta(e.target.value)}
+                    data-testid="export-hasta"
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button type="button" className="btn btn-outline" onClick={() => setShowExportModal(false)}>
+                Cancelar
+              </button>
+              <button 
+                type="button" 
+                className="btn btn-primary"
+                onClick={handleExportCompraAPP}
+                disabled={exporting}
+                data-testid="export-confirm-btn"
+              >
+                <FileSpreadsheet size={16} />
+                {exporting ? 'Exportando...' : 'Exportar Excel'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
