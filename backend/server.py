@@ -2412,13 +2412,14 @@ async def create_gasto(data: GastoCreate, empresa_id: int = Depends(get_empresa_
                 raise HTTPException(400, f"El total de pagos ({total_pagos:.2f}) debe ser igual al total del gasto ({total:.2f})")
             
             # Create gasto first
+            fecha_contable = data.fecha_contable or data.fecha
             gasto = await conn.fetchrow("""
                 INSERT INTO finanzas2.cont_gasto 
-                (empresa_id, numero, fecha, proveedor_id, beneficiario_nombre, moneda_id, subtotal, igv, total,
+                (empresa_id, numero, fecha, fecha_contable, proveedor_id, beneficiario_nombre, moneda_id, subtotal, igv, total,
                  tipo_documento, numero_documento, notas)
-                VALUES ($1, $2, TO_DATE($3, 'YYYY-MM-DD'), $4, $5, $6, $7, $8, $9, $10, $11, $12)
+                VALUES ($1, $2, TO_DATE($3, 'YYYY-MM-DD'), TO_DATE($4, 'YYYY-MM-DD'), $5, $6, $7, $8, $9, $10, $11, $12, $13)
                 RETURNING id
-            """, empresa_id, numero, safe_date_param(data.fecha), data.proveedor_id, data.beneficiario_nombre, data.moneda_id,
+            """, empresa_id, numero, safe_date_param(data.fecha), safe_date_param(fecha_contable), data.proveedor_id, data.beneficiario_nombre, data.moneda_id,
                 subtotal, igv, total, data.tipo_documento, data.numero_documento, data.notas)
             
             gasto_id = gasto['id']
