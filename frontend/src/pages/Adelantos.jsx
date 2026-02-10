@@ -42,6 +42,7 @@ export const Adelantos = () => {
   const [showModal, setShowModal] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
   const [showPagoModal, setShowPagoModal] = useState(false);
+  const [registrandoPago, setRegistrandoPago] = useState(false);
   const [showPagosListModal, setShowPagosListModal] = useState(false);
   const [selectedAdelanto, setSelectedAdelanto] = useState(null);
   const [pagoData, setPagoData] = useState({ cuenta_financiera_id: '', medio_pago: 'efectivo' });
