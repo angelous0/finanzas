@@ -4723,6 +4723,10 @@ async def export_compraapp(
         if errors:
             raise HTTPException(400, detail={"message": "Faltan datos obligatorios para la exportación", "errors": errors})
 
+        # Convert to dicts for mutability
+        facturas = [dict(r) for r in facturas]
+        gastos = [dict(r) for r in gastos]
+
         # Assign voucher numbers atomically to docs that don't have one yet
         async with conn.transaction():
             for f in facturas:
@@ -4736,16 +4740,11 @@ async def export_compraapp(
                         DO UPDATE SET ultimo_numero = finanzas2.cont_correlativos.ultimo_numero + 1, updated_at = NOW()
                         RETURNING ultimo_numero
                     """, empresa_id, f'VOU_COMPRAS_{anio}', '01')
-                    vou_num = f"{row['ultimo_numero']:06d}"
+                    f['vou_numero'] = f"{row['ultimo_numero']:06d}"
                     await conn.execute(
                         "UPDATE finanzas2.cont_factura_proveedor SET vou_numero = $1 WHERE id = $2",
-                        vou_num, f['id']
+                        f['vou_numero'], f['id']
                     )
-                    # Update local record
-                    facturas = [dict(r) for r in facturas]
-                    for ff in facturas:
-                        if ff['id'] == f['id']:
-                            ff['vou_numero'] = vou_num
 
             for g in gastos:
                 if not g['vou_numero']:
@@ -4758,15 +4757,11 @@ async def export_compraapp(
                         DO UPDATE SET ultimo_numero = finanzas2.cont_correlativos.ultimo_numero + 1, updated_at = NOW()
                         RETURNING ultimo_numero
                     """, empresa_id, f'VOU_COMPRAS_{anio}', '01')
-                    vou_num = f"{row['ultimo_numero']:06d}"
+                    g['vou_numero'] = f"{row['ultimo_numero']:06d}"
                     await conn.execute(
                         "UPDATE finanzas2.cont_gasto SET vou_numero = $1 WHERE id = $2",
-                        vou_num, g['id']
+                        g['vou_numero'], g['id']
                     )
-                    gastos = [dict(r) for r in gastos]
-                    for gg in gastos:
-                        if gg['id'] == g['id']:
-                            gg['vou_numero'] = vou_num
 
         # Helper to clean doc number (digits only)
         def clean_doc(doc_str):
