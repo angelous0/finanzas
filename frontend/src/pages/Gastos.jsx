@@ -16,8 +16,9 @@ import { useEmpresa } from '../context/EmpresaContext';
 import SearchableSelect from '../components/SearchableSelect';
 
 const formatCurrency = (value, symbol = 'S/') => {
+  const s = symbol || 'S/';
   const num = parseFloat(value) || 0;
-  return `${symbol} ${num.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  return `${s} ${num.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 };
 
 const formatDate = (dateStr) => {
