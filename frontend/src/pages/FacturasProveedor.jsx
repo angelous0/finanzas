@@ -268,42 +268,68 @@ export const FacturasProveedor = () => {
   const calcularTotales = () => {
     let subtotal = 0;
     let igv = 0;
+    let base_gravada = 0;
+    let igv_sunat = 0;
+    let base_no_gravada = 0;
     
     // Sumar líneas de categoría
     formData.lineas.forEach(linea => {
       const importe = parseFloat(linea.importe) || 0;
-      if (formData.impuestos_incluidos) {
-        const base = importe / 1.18;
-        subtotal += base;
-        if (linea.igv_aplica) {
-          igv += base * 0.18;
+      if (linea.igv_aplica) {
+        if (formData.impuestos_incluidos) {
+          const base = importe / 1.18;
+          const lineaIgv = importe - base;
+          subtotal += base;
+          igv += lineaIgv;
+          base_gravada += base;
+          igv_sunat += lineaIgv;
+        } else {
+          subtotal += importe;
+          igv += importe * 0.18;
+          base_gravada += importe;
+          igv_sunat += importe * 0.18;
         }
       } else {
-        subtotal += importe;
-        if (linea.igv_aplica) {
-          igv += importe * 0.18;
+        if (formData.impuestos_incluidos) {
+          subtotal += importe;
+        } else {
+          subtotal += importe;
         }
+        base_no_gravada += importe;
       }
     });
     
     // Sumar artículos
     formData.articulos.forEach(art => {
       const importe = calcularImporteArticulo(art);
-      if (formData.impuestos_incluidos) {
-        const base = importe / 1.18;
-        subtotal += base;
-        if (art.igv_aplica) {
-          igv += base * 0.18;
+      if (art.igv_aplica) {
+        if (formData.impuestos_incluidos) {
+          const base = importe / 1.18;
+          const artIgv = importe - base;
+          subtotal += base;
+          igv += artIgv;
+          base_gravada += base;
+          igv_sunat += artIgv;
+        } else {
+          subtotal += importe;
+          igv += importe * 0.18;
+          base_gravada += importe;
+          igv_sunat += importe * 0.18;
         }
       } else {
         subtotal += importe;
-        if (art.igv_aplica) {
-          igv += importe * 0.18;
-        }
+        base_no_gravada += importe;
       }
     });
     
-    return { subtotal, igv, total: subtotal + igv };
+    return {
+      subtotal,
+      igv,
+      total: subtotal + igv,
+      base_gravada: parseFloat(base_gravada.toFixed(2)),
+      igv_sunat: parseFloat(igv_sunat.toFixed(2)),
+      base_no_gravada: parseFloat(base_no_gravada.toFixed(2))
+    };
   };
 
   // Crear nuevo proveedor
