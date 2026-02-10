@@ -1,0 +1,50 @@
+{
+  "summary": "Tested SUNAT auto-calculated fields refinement. Backend: 8/8 tests passed for server-side calculation of base_gravada, igv_sunat, base_no_gravada. Frontend: All 4 FacturasProveedor tests passed, all 4 Gastos tests passed. Fields are correctly read-only and auto-calculate from line items.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "features_tested": {
+    "backend_facturas_impuestos_no_incluidos": "PASS - POST with impuestos_incluidos=false, mixed igv lines → correct base_gravada=1000, igv_sunat=180, base_no_gravada=500",
+    "backend_facturas_impuestos_incluidos": "PASS - POST with impuestos_incluidos=true, 1180 importe → base_gravada≈1000, igv_sunat≈180 (extracted from gross)",
+    "backend_facturas_all_no_gravada": "PASS - All igv_aplica=false lines → base_gravada=0, igv_sunat=0, base_no_gravada=sum(importes)",
+    "backend_server_recalculates": "PASS - Server ignores client-sent SUNAT values and recalculates from lines",
+    "backend_gastos_mixed_igv": "PASS - Gastos with mixed igv lines → correct calculation (no impuestos_incluidos flag)",
+    "backend_gastos_all_gravado": "PASS - Gastos all igv_aplica=true → base=sum(importes), igv=base*0.18",
+    "backend_gastos_server_recalculates": "PASS - Gastos server recalculates SUNAT values correctly",
+    "backend_export_compraapp": "PASS - Export works with auto-calculated values",
+    "frontend_facturas_readonly_fields": "PASS - Base Gravada, IGV, No Gravada have readOnly attribute",
+    "frontend_facturas_isc_editable": "PASS - ISC field remains editable (no readOnly)",
+    "frontend_facturas_auto_calc": "PASS - Entering 1180 importe with IGV included → base=1000, igv=180",
+    "frontend_facturas_toggle_igv": "PASS - Unchecking IGV moves value to No Gravada, base=0, igv=0",
+    "frontend_gastos_readonly_fields": "PASS - Base Gravada, IGV, No Gravada have readOnly attribute",
+    "frontend_gastos_isc_editable": "PASS - ISC field remains editable",
+    "frontend_gastos_auto_calc": "PASS - Entering 1000 importe → base=1000, igv=180 (line base mode)",
+    "frontend_gastos_toggle_igv": "PASS - Unchecking IGV → base=0, no_gravada=1000, igv=0"
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_sunat_auto_calc.py",
+    "/app/test_reports/pytest/pytest_sunat_auto_calc_iter10.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [],
+  "updated_files": [
+    "/app/backend/tests/test_sunat_auto_calc.py"
+  ],
+  "success_rate": {
+    "backend": "100% (8/8 tests passed)",
+    "frontend": "100% (all UI features verified working)"
+  },
+  "test_data_created": {
+    "facturas_proveedor": "TEST_AUTO_001-*, TEST_AUTO_002-*, TEST_AUTO_003-*, TEST_AUTO_004-* with SUNAT auto-calc",
+    "gastos": "TEST_GASTO_001-*, TEST_GASTO_002-*, TEST_GASTO_003-* with SUNAT auto-calc"
+  },
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "SUNAT auto-calculation feature is fully working. Backend recalculates base_gravada, igv_sunat, base_no_gravada from line items regardless of what client sends. FacturasProveedor uses impuestos_incluidos flag: if true, extracts tax from gross (importe/1.18); if false, adds tax to base. Gastos do NOT use impuestos_incluidos - lines are always base values and IGV is added (base*0.18). Frontend displays computed values as readOnly with gray background. Only ISC remains editable. Empresa ID is 5, proveedor ID is 42, cuenta_financiera_id is 7."
+}
