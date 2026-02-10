@@ -4604,6 +4604,175 @@ async def reporte_balance_general(empresa_id: int = Depends(get_empresa_id)):
             "patrimonio": patrimonio
         }
 
+@api_router.get("/export/compraapp")
+async def export_compraapp(
+    empresa_id: int = Depends(get_empresa_id),
+    desde: Optional[date] = None,
+    hasta: Optional[date] = None,
+):
+    """Export purchases (facturas proveedor + gastos) in compraAPP Excel format"""
+    import openpyxl
+    from openpyxl.styles import Font, Alignment, Border, Side
+    from re import sub as re_sub
+
+    pool = await get_pool()
+    async with pool.acquire() as conn:
+        await conn.execute("SET search_path TO finanzas2, public")
+
+        # Build date filters
+        fp_conditions = ["fp.empresa_id = $1"]
+        g_conditions = ["g.empresa_id = $1"]
+        params_fp = [empresa_id]
+        params_g = [empresa_id]
+        idx_fp = 2
+        idx_g = 2
+
+        if desde:
+            fp_conditions.append(f"fp.fecha_factura >= ${idx_fp}")
+            params_fp.append(desde)
+            idx_fp += 1
+            g_conditions.append(f"g.fecha >= ${idx_g}")
+            params_g.append(desde)
+            idx_g += 1
+        if hasta:
+            fp_conditions.append(f"fp.fecha_factura <= ${idx_fp}")
+            params_fp.append(hasta)
+            idx_fp += 1
+            g_conditions.append(f"g.fecha <= ${idx_g}")
+            params_g.append(hasta)
+            idx_g += 1
+
+        # Fetch facturas proveedor
+        facturas = await conn.fetch(f"""
+            SELECT fp.numero, fp.fecha_factura, fp.fecha_vencimiento,
+                   fp.tipo_comprobante_sunat, fp.base_gravada, fp.igv_sunat,
+                   fp.base_no_gravada, fp.isc, fp.total,
+                   t.numero_documento as proveedor_doc, t.nombre as proveedor_nombre
+            FROM finanzas2.cont_factura_proveedor fp
+            LEFT JOIN finanzas2.cont_tercero t ON fp.proveedor_id = t.id
+            WHERE {' AND '.join(fp_conditions)}
+            ORDER BY fp.fecha_factura, fp.id
+        """, *params_fp)
+
+        # Fetch gastos
+        gastos = await conn.fetch(f"""
+            SELECT g.numero_documento, g.fecha, g.fecha_contable,
+                   g.tipo_comprobante_sunat, g.base_gravada, g.igv_sunat,
+                   g.base_no_gravada, g.isc, g.total,
+                   t.numero_documento as proveedor_doc, t.nombre as proveedor_nombre
+            FROM finanzas2.cont_gasto g
+            LEFT JOIN finanzas2.cont_tercero t ON g.proveedor_id = t.id
+            WHERE {' AND '.join(g_conditions)}
+            ORDER BY g.fecha, g.id
+        """, *params_g)
+
+        # Validate: check for missing required fields
+        errors = []
+        for i, f in enumerate(facturas):
+            if not f['tipo_comprobante_sunat']:
+                errors.append(f"Factura '{f['numero']}': falta Doc SUNAT")
+            if not f['numero']:
+                errors.append(f"Factura #{i+1}: falta Número")
+            if not f['proveedor_doc']:
+                errors.append(f"Factura '{f['numero']}': falta Código (RUC/DNI) del proveedor")
+        for i, g in enumerate(gastos):
+            if not g['tipo_comprobante_sunat']:
+                errors.append(f"Gasto '{g['numero_documento']}': falta Doc SUNAT")
+            if not g['numero_documento']:
+                errors.append(f"Gasto #{i+1}: falta Número documento")
+            if not g['proveedor_doc']:
+                errors.append(f"Gasto '{g['numero_documento']}': falta Código (RUC/DNI) del proveedor")
+
+        if errors:
+            raise HTTPException(400, detail={"message": "Faltan datos obligatorios para la exportación", "errors": errors})
+
+        # Helper to clean doc number (digits only)
+        def clean_doc(doc_str):
+            if not doc_str:
+                return ""
+            return re_sub(r'[^0-9]', '', str(doc_str))
+
+        # Build Excel
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "CompraAPP"
+
+        headers = ["Doc", "Numero", "Fec.Doc", "Fec.Venc", "Codigo", "B.I.O.G y E.(A)", "AD. NO GRAV.", "I.S.C.", "IGV(A)"]
+        header_font = Font(bold=True, size=10)
+        thin_border = Border(
+            left=Side(style='thin'), right=Side(style='thin'),
+            top=Side(style='thin'), bottom=Side(style='thin')
+        )
+
+        for col_idx, header in enumerate(headers, 1):
+            cell = ws.cell(row=1, column=col_idx, value=header)
+            cell.font = header_font
+            cell.alignment = Alignment(horizontal='center')
+            cell.border = thin_border
+
+        row_num = 2
+
+        def fmt_date(d):
+            if d is None:
+                return ""
+            if isinstance(d, str):
+                return d[:10]
+            return d.strftime("%d/%m/%Y")
+
+        def fmt_num(val):
+            if val is None:
+                return 0.0
+            return round(float(val), 2)
+
+        # Write facturas proveedor
+        for f in facturas:
+            ws.cell(row=row_num, column=1, value=f['tipo_comprobante_sunat'] or "").border = thin_border
+            ws.cell(row=row_num, column=2, value=f['numero'] or "").border = thin_border
+            ws.cell(row=row_num, column=3, value=fmt_date(f['fecha_factura'])).border = thin_border
+            ws.cell(row=row_num, column=4, value=fmt_date(f['fecha_vencimiento'])).border = thin_border
+            ws.cell(row=row_num, column=5, value=clean_doc(f['proveedor_doc'])).border = thin_border
+            ws.cell(row=row_num, column=6, value=fmt_num(f['base_gravada'])).border = thin_border
+            ws.cell(row=row_num, column=7, value=fmt_num(f['base_no_gravada'])).border = thin_border
+            ws.cell(row=row_num, column=8, value=fmt_num(f['isc'])).border = thin_border
+            ws.cell(row=row_num, column=9, value=fmt_num(f['igv_sunat'])).border = thin_border
+            row_num += 1
+
+        # Write gastos
+        for g in gastos:
+            ws.cell(row=row_num, column=1, value=g['tipo_comprobante_sunat'] or "").border = thin_border
+            ws.cell(row=row_num, column=2, value=g['numero_documento'] or "").border = thin_border
+            ws.cell(row=row_num, column=3, value=fmt_date(g['fecha'])).border = thin_border
+            ws.cell(row=row_num, column=4, value="").border = thin_border  # Gastos don't have fecha_vencimiento
+            ws.cell(row=row_num, column=5, value=clean_doc(g['proveedor_doc'])).border = thin_border
+            ws.cell(row=row_num, column=6, value=fmt_num(g['base_gravada'])).border = thin_border
+            ws.cell(row=row_num, column=7, value=fmt_num(g['base_no_gravada'])).border = thin_border
+            ws.cell(row=row_num, column=8, value=fmt_num(g['isc'])).border = thin_border
+            ws.cell(row=row_num, column=9, value=fmt_num(g['igv_sunat'])).border = thin_border
+            row_num += 1
+
+        # Auto-adjust column widths
+        col_widths = [8, 20, 12, 12, 14, 18, 16, 10, 12]
+        for i, w in enumerate(col_widths, 1):
+            ws.column_dimensions[openpyxl.utils.get_column_letter(i)].width = w
+
+        # Save to buffer
+        buffer = io.BytesIO()
+        wb.save(buffer)
+        buffer.seek(0)
+
+        filename = f"CompraAPP_{empresa_id}"
+        if desde:
+            filename += f"_{desde}"
+        if hasta:
+            filename += f"_{hasta}"
+        filename += ".xlsx"
+
+        return StreamingResponse(
+            buffer,
+            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            headers={"Content-Disposition": f'attachment; filename="{filename}"'}
+        )
+
 # Include router
 app.include_router(api_router)
 
