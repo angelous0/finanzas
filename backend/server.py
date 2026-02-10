@@ -363,6 +363,30 @@ async def create_empresa(data: EmpresaCreate):
             VALUES ($1, $2, $3, $4, $5, $6, $7)
             RETURNING *
         """, data.nombre, data.ruc, data.direccion, data.telefono, data.email, data.logo_url, data.activo)
+        
+        empresa_id = row['id']
+        
+        # Create base monedas if none exist
+        moneda_count = await conn.fetchval("SELECT COUNT(*) FROM finanzas2.cont_moneda")
+        if moneda_count == 0:
+            await conn.execute("INSERT INTO finanzas2.cont_moneda (codigo, nombre, simbolo, es_principal) VALUES ('PEN', 'Sol Peruano', 'S/', TRUE)")
+            await conn.execute("INSERT INTO finanzas2.cont_moneda (codigo, nombre, simbolo, es_principal) VALUES ('USD', 'Dólar Americano', '$', FALSE)")
+        
+        # Create default categorias for new empresa
+        cat_count = await conn.fetchval("SELECT COUNT(*) FROM finanzas2.cont_categoria WHERE empresa_id = $1", empresa_id)
+        if cat_count == 0:
+            await conn.execute("""
+                INSERT INTO finanzas2.cont_categoria (empresa_id, codigo, nombre, tipo) VALUES
+                ($1, 'ING-001', 'Ventas', 'ingreso'),
+                ($1, 'ING-002', 'Otros Ingresos', 'ingreso'),
+                ($1, 'EGR-001', 'Compras Mercadería', 'egreso'),
+                ($1, 'EGR-002', 'Servicios', 'egreso'),
+                ($1, 'EGR-003', 'Planilla', 'egreso'),
+                ($1, 'EGR-004', 'Alquileres', 'egreso'),
+                ($1, 'EGR-005', 'Servicios Públicos', 'egreso'),
+                ($1, 'EGR-006', 'Otros Gastos', 'egreso')
+            """, empresa_id)
+        
         return dict(row)
 
 @api_router.put("/empresas/{id}", response_model=Empresa)
