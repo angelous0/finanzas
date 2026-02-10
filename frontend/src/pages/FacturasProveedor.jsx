@@ -850,11 +850,13 @@ export const FacturasProveedor = () => {
 
   const resetForm = () => {
     const pen = monedas.find(m => m.codigo === 'PEN');
+    const hoy = new Date().toISOString().split('T')[0];
     setFormData({
       proveedor_id: '',
       beneficiario_nombre: '',
       moneda_id: pen?.id || '',
-      fecha_factura: new Date().toISOString().split('T')[0],
+      fecha_factura: hoy,
+      fecha_contable: hoy,
       fecha_vencimiento: '',
       terminos_dias: 30,
       tipo_documento: 'factura',
@@ -864,6 +866,7 @@ export const FacturasProveedor = () => {
       lineas: [{ categoria_id: '', descripcion: '', linea_negocio_id: '', centro_costo_id: '', importe: 0, igv_aplica: true }],
       articulos: []
     });
+    setFechaContableManual(false);
   };
 
   const totales = calcularTotales();
