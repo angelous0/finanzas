@@ -94,6 +94,10 @@ export const FacturasProveedor = () => {
   const [filtroNumero, setFiltroNumero] = useState('');
   const [filtroProveedorId, setFiltroProveedorId] = useState('');
   const [filtroFecha, setFiltroFecha] = useState('');
+  const [exportDesde, setExportDesde] = useState('');
+  const [exportHasta, setExportHasta] = useState('');
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [exporting, setExporting] = useState(false);
   
   // Form state
   const [formData, setFormData] = useState({
