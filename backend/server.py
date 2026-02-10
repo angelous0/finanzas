@@ -5001,7 +5001,7 @@ async def export_compraapp(
             row_num += 1
 
         # Auto-adjust column widths
-        col_widths = [10, 12, 12, 8, 20, 12, 12, 14, 18, 16, 10, 12]
+        col_widths = [10, 12, 12, 8, 20, 12, 12, 14, 18, 16, 10, 12, 14, 14, 14]
         for i, w in enumerate(col_widths, 1):
             ws.column_dimensions[openpyxl.utils.get_column_letter(i)].width = w
 
