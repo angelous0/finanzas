@@ -493,6 +493,11 @@ class GastoBase(BaseModel):
     moneda_id: Optional[int] = None
     tipo_documento: Optional[str] = None
     numero_documento: Optional[str] = None
+    tipo_comprobante_sunat: Optional[str] = None
+    base_gravada: float = 0
+    igv_sunat: float = 0
+    base_no_gravada: float = 0
+    isc: float = 0
     notas: Optional[str] = None
 
 class GastoPagoDetalle(BaseModel):
