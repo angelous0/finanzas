@@ -1166,9 +1166,9 @@ export const ConciliacionBancaria = () => {
                 <div>
                   <strong>Formatos esperados:</strong>
                   <ul style={{ margin: '0.5rem 0 0 0', paddingLeft: '1.25rem', lineHeight: 1.6 }}>
-                    <li><strong>BCP:</strong> Fecha, Descripción, Monto, Saldo</li>
-                    <li><strong>BBVA:</strong> F. Valor, Concepto, Importe</li>
-                    <li><strong>IBK:</strong> Fecha, Descripción, Cargo, Abono</li>
+                    <li><strong>BCP:</strong> Fecha, Nro Operación, Descripción, Monto</li>
+                    <li><strong>BBVA:</strong> F. Operación, Nº Doc, Concepto, Importe</li>
+                    <li><strong>IBK:</strong> Fecha, Nro Operación, Descripción, Cargo/Abono</li>
                   </ul>
                 </div>
               </div>
