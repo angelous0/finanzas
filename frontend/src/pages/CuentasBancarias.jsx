@@ -362,8 +362,8 @@ export const CuentasBancarias = () => {
                     type="number"
                     step="0.01"
                     className="form-input"
-                    value={formData.saldo_actual}
-                    onChange={(e) => setFormData(prev => ({ ...prev, saldo_actual: e.target.value }))}
+                    value={formData.saldo_inicial}
+                    onChange={(e) => setFormData(prev => ({ ...prev, saldo_inicial: e.target.value }))}
                   />
                 </div>
               </div>
