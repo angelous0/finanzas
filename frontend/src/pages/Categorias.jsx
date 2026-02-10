@@ -43,7 +43,7 @@ export const Categorias = () => {
     if (submitting) return;
     setSubmitting(true);
     try {
-      const payload = { ...formData, padre_id: formData.padre_id || null };
+      const payload = { ...formData, padre_id: formData.padre_id || null, cuenta_gasto_id: formData.cuenta_gasto_id || null };
       if (editingId) {
         await updateCategoria(editingId, payload);
         toast.success('Categoría actualizada');
