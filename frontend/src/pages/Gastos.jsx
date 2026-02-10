@@ -645,6 +645,80 @@ export default function Gastos() {
                   </div>
                 </div>
 
+                {/* SUNAT Doc Type and Tax Breakdown */}
+                <div className="form-grid form-grid-4" style={{ marginTop: '0.75rem' }}>
+                  <div className="form-group">
+                    <label className="form-label">Doc SUNAT</label>
+                    <select
+                      className="form-input form-select"
+                      value={formData.tipo_comprobante_sunat}
+                      onChange={(e) => setFormData({ ...formData, tipo_comprobante_sunat: e.target.value })}
+                      data-testid="gasto-tipo-sunat"
+                    >
+                      <option value="">--</option>
+                      <option value="01">01 - Factura</option>
+                      <option value="03">03 - Boleta</option>
+                      <option value="07">07 - Nota Crédito</option>
+                      <option value="08">08 - Nota Débito</option>
+                      <option value="14">14 - Serv. Público</option>
+                      <option value="02">02 - Recibo Hon.</option>
+                      <option value="12">12 - Ticket</option>
+                      <option value="00">00 - Otros</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">Base Gravada</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      className="form-input"
+                      value={formData.base_gravada}
+                      onChange={(e) => {
+                        const bg = parseFloat(e.target.value) || 0;
+                        setFormData(prev => ({ ...prev, base_gravada: bg, igv_sunat: parseFloat((bg * 0.18).toFixed(2)) }));
+                      }}
+                      data-testid="gasto-base-gravada"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">IGV</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      className="form-input"
+                      value={formData.igv_sunat}
+                      onChange={(e) => setFormData({ ...formData, igv_sunat: parseFloat(e.target.value) || 0 })}
+                      data-testid="gasto-igv-sunat"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">No Gravada</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      className="form-input"
+                      value={formData.base_no_gravada}
+                      onChange={(e) => setFormData({ ...formData, base_no_gravada: parseFloat(e.target.value) || 0 })}
+                      data-testid="gasto-base-no-gravada"
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label">ISC</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      className="form-input"
+                      value={formData.isc}
+                      onChange={(e) => setFormData({ ...formData, isc: parseFloat(e.target.value) || 0 })}
+                      data-testid="gasto-isc"
+                    />
+                  </div>
+                </div>
+
                 {/* Line Items */}
                 <div style={{ marginTop: '1.5rem' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
