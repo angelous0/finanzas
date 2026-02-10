@@ -5,12 +5,17 @@ Tests that Base Gravada, IGV and No Gravada are server-side calculated from line
 import pytest
 import requests
 import os
+import uuid
 from datetime import date, timedelta
 
 BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', '').rstrip('/')
 EMPRESA_ID = 5
 PROVEEDOR_ID = 42
 CUENTA_FINANCIERA_ID = 7
+
+def unique_id():
+    """Generate a unique ID for test data"""
+    return str(uuid.uuid4())[:8]
 
 class TestFacturasProveedorSUNATCalculation:
     """Test SUNAT fields auto-calculation for Facturas Proveedor"""
