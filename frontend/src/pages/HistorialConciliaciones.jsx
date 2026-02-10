@@ -94,7 +94,7 @@ export const HistorialConciliaciones = () => {
   };
 
   const totalMontoBanco = conciliacionesFiltradas.reduce((sum, c) => sum + (c.monto || 0), 0);
-  const totalMontoSistema = conciliacionesFiltradas.reduce((sum, c) => sum + (c.tipo_sistema === 'ingreso' ? c.monto : -Math.abs(c.monto)), 0);
+  const totalMontoSistema = conciliacionesFiltradas.reduce((sum, c) => sum + (c.monto_sistema || 0), 0);
   const diferencia = totalMontoBanco - totalMontoSistema;
 
   const exportToExcel = () => {
