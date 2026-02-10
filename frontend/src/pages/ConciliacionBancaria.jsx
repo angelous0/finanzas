@@ -609,7 +609,7 @@ export const ConciliacionBancaria = () => {
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                 <Building2 size={20} />
                 <span style={{ fontWeight: 600, fontSize: '1rem' }}>
-                  Movimientos del Banco ({movimientosBanco.length})
+                  Movimientos del Banco ({movimientosBanco.filter(m => !m.conciliado).length})
                 </span>
                 {selectedBanco.length > 0 && (
                   <span style={{ 
