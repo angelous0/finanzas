@@ -33,7 +33,7 @@ class TestFacturasProveedorSUNATCalculation:
                 "moneda_id": 5,
                 "fecha_factura": date.today().isoformat(),
                 "tipo_documento": "factura",
-                "numero": f"TEST_AUTO_CALC_001-{date.today().isoformat()}",
+                "numero": f"TEST_AUTO_001-{unique_id()}",
                 "impuestos_incluidos": False,
                 "tipo_comprobante_sunat": "01",
                 "lineas": [
@@ -69,7 +69,7 @@ class TestFacturasProveedorSUNATCalculation:
                 "moneda_id": 5,
                 "fecha_factura": date.today().isoformat(),
                 "tipo_documento": "factura",
-                "numero": f"TEST_AUTO_CALC_002-{date.today().isoformat()}",
+                "numero": f"TEST_AUTO_002-{unique_id()}",
                 "impuestos_incluidos": True,
                 "tipo_comprobante_sunat": "01",
                 "lineas": [
@@ -101,7 +101,7 @@ class TestFacturasProveedorSUNATCalculation:
                 "moneda_id": 5,
                 "fecha_factura": date.today().isoformat(),
                 "tipo_documento": "recibo",
-                "numero": f"TEST_AUTO_CALC_003-{date.today().isoformat()}",
+                "numero": f"TEST_AUTO_003-{unique_id()}",
                 "impuestos_incluidos": False,
                 "tipo_comprobante_sunat": "02",
                 "lineas": [
@@ -132,7 +132,7 @@ class TestFacturasProveedorSUNATCalculation:
                 "moneda_id": 5,
                 "fecha_factura": date.today().isoformat(),
                 "tipo_documento": "factura",
-                "numero": f"TEST_AUTO_CALC_004-{date.today().isoformat()}",
+                "numero": f"TEST_AUTO_004-{unique_id()}",
                 "impuestos_incluidos": False,
                 "tipo_comprobante_sunat": "01",
                 # Client sends wrong values - server should ignore and recalculate
@@ -172,7 +172,7 @@ class TestGastosSUNATCalculation:
                 "fecha": date.today().isoformat(),
                 "moneda_id": 5,
                 "tipo_documento": "boleta",
-                "numero_documento": f"TEST_GASTO_AUTO_001-{date.today().isoformat()}",
+                "numero_documento": f"TEST_GASTO_001-{unique_id()}",
                 "tipo_comprobante_sunat": "03",
                 "lineas": [
                     {"categoria_id": None, "descripcion": "Gasto gravado", "importe": 800, "igv_aplica": True},
@@ -209,7 +209,7 @@ class TestGastosSUNATCalculation:
                 "fecha": date.today().isoformat(),
                 "moneda_id": 5,
                 "tipo_documento": "factura",
-                "numero_documento": f"TEST_GASTO_AUTO_002-{date.today().isoformat()}",
+                "numero_documento": f"TEST_GASTO_002-{unique_id()}",
                 "tipo_comprobante_sunat": "01",
                 "lineas": [
                     {"categoria_id": None, "descripcion": "Compra 1", "importe": 1000, "igv_aplica": True}
@@ -240,7 +240,7 @@ class TestGastosSUNATCalculation:
                 "fecha": date.today().isoformat(),
                 "moneda_id": 5,
                 "tipo_documento": "boleta",
-                "numero_documento": f"TEST_GASTO_AUTO_003-{date.today().isoformat()}",
+                "numero_documento": f"TEST_GASTO_003-{unique_id()}",
                 "tipo_comprobante_sunat": "03",
                 # Wrong values sent by client
                 "base_gravada": 9999,
