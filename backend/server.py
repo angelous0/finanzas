@@ -4647,7 +4647,7 @@ async def export_compraapp(
     desde: Optional[date] = None,
     hasta: Optional[date] = None,
 ):
-    """Export purchases (facturas proveedor + gastos) in compraAPP Excel format"""
+    """Export purchases (facturas proveedor + gastos) in compraAPP Excel format with voucher columns"""
     import openpyxl
     from openpyxl.styles import Font, Alignment, Border, Side
     from re import sub as re_sub
@@ -4679,28 +4679,28 @@ async def export_compraapp(
             params_g.append(hasta)
             idx_g += 1
 
-        # Fetch facturas proveedor
+        # Fetch facturas proveedor (include id, fecha_contable, vou_numero)
         facturas = await conn.fetch(f"""
-            SELECT fp.numero, fp.fecha_factura, fp.fecha_vencimiento,
+            SELECT fp.id, fp.numero, fp.fecha_factura, fp.fecha_contable, fp.fecha_vencimiento,
                    fp.tipo_comprobante_sunat, fp.base_gravada, fp.igv_sunat,
-                   fp.base_no_gravada, fp.isc, fp.total,
+                   fp.base_no_gravada, fp.isc, fp.total, fp.vou_numero,
                    t.numero_documento as proveedor_doc, t.nombre as proveedor_nombre
             FROM finanzas2.cont_factura_proveedor fp
             LEFT JOIN finanzas2.cont_tercero t ON fp.proveedor_id = t.id
             WHERE {' AND '.join(fp_conditions)}
-            ORDER BY fp.fecha_factura, fp.id
+            ORDER BY COALESCE(fp.fecha_contable, fp.fecha_factura), fp.id
         """, *params_fp)
 
-        # Fetch gastos
+        # Fetch gastos (include id, fecha_contable, vou_numero)
         gastos = await conn.fetch(f"""
-            SELECT g.numero_documento, g.fecha, g.fecha_contable,
+            SELECT g.id, g.numero_documento, g.fecha, g.fecha_contable,
                    g.tipo_comprobante_sunat, g.base_gravada, g.igv_sunat,
-                   g.base_no_gravada, g.isc, g.total,
+                   g.base_no_gravada, g.isc, g.total, g.vou_numero,
                    t.numero_documento as proveedor_doc, t.nombre as proveedor_nombre
             FROM finanzas2.cont_gasto g
             LEFT JOIN finanzas2.cont_tercero t ON g.proveedor_id = t.id
             WHERE {' AND '.join(g_conditions)}
-            ORDER BY g.fecha, g.id
+            ORDER BY COALESCE(g.fecha_contable, g.fecha), g.id
         """, *params_g)
 
         # Validate: check for missing required fields
@@ -4723,6 +4723,51 @@ async def export_compraapp(
         if errors:
             raise HTTPException(400, detail={"message": "Faltan datos obligatorios para la exportación", "errors": errors})
 
+        # Assign voucher numbers atomically to docs that don't have one yet
+        async with conn.transaction():
+            for f in facturas:
+                if not f['vou_numero']:
+                    vou_fecha = f['fecha_contable'] or f['fecha_factura']
+                    anio = vou_fecha.year if vou_fecha else date.today().year
+                    row = await conn.fetchrow("""
+                        INSERT INTO finanzas2.cont_correlativos (empresa_id, tipo_documento, prefijo, ultimo_numero, updated_at)
+                        VALUES ($1, $2, $3, 1, NOW())
+                        ON CONFLICT (empresa_id, tipo_documento, prefijo)
+                        DO UPDATE SET ultimo_numero = finanzas2.cont_correlativos.ultimo_numero + 1, updated_at = NOW()
+                        RETURNING ultimo_numero
+                    """, empresa_id, f'VOU_COMPRAS_{anio}', '01')
+                    vou_num = f"{row['ultimo_numero']:06d}"
+                    await conn.execute(
+                        "UPDATE finanzas2.cont_factura_proveedor SET vou_numero = $1 WHERE id = $2",
+                        vou_num, f['id']
+                    )
+                    # Update local record
+                    facturas = [dict(r) for r in facturas]
+                    for ff in facturas:
+                        if ff['id'] == f['id']:
+                            ff['vou_numero'] = vou_num
+
+            for g in gastos:
+                if not g['vou_numero']:
+                    vou_fecha = g['fecha_contable'] or g['fecha']
+                    anio = vou_fecha.year if vou_fecha else date.today().year
+                    row = await conn.fetchrow("""
+                        INSERT INTO finanzas2.cont_correlativos (empresa_id, tipo_documento, prefijo, ultimo_numero, updated_at)
+                        VALUES ($1, $2, $3, 1, NOW())
+                        ON CONFLICT (empresa_id, tipo_documento, prefijo)
+                        DO UPDATE SET ultimo_numero = finanzas2.cont_correlativos.ultimo_numero + 1, updated_at = NOW()
+                        RETURNING ultimo_numero
+                    """, empresa_id, f'VOU_COMPRAS_{anio}', '01')
+                    vou_num = f"{row['ultimo_numero']:06d}"
+                    await conn.execute(
+                        "UPDATE finanzas2.cont_gasto SET vou_numero = $1 WHERE id = $2",
+                        vou_num, g['id']
+                    )
+                    gastos = [dict(r) for r in gastos]
+                    for gg in gastos:
+                        if gg['id'] == g['id']:
+                            gg['vou_numero'] = vou_num
+
         # Helper to clean doc number (digits only)
         def clean_doc(doc_str):
             if not doc_str:
@@ -4734,7 +4779,7 @@ async def export_compraapp(
         ws = wb.active
         ws.title = "CompraAPP"
 
-        headers = ["Doc", "Numero", "Fec.Doc", "Fec.Venc", "Codigo", "B.I.O.G y E.(A)", "AD. NO GRAV.", "I.S.C.", "IGV(A)"]
+        headers = ["Vou.Origen", "Vou.Numero", "Vou.Fecha", "Doc", "Numero", "Fec.Doc", "Fec.Venc", "Codigo", "B.I.O.G y E.(A)", "AD. NO GRAV.", "I.S.C.", "IGV(A)"]
         header_font = Font(bold=True, size=10)
         thin_border = Border(
             left=Side(style='thin'), right=Side(style='thin'),
@@ -4748,12 +4793,18 @@ async def export_compraapp(
             cell.border = thin_border
 
         row_num = 2
+        VOU_ORIGEN = "01"
 
         def fmt_date(d):
             if d is None:
                 return ""
             if isinstance(d, str):
-                return d[:10]
+                try:
+                    from datetime import datetime as dt
+                    parsed = dt.strptime(d[:10], "%Y-%m-%d")
+                    return parsed.strftime("%d/%m/%Y")
+                except Exception:
+                    return d[:10]
             return d.strftime("%d/%m/%Y")
 
         def fmt_num(val):
@@ -4763,32 +4814,42 @@ async def export_compraapp(
 
         # Write facturas proveedor
         for f in facturas:
-            ws.cell(row=row_num, column=1, value=f['tipo_comprobante_sunat'] or "").border = thin_border
-            ws.cell(row=row_num, column=2, value=f['numero'] or "").border = thin_border
-            ws.cell(row=row_num, column=3, value=fmt_date(f['fecha_factura'])).border = thin_border
-            ws.cell(row=row_num, column=4, value=fmt_date(f['fecha_vencimiento'])).border = thin_border
-            ws.cell(row=row_num, column=5, value=clean_doc(f['proveedor_doc'])).border = thin_border
-            ws.cell(row=row_num, column=6, value=fmt_num(f['base_gravada'])).border = thin_border
-            ws.cell(row=row_num, column=7, value=fmt_num(f['base_no_gravada'])).border = thin_border
-            ws.cell(row=row_num, column=8, value=fmt_num(f['isc'])).border = thin_border
-            ws.cell(row=row_num, column=9, value=fmt_num(f['igv_sunat'])).border = thin_border
+            f = dict(f) if not isinstance(f, dict) else f
+            vou_fecha = f.get('fecha_contable') or f.get('fecha_factura')
+            ws.cell(row=row_num, column=1, value=VOU_ORIGEN).border = thin_border
+            ws.cell(row=row_num, column=2, value=f.get('vou_numero') or "").border = thin_border
+            ws.cell(row=row_num, column=3, value=fmt_date(vou_fecha)).border = thin_border
+            ws.cell(row=row_num, column=4, value=f['tipo_comprobante_sunat'] or "").border = thin_border
+            ws.cell(row=row_num, column=5, value=f['numero'] or "").border = thin_border
+            ws.cell(row=row_num, column=6, value=fmt_date(f['fecha_factura'])).border = thin_border
+            ws.cell(row=row_num, column=7, value=fmt_date(f['fecha_vencimiento'])).border = thin_border
+            ws.cell(row=row_num, column=8, value=clean_doc(f['proveedor_doc'])).border = thin_border
+            ws.cell(row=row_num, column=9, value=fmt_num(f['base_gravada'])).border = thin_border
+            ws.cell(row=row_num, column=10, value=fmt_num(f['base_no_gravada'])).border = thin_border
+            ws.cell(row=row_num, column=11, value=fmt_num(f['isc'])).border = thin_border
+            ws.cell(row=row_num, column=12, value=fmt_num(f['igv_sunat'])).border = thin_border
             row_num += 1
 
         # Write gastos
         for g in gastos:
-            ws.cell(row=row_num, column=1, value=g['tipo_comprobante_sunat'] or "").border = thin_border
-            ws.cell(row=row_num, column=2, value=g['numero_documento'] or "").border = thin_border
-            ws.cell(row=row_num, column=3, value=fmt_date(g['fecha'])).border = thin_border
-            ws.cell(row=row_num, column=4, value="").border = thin_border  # Gastos don't have fecha_vencimiento
-            ws.cell(row=row_num, column=5, value=clean_doc(g['proveedor_doc'])).border = thin_border
-            ws.cell(row=row_num, column=6, value=fmt_num(g['base_gravada'])).border = thin_border
-            ws.cell(row=row_num, column=7, value=fmt_num(g['base_no_gravada'])).border = thin_border
-            ws.cell(row=row_num, column=8, value=fmt_num(g['isc'])).border = thin_border
-            ws.cell(row=row_num, column=9, value=fmt_num(g['igv_sunat'])).border = thin_border
+            g = dict(g) if not isinstance(g, dict) else g
+            vou_fecha = g.get('fecha_contable') or g.get('fecha')
+            ws.cell(row=row_num, column=1, value=VOU_ORIGEN).border = thin_border
+            ws.cell(row=row_num, column=2, value=g.get('vou_numero') or "").border = thin_border
+            ws.cell(row=row_num, column=3, value=fmt_date(vou_fecha)).border = thin_border
+            ws.cell(row=row_num, column=4, value=g['tipo_comprobante_sunat'] or "").border = thin_border
+            ws.cell(row=row_num, column=5, value=g['numero_documento'] or "").border = thin_border
+            ws.cell(row=row_num, column=6, value=fmt_date(g['fecha'])).border = thin_border
+            ws.cell(row=row_num, column=7, value="").border = thin_border
+            ws.cell(row=row_num, column=8, value=clean_doc(g['proveedor_doc'])).border = thin_border
+            ws.cell(row=row_num, column=9, value=fmt_num(g['base_gravada'])).border = thin_border
+            ws.cell(row=row_num, column=10, value=fmt_num(g['base_no_gravada'])).border = thin_border
+            ws.cell(row=row_num, column=11, value=fmt_num(g['isc'])).border = thin_border
+            ws.cell(row=row_num, column=12, value=fmt_num(g['igv_sunat'])).border = thin_border
             row_num += 1
 
         # Auto-adjust column widths
-        col_widths = [8, 20, 12, 12, 14, 18, 16, 10, 12]
+        col_widths = [10, 12, 12, 8, 20, 12, 12, 14, 18, 16, 10, 12]
         for i, w in enumerate(col_widths, 1):
             ws.column_dimensions[openpyxl.utils.get_column_letter(i)].width = w
 
