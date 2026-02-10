@@ -30,6 +30,7 @@ export const Categorias = () => {
       setLoading(true);
       const response = await getCategorias(filtroTipo || undefined);
       setCategorias(response.data);
+      try { const cRes = await getCuentasContables(); setCuentasContables(cRes.data.filter(c => c.es_activa)); } catch {}
     } catch (error) {
       toast.error('Error al cargar categorías');
     } finally {
