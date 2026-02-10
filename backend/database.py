@@ -747,6 +747,12 @@ async def create_schema():
                 IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='finanzas2' AND table_name='cont_gasto' AND column_name='isc') THEN
                     ALTER TABLE finanzas2.cont_gasto ADD COLUMN isc NUMERIC(18,8) DEFAULT 0;
                 END IF;
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='finanzas2' AND table_name='cont_factura_proveedor' AND column_name='vou_numero') THEN
+                    ALTER TABLE finanzas2.cont_factura_proveedor ADD COLUMN vou_numero VARCHAR(10);
+                END IF;
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='finanzas2' AND table_name='cont_gasto' AND column_name='vou_numero') THEN
+                    ALTER TABLE finanzas2.cont_gasto ADD COLUMN vou_numero VARCHAR(10);
+                END IF;
             END $$;
         """)
 
