@@ -4183,6 +4183,8 @@ async def get_historial_conciliaciones(empresa_id: int = Depends(get_empresa_id)
             result.append({
                 "id": r['id'],
                 "conciliacion_id": r['conciliacion_id'],
+                "banco_id": r['banco_mov_id'],
+                "sistema_id": r['pago_id'],
                 "banco_mov_id": r['banco_mov_id'],
                 "pago_id": r['pago_id'],
                 "fecha_banco": fecha_banco.isoformat() if fecha_banco else None,
