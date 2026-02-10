@@ -2425,6 +2425,22 @@ async def create_gasto(data: GastoCreate, empresa_id: int = Depends(get_empresa_
             igv = sum(l.importe * 0.18 for l in data.lineas if l.igv_aplica)
             total = subtotal + igv
             
+            # Calculate SUNAT tax breakdown from lines
+            base_gravada = 0.0
+            igv_sunat = 0.0
+            base_no_gravada = 0.0
+            for linea in data.lineas:
+                imp = linea.importe
+                if linea.igv_aplica:
+                    base_gravada += imp
+                    igv_sunat += imp * 0.18
+                else:
+                    base_no_gravada += imp
+            base_gravada = round(base_gravada, 2)
+            igv_sunat = round(igv_sunat, 2)
+            base_no_gravada = round(base_no_gravada, 2)
+            isc_val = data.isc or 0.0
+            
             # Validate payments sum to total
             if not data.pagos:
                 raise HTTPException(400, "El gasto debe tener al menos un pago")
