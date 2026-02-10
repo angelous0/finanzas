@@ -16,6 +16,7 @@ Features tested:
 import pytest
 import requests
 import os
+import uuid
 from datetime import date, timedelta
 
 # Get BASE_URL from environment
