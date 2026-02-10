@@ -53,6 +53,7 @@ export const FacturasProveedor = () => {
   const [cuentasFinancieras, setCuentasFinancieras] = useState([]);
   
   // Modal de Pago
+  const [registrandoPago, setRegistrandoPago] = useState(false);
   const [showPagoModal, setShowPagoModal] = useState(false);
   const [facturaParaPago, setFacturaParaPago] = useState(null);
   const [pagoData, setPagoData] = useState({
