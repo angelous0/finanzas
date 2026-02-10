@@ -220,4 +220,14 @@ export const getReporteBalanceGeneral = () => api.get('/reportes/balance-general
 
 export const exportCompraAPP = (params) => api.get('/export/compraapp', { params, responseType: 'blob' });
 
+// Cuentas Contables
+export const getCuentasContables = () => api.get('/cuentas-contables');
+export const createCuentaContable = (data) => api.post('/cuentas-contables', data);
+export const updateCuentaContable = (id, data) => api.put(`/cuentas-contables/${id}`, data);
+export const deleteCuentaContable = (id) => api.delete(`/cuentas-contables/${id}`);
+
+// Config Contable
+export const getConfigContable = () => api.get('/config-contable');
+export const updateConfigContable = (data) => api.put('/config-contable', data);
+
 export default api;
