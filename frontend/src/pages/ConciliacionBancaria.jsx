@@ -896,7 +896,6 @@ export const ConciliacionBancaria = () => {
                       }}>
                         {formatCurrency(mov.monto, mov.monto < 0 ? '-S/' : 'S/')}
                       </td>
-                      <td className="text-right currency-display">{mov.saldo ? formatCurrency(mov.saldo) : '-'}</td>
                       <td className="text-center">
                         <span className={`badge ${mov.conciliado ? 'badge-success' : 'badge-warning'}`}>
                           {mov.conciliado ? 'Conciliado' : 'Pendiente'}
