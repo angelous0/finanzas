@@ -3,7 +3,8 @@ import {
   getFacturasProveedor, createFacturaProveedor, updateFacturaProveedor, deleteFacturaProveedor,
   getProveedores, getMonedas, getCategorias, getLineasNegocio, getCentrosCosto,
   getInventario, getModelosCortes, createTercero, createPago, getCuentasFinancieras, generarLetras,
-  getPagosDeFactura, getLetrasDeFactura, deshacerCanjeLetras, deletePago, updatePago
+  getPagosDeFactura, getLetrasDeFactura, deshacerCanjeLetras, deletePago, updatePago,
+  exportCompraAPP
 } from '../services/api';
 import { useEmpresa } from '../context/EmpresaContext';
 import { Plus, Trash2, Search, X, FileText, ChevronDown, ChevronUp, Copy, Edit2, Eye, DollarSign, FileSpreadsheet, Undo2, History, Download } from 'lucide-react';
