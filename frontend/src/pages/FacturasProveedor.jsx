@@ -606,6 +606,11 @@ export const FacturasProveedor = () => {
       tipo_documento: factura.tipo_documento || 'factura',
       numero: factura.numero || '',
       impuestos_incluidos: factura.impuestos_incluidos !== false,
+      tipo_comprobante_sunat: factura.tipo_comprobante_sunat || '',
+      base_gravada: factura.base_gravada || 0,
+      igv_sunat: factura.igv_sunat || 0,
+      base_no_gravada: factura.base_no_gravada || 0,
+      isc: factura.isc || 0,
       notas: factura.notas || '',
       lineas: factura.lineas && factura.lineas.length > 0 
         ? factura.lineas.map(l => ({
