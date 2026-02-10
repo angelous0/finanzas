@@ -1,58 +1,28 @@
 # Finanzas 4.0 - PRD
 
 ## Problema Original
-Sistema de gestión financiera multiempresa. Módulos: OC, Facturas Proveedor, Gastos, Pagos, Letras, Planilla, Adelantos, CxP, CxC, Ventas POS, Conciliación Bancaria, Presupuestos, Reportes.
+Sistema de gestión financiera completo con FastAPI backend + React frontend + PostgreSQL. Incluye módulos de ventas, gastos, facturas proveedor, empleados, nómina e informes financieros.
 
 ## Arquitectura
-- **Backend:** FastAPI + asyncpg (PostgreSQL) - `/app/backend/server.py`
-- **Frontend:** React + Tailwind CSS - `/app/frontend/src/`
-- **BD:** PostgreSQL schemas `finanzas2` (contabilidad) y `produccion` (artículos)
-- **Multiempresa:** empresa_id obligatorio en todos los endpoints
+- **Backend**: FastAPI monolítico (`server.py`) con `asyncpg` para PostgreSQL
+- **Frontend**: React con React-Bootstrap, Axios, react-router-dom
+- **Base de datos**: PostgreSQL, esquema `finanzas2`
+- **Deploy**: Docker en EasyPanel
 
-## Implementado
-
-### Multi-Tenancy (DONE)
-- empresa_id en 31 tablas, FastAPI dependency, Axios interceptor, EmpresaGuard
-- Todas las páginas reactivas al cambio de empresa
-
-### Correlativos Seguros (DONE)
-- Tabla cont_correlativos con UNIQUE(empresa_id, tipo_documento, prefijo)
-- Función atómica get_next_correlativo() con INSERT ON CONFLICT UPDATE
-- Sync automático al startup
-
-### Reportes Financieros (DONE)
-- Balance General, Estado de Resultados, Flujo de Caja: filtran por empresa_id
-- Reporte de Pagos: filtros por Centro de Costo, Línea de Negocio, Cuenta, Tipo, Fechas + Export CSV
-
-### Centro de Costo + Línea de Negocio (DONE)
-- Campos en cont_empleado_detalle y cont_pago
-- Empleados: formulario con CC y LN
-- Pagos de planilla/adelanto: heredan CC/LN del empleado
-- Editar en Centros de Costo y Líneas de Negocio
-
-### Protección doble-click (DONE)
-- submitting state en 16 módulos
-
-### Ventas POS (DONE)
-- Ingresos solo cuentan ventas confirmadas (estado_local = 'confirmada')
-- Botón Desconfirmar en tabla de confirmadas
-- Desconfirmar funciona sin pagos oficiales vinculados
-
-### Bug Fixes (DONE)
-- get_planilla: empresa_id como parámetro
-- Reportes financieros filtran por empresa_id
-- Gasto linea INSERT parameter order
-- EmpleadoDetalleCreate: tercero_id optional
-
-### Test Exhaustivo (DONE - 2026-02-09)
-- 20 módulos testeados: 30/30 backend + frontend 100%
-- Base de datos limpiada a cero post-test
+## Funcionalidades Implementadas
+- Dashboard con KPIs
+- Gestión de empresas, monedas, categorías, terceros
+- Órdenes de compra, facturas proveedor, gastos
+- Sistema de pagos y letras
+- Ventas POS (sync con Odoo)
+- Planillas y adelantos de empleados
+- Reportes financieros (Estado de resultados, balance general, flujo de caja)
+- Correlativos atómicos por empresa
+- Centro de costo y línea de negocio en empleados y pagos
+- Reporte de pagos avanzado
+- Fecha contable en facturas y gastos
+- **Export CompraAPP** (SUNAT): Campos tipo_comprobante_sunat, base_gravada, igv_sunat, base_no_gravada, isc en facturas proveedor y gastos. Endpoint GET /api/export/compraapp genera Excel.
 
 ## Backlog
-### P1
-- Investigar venta B003-17918 con pagos duplicados
-
-### P2
-- Simplificar SQL repetitivo en server.py
-- Validar saldos negativos antes de pagos
-- UNIQUE constraint en planilla periodo
+- P1: Refactorizar server.py (6000+ líneas) usando APIRouter de FastAPI
+- P2: Extraer lógica de `submitting` en custom hook reutilizable
