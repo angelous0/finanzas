@@ -4153,7 +4153,7 @@ async def get_historial_conciliaciones(empresa_id: int = Depends(get_empresa_id)
                 cl.tipo,
                 cl.conciliado,
                 cl.created_at,
-                -- banco mov data
+                -- banco mov data (from raw table)
                 bm.fecha as fecha_banco,
                 bm.descripcion as descripcion_banco,
                 bm.referencia as ref_banco,
@@ -4168,7 +4168,7 @@ async def get_historial_conciliaciones(empresa_id: int = Depends(get_empresa_id)
                 cf.nombre as cuenta_nombre,
                 cf.banco as banco
             FROM finanzas2.cont_conciliacion_linea cl
-            LEFT JOIN finanzas2.cont_banco_mov bm ON cl.banco_mov_id = bm.id
+            LEFT JOIN finanzas2.cont_banco_mov_raw bm ON cl.banco_mov_id = bm.id
             LEFT JOIN finanzas2.cont_pago p ON cl.pago_id = p.id
             LEFT JOIN finanzas2.cont_conciliacion c ON cl.conciliacion_id = c.id
             LEFT JOIN finanzas2.cont_cuenta_financiera cf ON c.cuenta_financiera_id = cf.id
