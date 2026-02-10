@@ -784,6 +784,35 @@ async def create_schema():
             )
         """)
 
+        # ── Migration: Fix FK on conciliacion_linea to point to banco_mov_raw ──
+        await conn.execute("""
+            DO $$
+            BEGIN
+                IF EXISTS (
+                    SELECT 1 FROM information_schema.table_constraints 
+                    WHERE constraint_name = 'cont_conciliacion_linea_banco_mov_id_fkey'
+                    AND table_schema = 'finanzas2'
+                ) THEN
+                    ALTER TABLE finanzas2.cont_conciliacion_linea 
+                    DROP CONSTRAINT cont_conciliacion_linea_banco_mov_id_fkey;
+                END IF;
+            END $$;
+        """)
+        await conn.execute("""
+            DO $$
+            BEGIN
+                IF NOT EXISTS (
+                    SELECT 1 FROM information_schema.table_constraints 
+                    WHERE constraint_name = 'cont_conciliacion_linea_banco_mov_raw_fkey'
+                    AND table_schema = 'finanzas2'
+                ) THEN
+                    ALTER TABLE finanzas2.cont_conciliacion_linea 
+                    ADD CONSTRAINT cont_conciliacion_linea_banco_mov_raw_fkey
+                    FOREIGN KEY (banco_mov_id) REFERENCES finanzas2.cont_banco_mov_raw(id);
+                END IF;
+            END $$;
+        """)
+
         # ── Indexes ──
         index_stmts = [
             "CREATE INDEX IF NOT EXISTS idx_cont_venta_pos_pago_venta ON finanzas2.cont_venta_pos_pago(venta_pos_id)",
