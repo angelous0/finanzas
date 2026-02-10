@@ -314,6 +314,7 @@ class FacturaProveedorBase(BaseModel):
     beneficiario_nombre: Optional[str] = None
     moneda_id: Optional[int] = None
     fecha_factura: date
+    fecha_contable: Optional[date] = None
     fecha_vencimiento: Optional[date] = None
     terminos_dias: int = 0
     tipo_documento: str = "factura"
@@ -329,6 +330,7 @@ class FacturaProveedorUpdate(BaseModel):
     beneficiario_nombre: Optional[str] = None
     moneda_id: Optional[int] = None
     fecha_factura: Optional[date] = None
+    fecha_contable: Optional[date] = None
     fecha_vencimiento: Optional[date] = None
     terminos_dias: Optional[int] = None
     tipo_documento: Optional[str] = None
@@ -475,6 +477,7 @@ class GastoLinea(GastoLineaBase):
 
 class GastoBase(BaseModel):
     fecha: date
+    fecha_contable: Optional[date] = None
     proveedor_id: Optional[int] = None
     beneficiario_nombre: Optional[str] = None
     moneda_id: Optional[int] = None
