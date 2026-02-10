@@ -666,9 +666,14 @@ async def update_cuenta_financiera(id: int, data: CuentaFinancieraUpdate, empres
         updates = []
         values = []
         idx = 1
+        saldo_inicial_changed = False
+        new_saldo_inicial = None
         for field, value in data.model_dump(exclude_unset=True).items():
             updates.append(f"{field} = ${idx}")
             values.append(value)
+            if field == 'saldo_inicial':
+                saldo_inicial_changed = True
+                new_saldo_inicial = value
             idx += 1
         if not updates:
             raise HTTPException(400, "No fields to update")
@@ -678,6 +683,25 @@ async def update_cuenta_financiera(id: int, data: CuentaFinancieraUpdate, empres
         row = await conn.fetchrow(query, *values)
         if not row:
             raise HTTPException(404, "Cuenta financiera not found")
+        
+        # If saldo_inicial changed, recalculate saldo_actual
+        if saldo_inicial_changed and new_saldo_inicial is not None:
+            ingresos = await conn.fetchval("""
+                SELECT COALESCE(SUM(pd.monto), 0) FROM finanzas2.cont_pago_detalle pd
+                JOIN finanzas2.cont_pago p ON pd.pago_id = p.id
+                WHERE pd.cuenta_financiera_id = $1 AND p.tipo = 'ingreso'
+            """, id)
+            egresos = await conn.fetchval("""
+                SELECT COALESCE(SUM(pd.monto), 0) FROM finanzas2.cont_pago_detalle pd
+                JOIN finanzas2.cont_pago p ON pd.pago_id = p.id
+                WHERE pd.cuenta_financiera_id = $1 AND p.tipo = 'egreso'
+            """, id)
+            nuevo_saldo = float(new_saldo_inicial) + float(ingresos) - float(egresos)
+            row = await conn.fetchrow(
+                "UPDATE finanzas2.cont_cuenta_financiera SET saldo_actual = $1 WHERE id = $2 RETURNING *",
+                nuevo_saldo, id
+            )
+        
         return dict(row)
 
 @api_router.delete("/cuentas-financieras/{id}")
