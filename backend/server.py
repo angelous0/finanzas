@@ -493,10 +493,10 @@ async def create_categoria(data: CategoriaCreate, empresa_id: int = Depends(get_
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
         row = await conn.fetchrow("""
-            INSERT INTO finanzas2.cont_categoria (empresa_id, codigo, nombre, tipo, padre_id, descripcion, activo)
-            VALUES ($1, $2, $3, $4, $5, $6, $7)
+            INSERT INTO finanzas2.cont_categoria (empresa_id, codigo, nombre, tipo, padre_id, descripcion, cuenta_gasto_id, activo)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
             RETURNING *
-        """, empresa_id, data.codigo, data.nombre, data.tipo, data.padre_id, data.descripcion, data.activo)
+        """, empresa_id, data.codigo, data.nombre, data.tipo, data.padre_id, data.descripcion, data.cuenta_gasto_id, data.activo)
         return dict(row)
 
 @api_router.put("/categorias/{id}", response_model=Categoria)
