@@ -4138,59 +4138,64 @@ async def importar_excel_banco(
 
 @api_router.get("/conciliacion/historial")
 async def get_historial_conciliaciones(empresa_id: int = Depends(get_empresa_id)):
-    """Get all conciliacion records with details"""
+    """Get all conciliation detail lines in flat format for the history view"""
     pool = await get_pool()
     async with pool.acquire() as conn:
         await conn.execute("SET search_path TO finanzas2, public")
         
-        # Get all conciliacion records with account info
         rows = await conn.fetch("""
             SELECT 
-                c.id,
-                c.fecha_inicio,
-                c.fecha_fin,
-                c.saldo_inicial,
-                c.saldo_final,
-                c.diferencia,
-                c.estado,
-                c.notas,
-                c.created_at as fecha_conciliacion,
+                cl.id,
+                cl.conciliacion_id,
+                cl.banco_mov_id,
+                cl.pago_id,
+                cl.monto,
+                cl.tipo,
+                cl.conciliado,
+                cl.created_at,
+                -- banco mov data
+                bm.fecha as fecha_banco,
+                bm.descripcion as descripcion_banco,
+                bm.referencia as ref_banco,
+                bm.monto as monto_banco,
+                -- pago data
+                p.numero as numero_sistema,
+                p.tipo as tipo_sistema,
+                p.fecha as fecha_sistema,
+                p.notas as descripcion_sistema,
+                p.monto_total as monto_sistema,
+                -- cuenta data
                 cf.nombre as cuenta_nombre,
-                cf.banco as cuenta_banco,
-                (SELECT COUNT(*) FROM finanzas2.cont_conciliacion_linea WHERE conciliacion_id = c.id) as num_movimientos
-            FROM finanzas2.cont_conciliacion c
+                cf.banco as banco
+            FROM finanzas2.cont_conciliacion_linea cl
+            LEFT JOIN finanzas2.cont_banco_mov bm ON cl.banco_mov_id = bm.id
+            LEFT JOIN finanzas2.cont_pago p ON cl.pago_id = p.id
+            LEFT JOIN finanzas2.cont_conciliacion c ON cl.conciliacion_id = c.id
             LEFT JOIN finanzas2.cont_cuenta_financiera cf ON c.cuenta_financiera_id = cf.id
-            ORDER BY c.created_at DESC
-        """)
+            WHERE cl.empresa_id = $1
+            ORDER BY cl.created_at DESC
+        """, empresa_id)
         
         result = []
-        for row in rows:
-            # Get detalles
-            detalles = await conn.fetch("""
-                SELECT 
-                    cl.tipo,
-                    cl.monto,
-                    p.numero as pago_numero,
-                    p.tipo as pago_tipo
-                FROM finanzas2.cont_conciliacion_linea cl
-                LEFT JOIN finanzas2.cont_pago p ON cl.pago_id = p.id
-                WHERE cl.conciliacion_id = $1
-            """, row['id'])
-            
+        for r in rows:
+            fecha_banco = r['fecha_banco']
+            fecha_sistema = r['fecha_sistema']
             result.append({
-                "id": row['id'],
-                "fecha_inicio": row['fecha_inicio'].isoformat() if row['fecha_inicio'] else None,
-                "fecha_fin": row['fecha_fin'].isoformat() if row['fecha_fin'] else None,
-                "fecha_conciliacion": row['fecha_conciliacion'].isoformat() if row['fecha_conciliacion'] else None,
-                "cuenta_nombre": row['cuenta_nombre'],
-                "cuenta_banco": row['cuenta_banco'],
-                "saldo_inicial": float(row['saldo_inicial']) if row['saldo_inicial'] else 0.0,
-                "saldo_final": float(row['saldo_final']) if row['saldo_final'] else 0.0,
-                "diferencia": float(row['diferencia']) if row['diferencia'] else 0.0,
-                "estado": row['estado'],
-                "notas": row['notas'],
-                "num_movimientos": row['num_movimientos'],
-                "detalles": [dict(d) for d in detalles]
+                "id": r['id'],
+                "conciliacion_id": r['conciliacion_id'],
+                "banco_mov_id": r['banco_mov_id'],
+                "pago_id": r['pago_id'],
+                "fecha_banco": fecha_banco.isoformat() if fecha_banco else None,
+                "fecha_sistema": fecha_sistema.isoformat() if fecha_sistema else None,
+                "banco": r['banco'] or r['cuenta_nombre'] or '-',
+                "ref_banco": r['ref_banco'] or '',
+                "descripcion_banco": r['descripcion_banco'] or '',
+                "monto": float(r['monto_banco'] or r['monto'] or 0),
+                "numero_sistema": r['numero_sistema'] or '',
+                "tipo_sistema": r['tipo_sistema'] or r['tipo'] or '',
+                "descripcion_sistema": r['descripcion_sistema'] or '',
+                "monto_sistema": float(r['monto_sistema'] or r['monto'] or 0),
+                "conciliado": r['conciliado'],
             })
         
         return result
