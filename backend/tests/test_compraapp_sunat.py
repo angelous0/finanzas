@@ -125,10 +125,43 @@ class TestFacturaProveedorSUNATFields:
         self.created_factura_id = data['id']
         return data
     
+    def _create_test_factura(self):
+        """Helper to create a factura for testing"""
+        today = date.today().isoformat()
+        vencimiento = (date.today() + timedelta(days=30)).isoformat()
+        unique_id = uuid.uuid4().hex[:8]
+        
+        factura_data = {
+            'proveedor_id': self.proveedor_id,
+            'moneda_id': self.moneda_id,
+            'fecha_factura': today,
+            'fecha_vencimiento': vencimiento,
+            'terminos_dias': 30,
+            'tipo_documento': 'factura',
+            'numero': f'TEST_F001-{unique_id}',
+            'impuestos_incluidos': False,
+            'tipo_comprobante_sunat': '01',
+            'base_gravada': 1000.00,
+            'igv_sunat': 180.00,
+            'base_no_gravada': 0,
+            'isc': 0,
+            'lineas': [
+                {
+                    'descripcion': 'Servicio de prueba SUNAT',
+                    'importe': 1000.00,
+                    'igv_aplica': True
+                }
+            ]
+        }
+        
+        response = requests.post(f"{BASE_URL}/api/facturas-proveedor", json=factura_data, headers=HEADERS)
+        assert response.status_code == 200, f"Create factura failed: {response.text}"
+        return response.json()
+    
     def test_get_factura_returns_sunat_fields(self):
         """Test GET /api/facturas-proveedor returns SUNAT fields"""
         # First create a factura
-        factura = self.test_create_factura_with_sunat_fields()
+        factura = self._create_test_factura()
         
         # Now GET it
         response = requests.get(f"{BASE_URL}/api/facturas-proveedor/{factura['id']}", headers=HEADERS)
@@ -146,7 +179,7 @@ class TestFacturaProveedorSUNATFields:
     def test_list_facturas_returns_sunat_fields(self):
         """Test GET /api/facturas-proveedor list returns SUNAT fields"""
         # First create a factura
-        self.test_create_factura_with_sunat_fields()
+        self._create_test_factura()
         
         # List all facturas
         response = requests.get(f"{BASE_URL}/api/facturas-proveedor", headers=HEADERS)
