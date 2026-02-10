@@ -440,6 +440,7 @@ class TestExportCompraAPP:
     def test_export_without_sunat_fields_returns_error(self):
         """Test GET /api/export/compraapp returns error when SUNAT fields missing"""
         today = date.today().isoformat()
+        unique_id = uuid.uuid4().hex[:8]
         
         # Create a factura WITHOUT tipo_comprobante_sunat
         factura_data = {
@@ -448,7 +449,7 @@ class TestExportCompraAPP:
             'fecha_factura': today,
             'terminos_dias': 30,
             'tipo_documento': 'factura',
-            'numero': f'TEST_NOSUNAT-{date.today().strftime("%H%M%S")}',
+            'numero': f'TEST_NOSUNAT-{unique_id}',
             'impuestos_incluidos': False,
             # NO SUNAT fields - tipo_comprobante_sunat is empty
             'tipo_comprobante_sunat': '',  # Empty
