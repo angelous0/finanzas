@@ -148,7 +148,7 @@ export const CuentasBancarias = () => {
       numero_cuenta: '',
       cci: '',
       moneda_id: pen?.id || '',
-      saldo_actual: 0
+      saldo_inicial: 0
     });
   };
 
