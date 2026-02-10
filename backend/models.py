@@ -319,6 +319,11 @@ class FacturaProveedorBase(BaseModel):
     terminos_dias: int = 0
     tipo_documento: str = "factura"
     impuestos_incluidos: bool = False
+    tipo_comprobante_sunat: Optional[str] = None
+    base_gravada: float = 0
+    igv_sunat: float = 0
+    base_no_gravada: float = 0
+    isc: float = 0
     notas: Optional[str] = None
 
 class FacturaProveedorCreate(FacturaProveedorBase):
