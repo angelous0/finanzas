@@ -1263,6 +1263,17 @@ export const FacturasProveedor = () => {
                       required
                     />
                   </div>
+
+                  <div className="form-group">
+                    <label className="form-label">Fecha contable</label>
+                    <input
+                      type="date"
+                      className="form-input"
+                      value={formData.fecha_contable}
+                      onChange={(e) => { setFechaContableManual(true); setFormData(prev => ({ ...prev, fecha_contable: e.target.value })); }}
+                      data-testid="factura-fecha-contable"
+                    />
+                  </div>
                   
                   <div className="form-group">
                     <label className="form-label">Fecha de vencimiento</label>
