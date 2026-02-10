@@ -774,9 +774,9 @@ export const Adelantos = () => {
               <button className="btn btn-outline" onClick={() => setShowPagoModal(false)}>
                 Cancelar
               </button>
-              <button className="btn btn-primary" onClick={handlePagar}>
+              <button className="btn btn-primary" onClick={handlePagar} disabled={registrandoPago}>
                 <DollarSign size={16} />
-                Confirmar Pago
+                {registrandoPago ? 'Registrando...' : 'Confirmar Pago'}
               </button>
             </div>
           </div>
