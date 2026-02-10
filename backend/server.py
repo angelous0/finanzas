@@ -4766,11 +4766,11 @@ async def export_compraapp(
             params_g.append(hasta)
             idx_g += 1
 
-        # Fetch facturas proveedor (include id, fecha_contable, vou_numero)
+        # Fetch facturas proveedor (include id, fecha_contable, vou_numero, category accounts)
         facturas = await conn.fetch(f"""
             SELECT fp.id, fp.numero, fp.fecha_factura, fp.fecha_contable, fp.fecha_vencimiento,
                    fp.tipo_comprobante_sunat, fp.base_gravada, fp.igv_sunat,
-                   fp.base_no_gravada, fp.isc, fp.total, fp.vou_numero,
+                   fp.base_no_gravada, fp.isc, fp.total, fp.vou_numero, fp.saldo_pendiente,
                    t.numero_documento as proveedor_doc, t.nombre as proveedor_nombre
             FROM finanzas2.cont_factura_proveedor fp
             LEFT JOIN finanzas2.cont_tercero t ON fp.proveedor_id = t.id
@@ -4789,6 +4789,59 @@ async def export_compraapp(
             WHERE {' AND '.join(g_conditions)}
             ORDER BY COALESCE(g.fecha_contable, g.fecha), g.id
         """, *params_g)
+
+        # Fetch config contable and build account lookup
+        config_row = await conn.fetchrow(
+            "SELECT * FROM finanzas2.cont_config_empresa WHERE empresa_id = $1", empresa_id
+        )
+        config = dict(config_row) if config_row else {}
+
+        # Build account code lookup
+        cta_ids = set(filter(None, [
+            config.get('cta_gastos_default_id'),
+            config.get('cta_igv_default_id'),
+            config.get('cta_xpagar_default_id'),
+        ]))
+        # Also fetch category account ids for facturas
+        fp_ids = [f['id'] for f in facturas]
+        cat_account_map = {}  # factura_id -> cuenta_codigo
+        if fp_ids:
+            cat_rows = await conn.fetch("""
+                SELECT DISTINCT fpl.factura_proveedor_id, cc.codigo as cta_codigo, cc.id as cta_id
+                FROM finanzas2.cont_factura_proveedor_linea fpl
+                LEFT JOIN finanzas2.cont_categoria cat ON fpl.categoria_id = cat.id
+                LEFT JOIN finanzas2.cont_cuenta cc ON cat.cuenta_gasto_id = cc.id
+                WHERE fpl.factura_proveedor_id = ANY($1) AND cc.id IS NOT NULL
+            """, fp_ids)
+            for cr in cat_rows:
+                cat_account_map[cr['factura_proveedor_id']] = cr['cta_codigo']
+
+        # Same for gastos
+        g_ids = [g['id'] for g in gastos]
+        gasto_cat_account_map = {}
+        if g_ids:
+            gcat_rows = await conn.fetch("""
+                SELECT DISTINCT gl.gasto_id, cc.codigo as cta_codigo
+                FROM finanzas2.cont_gasto_linea gl
+                LEFT JOIN finanzas2.cont_categoria cat ON gl.categoria_id = cat.id
+                LEFT JOIN finanzas2.cont_cuenta cc ON cat.cuenta_gasto_id = cc.id
+                WHERE gl.gasto_id = ANY($1) AND cc.id IS NOT NULL
+            """, g_ids)
+            for gr in gcat_rows:
+                gasto_cat_account_map[gr['gasto_id']] = gr['cta_codigo']
+
+        # Build account id -> codigo map
+        all_cta_ids = list(cta_ids)
+        cta_code_map = {}
+        if all_cta_ids:
+            cta_rows = await conn.fetch(
+                "SELECT id, codigo FROM finanzas2.cont_cuenta WHERE id = ANY($1)", all_cta_ids
+            )
+            cta_code_map = {r['id']: r['codigo'] for r in cta_rows}
+
+        default_cta_gastos = cta_code_map.get(config.get('cta_gastos_default_id'), '')
+        default_cta_igv = cta_code_map.get(config.get('cta_igv_default_id'), '')
+        default_cta_xpagar = cta_code_map.get(config.get('cta_xpagar_default_id'), '')
 
         # Validate: check for missing required fields
         errors = []
