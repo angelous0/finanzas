@@ -1989,10 +1989,11 @@ export const FacturasProveedor = () => {
                 type="button" 
                 className="btn btn-success"
                 onClick={handleRegistrarPago}
+                disabled={registrandoPago}
                 data-testid="registrar-pago-btn"
               >
                 <DollarSign size={16} />
-                Registrar Pago
+                {registrandoPago ? 'Registrando...' : 'Registrar Pago'}
               </button>
             </div>
           </div>
