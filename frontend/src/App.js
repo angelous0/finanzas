@@ -195,6 +195,8 @@ function App() {
             <Route path="/estado-resultados" element={<EstadoResultados />} />
             <Route path="/flujo-caja" element={<FlujoCaja />} />
             <Route path="/reporte-pagos" element={<ReportePagos />} />
+            <Route path="/cuentas-contables" element={<CuentasContables />} />
+            <Route path="/config-contable" element={<ConfigContable />} />
           </Routes>
         </main>
         </div>
