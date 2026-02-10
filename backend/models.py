@@ -78,6 +78,36 @@ class Categoria(CategoriaBase):
     updated_at: Optional[datetime] = None
 
 # =====================
+# CUENTA CONTABLE
+# =====================
+class CuentaContableBase(BaseModel):
+    codigo: str
+    nombre: str
+    tipo: str  # ACTIVO, PASIVO, GASTO, INGRESO, IMPUESTO, OTRO
+    es_activa: bool = True
+
+class CuentaContableCreate(CuentaContableBase):
+    pass
+
+class CuentaContableUpdate(BaseModel):
+    codigo: Optional[str] = None
+    nombre: Optional[str] = None
+    tipo: Optional[str] = None
+    es_activa: Optional[bool] = None
+
+class CuentaContable(CuentaContableBase):
+    id: int
+    empresa_id: Optional[int] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+class ConfigEmpresaContable(BaseModel):
+    empresa_id: Optional[int] = None
+    cta_gastos_default_id: Optional[int] = None
+    cta_igv_default_id: Optional[int] = None
+    cta_xpagar_default_id: Optional[int] = None
+
+# =====================
 # CENTRO COSTO
 # =====================
 class CentroCostoBase(BaseModel):
