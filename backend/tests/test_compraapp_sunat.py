@@ -319,6 +319,7 @@ class TestExportCompraAPP:
         """Helper to create a factura with all SUNAT fields"""
         today = date.today().isoformat()
         vencimiento = (date.today() + timedelta(days=30)).isoformat()
+        unique_id = uuid.uuid4().hex[:8]
         
         factura_data = {
             'proveedor_id': self.proveedor_id,
@@ -327,7 +328,7 @@ class TestExportCompraAPP:
             'fecha_vencimiento': vencimiento,
             'terminos_dias': 30,
             'tipo_documento': 'factura',
-            'numero': f'TEST_EXPORT-{date.today().strftime("%Y%m%d%H%M%S")}',
+            'numero': f'TEST_EXPORT-{unique_id}',
             'impuestos_incluidos': False,
             'tipo_comprobante_sunat': '01',
             'base_gravada': 2000.00,
