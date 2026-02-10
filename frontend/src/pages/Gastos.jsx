@@ -277,6 +277,10 @@ export default function Gastos() {
       const payload = {
         ...formData,
         proveedor_id: formData.proveedor_id || null,
+        base_gravada: totales.base_gravada,
+        igv_sunat: totales.igv_sunat,
+        base_no_gravada: totales.base_no_gravada,
+        isc: parseFloat(formData.isc) || 0,
         lineas: lineasGasto.filter(l => l.importe > 0).map(l => ({
           categoria_id: l.categoria_id || null,
           descripcion: l.descripcion || null,
