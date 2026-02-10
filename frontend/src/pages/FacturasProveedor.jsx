@@ -487,6 +487,7 @@ export const FacturasProveedor = () => {
 
   // Registrar pago
   const handleRegistrarPago = async () => {
+    if (registrandoPago) return;
     if (!pagoData.cuenta_id) {
       toast.error('Seleccione una cuenta');
       return;
@@ -502,6 +503,7 @@ export const FacturasProveedor = () => {
       return;
     }
     
+    setRegistrandoPago(true);
     try {
       await createPago({
         tipo: 'egreso',
