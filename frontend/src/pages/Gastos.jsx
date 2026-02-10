@@ -672,7 +672,7 @@ export default function Gastos() {
                   </div>
                 </div>
 
-                {/* SUNAT Doc Type and Tax Breakdown */}
+                {/* SUNAT Doc Type and Tax Breakdown (auto-calculated) */}
                 <div className="form-grid form-grid-4" style={{ marginTop: '0.75rem' }}>
                   <div className="form-group">
                     <label className="form-label">Doc SUNAT</label>
@@ -696,39 +696,33 @@ export default function Gastos() {
                   <div className="form-group">
                     <label className="form-label">Base Gravada</label>
                     <input
-                      type="number"
-                      step="0.01"
-                      min="0"
+                      type="text"
                       className="form-input"
-                      value={formData.base_gravada}
-                      onChange={(e) => {
-                        const bg = parseFloat(e.target.value) || 0;
-                        setFormData(prev => ({ ...prev, base_gravada: bg, igv_sunat: parseFloat((bg * 0.18).toFixed(2)) }));
-                      }}
+                      value={totales.base_gravada.toFixed(2)}
+                      readOnly
+                      style={{ background: '#f1f5f9' }}
                       data-testid="gasto-base-gravada"
                     />
                   </div>
                   <div className="form-group">
                     <label className="form-label">IGV</label>
                     <input
-                      type="number"
-                      step="0.01"
-                      min="0"
+                      type="text"
                       className="form-input"
-                      value={formData.igv_sunat}
-                      onChange={(e) => setFormData({ ...formData, igv_sunat: parseFloat(e.target.value) || 0 })}
+                      value={totales.igv_sunat.toFixed(2)}
+                      readOnly
+                      style={{ background: '#f1f5f9' }}
                       data-testid="gasto-igv-sunat"
                     />
                   </div>
                   <div className="form-group">
                     <label className="form-label">No Gravada</label>
                     <input
-                      type="number"
-                      step="0.01"
-                      min="0"
+                      type="text"
                       className="form-input"
-                      value={formData.base_no_gravada}
-                      onChange={(e) => setFormData({ ...formData, base_no_gravada: parseFloat(e.target.value) || 0 })}
+                      value={totales.base_no_gravada.toFixed(2)}
+                      readOnly
+                      style={{ background: '#f1f5f9' }}
                       data-testid="gasto-base-no-gravada"
                     />
                   </div>
