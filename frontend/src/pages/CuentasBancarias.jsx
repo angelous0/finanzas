@@ -28,7 +28,7 @@ export const CuentasBancarias = () => {
     numero_cuenta: '',
     cci: '',
     moneda_id: '',
-    saldo_actual: 0
+    saldo_inicial: 0
   });
 
   useEffect(() => {
