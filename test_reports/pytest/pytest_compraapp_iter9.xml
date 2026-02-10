@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="6" failures="1" skipped="2" tests="12" time="16.087" timestamp="2026-02-10T18:19:53.265266+00:00" hostname="agent-env-72f186a2-28c2-4377-9119-b3cbaa9083b0"><testcase classname="backend.tests.test_compraapp_sunat.TestFacturaProveedorSUNATFields" name="test_create_factura_with_sunat_fields" time="6.280"><error message="failed on setup with &quot;assert 520 == 200&#10; +  where 520 = &lt;Response [520]&gt;.status_code&quot;">backend/tests/test_compraapp_sunat.py:50: in setup
+    assert response.status_code == 200
+E   assert 520 == 200
+E    +  where 520 = &lt;Response [520]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_compraapp_sunat.TestFacturaProveedorSUNATFields" name="test_get_factura_returns_sunat_fields" time="1.054"><error message="failed on setup with &quot;assert 520 == 200&#10; +  where 520 = &lt;Response [520]&gt;.status_code&quot;">backend/tests/test_compraapp_sunat.py:50: in setup
+    assert response.status_code == 200
+E   assert 520 == 200
+E    +  where 520 = &lt;Response [520]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_compraapp_sunat.TestFacturaProveedorSUNATFields" name="test_list_facturas_returns_sunat_fields" time="2.315"><error message="failed on setup with &quot;assert 520 == 200&#10; +  where 520 = &lt;Response [520]&gt;.status_code&quot;">backend/tests/test_compraapp_sunat.py:50: in setup
+    assert response.status_code == 200
+E   assert 520 == 200
+E    +  where 520 = &lt;Response [520]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_compraapp_sunat.TestGastoSUNATFields" name="test_create_gasto_with_sunat_fields" time="1.196"><skipped type="pytest.skip" message="No cuentas financieras available">/app/backend/tests/test_compraapp_sunat.py:182: No cuentas financieras available</skipped></testcase><testcase classname="backend.tests.test_compraapp_sunat.TestGastoSUNATFields" name="test_get_gasto_returns_sunat_fields" time="0.958"><skipped type="pytest.skip" message="No cuentas financieras available">/app/backend/tests/test_compraapp_sunat.py:234: No cuentas financieras available</skipped></testcase><testcase classname="backend.tests.test_compraapp_sunat.TestExportCompraAPP" name="test_export_returns_excel_file" time="0.910"><error message="failed on setup with &quot;assert 520 == 200&#10; +  where 520 = &lt;Response [520]&gt;.status_code&quot;">backend/tests/test_compraapp_sunat.py:285: in setup
+    assert response.status_code == 200
+E   assert 520 == 200
+E    +  where 520 = &lt;Response [520]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_compraapp_sunat.TestExportCompraAPP" name="test_export_with_date_filters" time="0.892"><error message="failed on setup with &quot;assert 520 == 200&#10; +  where 520 = &lt;Response [520]&gt;.status_code&quot;">backend/tests/test_compraapp_sunat.py:285: in setup
+    assert response.status_code == 200
+E   assert 520 == 200
+E    +  where 520 = &lt;Response [520]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_compraapp_sunat.TestExportCompraAPP" name="test_export_without_sunat_fields_returns_error" time="0.891"><error message="failed on setup with &quot;assert 520 == 200&#10; +  where 520 = &lt;Response [520]&gt;.status_code&quot;">backend/tests/test_compraapp_sunat.py:285: in setup
+    assert response.status_code == 200
+E   assert 520 == 200
+E    +  where 520 = &lt;Response [520]&gt;.status_code</error></testcase><testcase classname="backend.tests.test_compraapp_sunat.TestIGVAutoCalculation" name="test_igv_calculation_from_base_gravada" time="0.000" /><testcase classname="backend.tests.test_compraapp_sunat.TestHealthAndPrerequisites" name="test_health_endpoint" time="0.453" /><testcase classname="backend.tests.test_compraapp_sunat.TestHealthAndPrerequisites" name="test_proveedores_available" time="0.491" /><testcase classname="backend.tests.test_compraapp_sunat.TestHealthAndPrerequisites" name="test_cuentas_financieras_available" time="0.463"><failure message="AssertionError: At least one cuenta financiera required for testing&#10;assert 0 &gt; 0&#10; +  where 0 = len([])">backend/tests/test_compraapp_sunat.py:526: in test_cuentas_financieras_available
+    assert len(data) &gt; 0, "At least one cuenta financiera required for testing"
+E   AssertionError: At least one cuenta financiera required for testing
+E   assert 0 &gt; 0
+E    +  where 0 = len([])</failure></testcase></testsuite></testsuites>
