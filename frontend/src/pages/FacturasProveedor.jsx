@@ -889,6 +889,44 @@ export const FacturasProveedor = () => {
     setFechaContableManual(false);
   };
 
+  const handleExportCompraAPP = async () => {
+    setExporting(true);
+    try {
+      const params = {};
+      if (exportDesde) params.desde = exportDesde;
+      if (exportHasta) params.hasta = exportHasta;
+      const response = await exportCompraAPP(params);
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `CompraAPP_${exportDesde || 'all'}_${exportHasta || 'all'}.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      toast.success('Archivo CompraAPP exportado exitosamente');
+      setShowExportModal(false);
+    } catch (error) {
+      console.error('Export error:', error);
+      const detail = error.response?.data;
+      if (detail && detail instanceof Blob) {
+        const text = await detail.text();
+        try {
+          const parsed = JSON.parse(text);
+          if (parsed.detail?.errors) {
+            toast.error(`${parsed.detail.message}:\n${parsed.detail.errors.slice(0, 3).join('\n')}`);
+          } else {
+            toast.error(parsed.detail?.message || parsed.detail || 'Error al exportar');
+          }
+        } catch { toast.error('Error al exportar CompraAPP'); }
+      } else {
+        toast.error(detail?.detail?.message || detail?.detail || 'Error al exportar CompraAPP');
+      }
+    } finally {
+      setExporting(false);
+    }
+  };
+
   const totales = calcularTotales();
   const monedaActual = monedas.find(m => m.id === parseInt(formData.moneda_id));
 
