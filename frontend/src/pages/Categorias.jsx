@@ -19,7 +19,8 @@ export const Categorias = () => {
     nombre: '',
     tipo: 'egreso',
     padre_id: null,
-    descripcion: ''
+    descripcion: '',
+    cuenta_gasto_id: null
   });
 
   useEffect(() => { loadData(); }, [filtroTipo, empresaActual]);
