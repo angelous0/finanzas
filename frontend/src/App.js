@@ -44,10 +44,60 @@ import Articulos from './pages/Articulos';
 import ReportePagos from './pages/ReportePagos';
 
 function EmpresaGuard({ children }) {
-  const { empresaActual, loading } = useEmpresa();
-  if (loading || !empresaActual) {
+  const { empresas, empresaActual, loading, reloadEmpresas } = useEmpresa();
+  const [showCreate, setShowCreate] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [form, setForm] = useState({ nombre: '', ruc: '' });
+
+  if (loading) {
     return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>Cargando...</div>;
   }
+
+  if (!empresaActual && empresas.length === 0) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: 'var(--bg)' }}>
+        <div style={{ textAlign: 'center', maxWidth: 420, padding: '2.5rem', background: 'var(--card)', borderRadius: '1rem', boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }}>
+          <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', fontSize: '1.5rem', fontWeight: 700, color: '#fff' }}>F4</div>
+          <h1 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.5rem' }}>Bienvenido a Finanzas 4.0</h1>
+          <p style={{ color: 'var(--muted)', marginBottom: '2rem' }}>Para comenzar, crea tu primera empresa</p>
+          
+          {!showCreate ? (
+            <button className="btn btn-primary" style={{ width: '100%', padding: '0.75rem' }} onClick={() => setShowCreate(true)} data-testid="crear-primera-empresa-btn">
+              Crear mi empresa
+            </button>
+          ) : (
+            <form onSubmit={async (e) => {
+              e.preventDefault();
+              if (creating || !form.nombre) return;
+              setCreating(true);
+              try {
+                const { createEmpresa } = await import('./services/api');
+                await createEmpresa(form);
+                await reloadEmpresas();
+              } catch (err) {
+                console.error(err);
+              } finally {
+                setCreating(false);
+              }
+            }}>
+              <div style={{ textAlign: 'left', marginBottom: '1rem' }}>
+                <label className="form-label required">Nombre de la empresa</label>
+                <input className="form-input" required value={form.nombre} onChange={e => setForm(p => ({ ...p, nombre: e.target.value }))} placeholder="Mi Empresa S.A.C." data-testid="empresa-nombre-input" />
+              </div>
+              <div style={{ textAlign: 'left', marginBottom: '1.5rem' }}>
+                <label className="form-label">RUC</label>
+                <input className="form-input" value={form.ruc} onChange={e => setForm(p => ({ ...p, ruc: e.target.value }))} placeholder="20123456789" />
+              </div>
+              <button type="submit" className="btn btn-primary" style={{ width: '100%', padding: '0.75rem' }} disabled={creating} data-testid="submit-primera-empresa-btn">
+                {creating ? 'Creando...' : 'Crear empresa'}
+              </button>
+            </form>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return children;
 }
 
