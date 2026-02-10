@@ -753,7 +753,35 @@ async def create_schema():
                 IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='finanzas2' AND table_name='cont_gasto' AND column_name='vou_numero') THEN
                     ALTER TABLE finanzas2.cont_gasto ADD COLUMN vou_numero VARCHAR(10);
                 END IF;
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='finanzas2' AND table_name='cont_categoria' AND column_name='cuenta_gasto_id') THEN
+                    ALTER TABLE finanzas2.cont_categoria ADD COLUMN cuenta_gasto_id INT;
+                END IF;
             END $$;
+        """)
+
+        # ── Table: cont_cuenta (chart of accounts) ──
+        await conn.execute("""
+            CREATE TABLE IF NOT EXISTS finanzas2.cont_cuenta (
+                id SERIAL PRIMARY KEY,
+                empresa_id INT NOT NULL REFERENCES finanzas2.cont_empresa(id),
+                codigo TEXT NOT NULL,
+                nombre TEXT NOT NULL,
+                tipo TEXT NOT NULL,
+                es_activa BOOLEAN NOT NULL DEFAULT true,
+                created_at TIMESTAMP DEFAULT NOW(),
+                updated_at TIMESTAMP DEFAULT NOW(),
+                UNIQUE (empresa_id, codigo)
+            )
+        """)
+
+        # ── Table: cont_config_empresa (accounting config per company) ──
+        await conn.execute("""
+            CREATE TABLE IF NOT EXISTS finanzas2.cont_config_empresa (
+                empresa_id INT PRIMARY KEY REFERENCES finanzas2.cont_empresa(id),
+                cta_gastos_default_id INT REFERENCES finanzas2.cont_cuenta(id),
+                cta_igv_default_id INT REFERENCES finanzas2.cont_cuenta(id),
+                cta_xpagar_default_id INT REFERENCES finanzas2.cont_cuenta(id)
+            )
         """)
 
         # ── Indexes ──
