@@ -4914,7 +4914,8 @@ async def export_compraapp(
         ws = wb.active
         ws.title = "CompraAPP"
 
-        headers = ["Vou.Origen", "Vou.Numero", "Vou.Fecha", "Doc", "Numero", "Fec.Doc", "Fec.Venc", "Codigo", "B.I.O.G y E.(A)", "AD. NO GRAV.", "I.S.C.", "IGV(A)"]
+        headers = ["Vou.Origen", "Vou.Numero", "Vou.Fecha", "Doc", "Numero", "Fec.Doc", "Fec.Venc", "Codigo",
+                   "B.I.O.G y E.(A)", "AD. NO GRAV.", "I.S.C.", "IGV(A)", "Cta Gastos", "Cta IGV", "Cta x Pagar"]
         header_font = Font(bold=True, size=10)
         thin_border = Border(
             left=Side(style='thin'), right=Side(style='thin'),
