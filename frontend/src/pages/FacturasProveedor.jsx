@@ -948,14 +948,25 @@ export const FacturasProveedor = () => {
             Pendiente: {formatCurrency(totalPendiente)}
           </p>
         </div>
-        <button 
-          className="btn btn-primary"
-          onClick={() => { resetForm(); setShowModal(true); }}
-          data-testid="nueva-factura-btn"
-        >
-          <Plus size={18} />
-          Nueva Factura
-        </button>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <button 
+            className="btn btn-outline"
+            onClick={() => setShowExportModal(true)}
+            data-testid="export-compraapp-btn"
+            title="Exportar CompraAPP"
+          >
+            <FileSpreadsheet size={18} />
+            CompraAPP
+          </button>
+          <button 
+            className="btn btn-primary"
+            onClick={() => { resetForm(); setShowModal(true); }}
+            data-testid="nueva-factura-btn"
+          >
+            <Plus size={18} />
+            Nueva Factura
+          </button>
+        </div>
       </div>
 
       <div className="page-content">
