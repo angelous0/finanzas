@@ -91,7 +91,7 @@ export const Categorias = () => {
 
   const resetForm = () => {
     setEditingId(null);
-    setFormData({ nombre: '', tipo: 'egreso', padre_id: null, descripcion: '' });
+    setFormData({ nombre: '', tipo: 'egreso', padre_id: null, descripcion: '', cuenta_gasto_id: null });
   };
 
   const getNombrePadre = (padreId) => {
