@@ -8,6 +8,7 @@ export const Categorias = () => {
   const { empresaActual } = useEmpresa();
 
   const [categorias, setCategorias] = useState([]);
+  const [cuentasContables, setCuentasContables] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState(null);
