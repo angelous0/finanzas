@@ -1,0 +1,50 @@
+{
+  "summary": "Tested Cuentas Contables (Plan de Cuentas) module. Backend: 12/12 tests passed for CRUD cuentas-contables, config-contable, categoria cuenta_gasto_id, and export compraapp columns. Frontend: All UI elements verified working - Plan de Cuentas page, Config Contable page, Categorías cuenta_gasto_id field.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "features_tested": {
+    "backend_cuentas_list": "PASS - GET /api/cuentas-contables returns 3 accounts (4011 IMPUESTO, 4212 PASIVO, 6011 GASTO)",
+    "backend_cuentas_create": "PASS - POST /api/cuentas-contables creates account with codigo, nombre, tipo",
+    "backend_cuentas_update": "PASS - PUT /api/cuentas-contables/{id} updates account fields",
+    "backend_cuentas_delete": "PASS - DELETE /api/cuentas-contables/{id} removes account",
+    "backend_cuentas_unique_codigo": "PASS - Duplicate codigo rejected (UNIQUE constraint)",
+    "backend_config_get": "PASS - GET /api/config-contable returns config with 3 default account IDs",
+    "backend_config_save": "PASS - PUT /api/config-contable saves config using UPSERT",
+    "backend_categoria_cuenta_gasto": "PASS - PUT /api/categorias/{id} updates cuenta_gasto_id field",
+    "backend_categoria_create_cuenta_gasto": "PASS - POST /api/categorias can set cuenta_gasto_id",
+    "backend_export_15_columns": "PASS - GET /api/export/compraapp has 15 column headers including Cta Gastos, Cta IGV, Cta x Pagar",
+    "backend_export_account_resolution": "PASS - Account resolution works: category account > default empresa account",
+    "backend_existing_cuentas": "PASS - Verified existing accounts: 6011 GASTO, 4011 IMPUESTO, 4212 PASIVO",
+    "frontend_plan_cuentas_page": "PASS - /cuentas-contables page shows CRUD table with search and type filter",
+    "frontend_plan_cuentas_crud": "PASS - Nueva Cuenta modal with codigo, nombre, tipo, es_activa fields",
+    "frontend_config_contable_page": "PASS - /config-contable page shows 3 account selects with saved values (6011, 4011, 4212)",
+    "frontend_categorias_cuenta_gasto": "PASS - Categorías form shows 'Cuenta de Gasto (para export)' dropdown for egreso categories"
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_cuentas_contables.py",
+    "/app/test_reports/pytest/pytest_cuentas_contables_iter11.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [],
+  "updated_files": [
+    "/app/backend/tests/test_cuentas_contables.py"
+  ],
+  "success_rate": {
+    "backend": "100% (12/12 tests passed)",
+    "frontend": "100% (all UI features verified working)"
+  },
+  "test_data_created": {
+    "cuentas_contables_seed": "Existing cuentas: ID 1 (6011 GASTO), ID 2 (4011 IMPUESTO), ID 3 (4212 PASIVO)",
+    "config_contable": "cta_gastos_default_id=1, cta_igv_default_id=2, cta_xpagar_default_id=3"
+  },
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Cuentas Contables module fully tested. Tables: cont_cuenta (chart of accounts), cont_config_empresa (accounting config per company). The Categorías form shows cuenta_gasto_id field only when tipo='egreso'. Export compraapp endpoint now has 15 columns - columns 13-15 are: Cta Gastos (from category or default), Cta IGV (default if IGV>0), Cta x Pagar (default if saldo_pendiente>0). Empresa ID is 5, existing cuenta IDs: 1 (6011 GASTO), 2 (4011 IMPUESTO), 3 (4212 PASIVO)."
+}
