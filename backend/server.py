@@ -31,7 +31,8 @@ from models import (
     VentaPOS, CXC, CXCCreate,
     Presupuesto, PresupuestoCreate,
     Conciliacion, ConciliacionCreate, BancoMovRaw, BancoMov,
-    DashboardKPIs
+    DashboardKPIs,
+    CuentaContable, CuentaContableCreate, CuentaContableUpdate, ConfigEmpresaContable
 )
 from odoo_service import OdooService
 
