@@ -755,7 +755,7 @@ export const ConciliacionBancaria = () => {
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                 <FileSpreadsheet size={20} />
                 <span style={{ fontWeight: 600, fontSize: '1rem' }}>
-                  Movimientos del Sistema ({movimientosSistema.length})
+                  Movimientos del Sistema ({movimientosSistema.filter(m => !m.conciliado).length})
                 </span>
                 {selectedSistema.length > 0 && (
                   <span style={{ 
