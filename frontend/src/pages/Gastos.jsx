@@ -137,8 +137,10 @@ export default function Gastos() {
   };
 
   const resetForm = () => {
+    const hoy = new Date().toISOString().split('T')[0];
     setFormData({
-      fecha: new Date().toISOString().split('T')[0],
+      fecha: hoy,
+      fecha_contable: hoy,
       proveedor_id: '',
       beneficiario_nombre: '',
       moneda_id: monedas[0]?.id || '',
@@ -146,6 +148,7 @@ export default function Gastos() {
       numero_documento: '',
       notas: ''
     });
+    setFechaContableManual(false);
     setLineasGasto([{
       categoria_id: '',
       descripcion: '',
