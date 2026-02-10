@@ -1332,6 +1332,80 @@ export const FacturasProveedor = () => {
                   </div>
                 </div>
 
+                {/* SUNAT Doc Type and Tax Breakdown */}
+                <div className="form-row" style={{ marginTop: '0.75rem', gap: '0.75rem', flexWrap: 'wrap' }}>
+                  <div className="form-group" style={{ maxWidth: '140px' }}>
+                    <label className="form-label">Doc SUNAT</label>
+                    <select
+                      className="form-input form-select"
+                      value={formData.tipo_comprobante_sunat}
+                      onChange={(e) => setFormData(prev => ({ ...prev, tipo_comprobante_sunat: e.target.value }))}
+                      data-testid="factura-tipo-sunat"
+                    >
+                      <option value="">--</option>
+                      <option value="01">01 - Factura</option>
+                      <option value="03">03 - Boleta</option>
+                      <option value="07">07 - Nota Crédito</option>
+                      <option value="08">08 - Nota Débito</option>
+                      <option value="14">14 - Serv. Público</option>
+                      <option value="02">02 - Recibo Hon.</option>
+                      <option value="12">12 - Ticket</option>
+                      <option value="00">00 - Otros</option>
+                    </select>
+                  </div>
+                  <div className="form-group" style={{ maxWidth: '140px' }}>
+                    <label className="form-label">Base Gravada</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      className="form-input"
+                      value={formData.base_gravada}
+                      onChange={(e) => {
+                        const bg = parseFloat(e.target.value) || 0;
+                        setFormData(prev => ({ ...prev, base_gravada: bg, igv_sunat: parseFloat((bg * 0.18).toFixed(2)) }));
+                      }}
+                      data-testid="factura-base-gravada"
+                    />
+                  </div>
+                  <div className="form-group" style={{ maxWidth: '130px' }}>
+                    <label className="form-label">IGV</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      className="form-input"
+                      value={formData.igv_sunat}
+                      onChange={(e) => setFormData(prev => ({ ...prev, igv_sunat: parseFloat(e.target.value) || 0 }))}
+                      data-testid="factura-igv-sunat"
+                    />
+                  </div>
+                  <div className="form-group" style={{ maxWidth: '140px' }}>
+                    <label className="form-label">No Gravada</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      className="form-input"
+                      value={formData.base_no_gravada}
+                      onChange={(e) => setFormData(prev => ({ ...prev, base_no_gravada: parseFloat(e.target.value) || 0 }))}
+                      data-testid="factura-base-no-gravada"
+                    />
+                  </div>
+                  <div className="form-group" style={{ maxWidth: '120px' }}>
+                    <label className="form-label">ISC</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      className="form-input"
+                      value={formData.isc}
+                      onChange={(e) => setFormData(prev => ({ ...prev, isc: parseFloat(e.target.value) || 0 }))}
+                      data-testid="factura-isc"
+                    />
+                  </div>
+                </div>
+
                 {/* Sección Detalles de la categoría */}
                 <div className="factura-section">
                   <div className="factura-section-header">
