@@ -348,6 +348,7 @@ export const FacturasProveedor = () => {
         terminos_dias: parseInt(formData.terminos_dias) || 0,
         // Ensure dates are valid or null
         fecha_factura: formData.fecha_factura || null,
+        fecha_contable: formData.fecha_contable || formData.fecha_factura || null,
         fecha_vencimiento: formData.fecha_vencimiento || null,
         lineas: formData.lineas.map(l => ({
           ...l,
