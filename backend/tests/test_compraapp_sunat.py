@@ -77,6 +77,7 @@ class TestFacturaProveedorSUNATFields:
         """Test POST /api/facturas-proveedor creates factura with SUNAT fields"""
         today = date.today().isoformat()
         vencimiento = (date.today() + timedelta(days=30)).isoformat()
+        unique_id = uuid.uuid4().hex[:8]
         
         factura_data = {
             'proveedor_id': self.proveedor_id,
@@ -85,7 +86,7 @@ class TestFacturaProveedorSUNATFields:
             'fecha_vencimiento': vencimiento,
             'terminos_dias': 30,
             'tipo_documento': 'factura',
-            'numero': f'TEST_F001-{date.today().strftime("%Y%m%d%H%M%S")}',
+            'numero': f'TEST_F001-{unique_id}',
             'impuestos_incluidos': False,
             # SUNAT fields
             'tipo_comprobante_sunat': '01',  # Factura
