@@ -4373,17 +4373,31 @@ async def conciliar_movimientos(
                 
                 conciliacion_id = conciliacion['id']
                 
-                # Create detail records for payments
-                for pago_id in pago_ids:
+                # Create detail records - pair bank movements with payments
+                for i, pago_id in enumerate(pago_ids):
                     pago_info = await conn.fetchrow("""
                         SELECT monto_total FROM finanzas2.cont_pago WHERE id = $1
                     """, pago_id)
                     
+                    # Link to corresponding bank movement if available
+                    banco_mov_id = banco_ids[i] if i < len(banco_ids) else None
+                    
                     await conn.execute("""
                         INSERT INTO finanzas2.cont_conciliacion_linea 
-                        (conciliacion_id, pago_id, tipo, monto, conciliado, empresa_id)
-                        VALUES ($1, $2, 'pago', $3, TRUE, $4)
-                    """, conciliacion_id, pago_id, pago_info['monto_total'] if pago_info else 0, empresa_id)
+                        (conciliacion_id, banco_mov_id, pago_id, tipo, monto, conciliado, empresa_id)
+                        VALUES ($1, $2, $3, 'pago', $4, TRUE, $5)
+                    """, conciliacion_id, banco_mov_id, pago_id, pago_info['monto_total'] if pago_info else 0, empresa_id)
+                
+                # Also create records for unmatched bank movements
+                for i in range(len(pago_ids), len(banco_ids)):
+                    banco_info = await conn.fetchrow(
+                        "SELECT monto FROM finanzas2.cont_banco_mov_raw WHERE id = $1", banco_ids[i]
+                    )
+                    await conn.execute("""
+                        INSERT INTO finanzas2.cont_conciliacion_linea 
+                        (conciliacion_id, banco_mov_id, tipo, monto, conciliado, empresa_id)
+                        VALUES ($1, $2, 'banco', $3, TRUE, $4)
+                    """, conciliacion_id, banco_ids[i], banco_info['monto'] if banco_info else 0, empresa_id)
         
         return {
             "message": f"Conciliados {len(banco_ids)} movimientos del banco y {len(pago_ids)} del sistema",
