@@ -386,6 +386,7 @@ export const FacturasProveedor = () => {
         proveedor_id: formData.proveedor_id ? parseInt(formData.proveedor_id) : null,
         moneda_id: formData.moneda_id ? parseInt(formData.moneda_id) : null,
         terminos_dias: parseInt(formData.terminos_dias) || 0,
+        tipo_cambio: formData.tipo_cambio ? parseFloat(formData.tipo_cambio) : null,
         base_gravada: tots.base_gravada,
         igv_sunat: tots.igv_sunat,
         base_no_gravada: tots.base_no_gravada,
