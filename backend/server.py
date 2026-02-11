@@ -4835,9 +4835,12 @@ async def export_compraapp(
             SELECT fp.id, fp.numero, fp.fecha_factura, fp.fecha_contable, fp.fecha_vencimiento,
                    fp.tipo_comprobante_sunat, fp.base_gravada, fp.igv_sunat,
                    fp.base_no_gravada, fp.isc, fp.total, fp.vou_numero, fp.saldo_pendiente,
-                   t.numero_documento as proveedor_doc, t.nombre as proveedor_nombre
+                   fp.tipo_cambio,
+                   t.numero_documento as proveedor_doc, t.nombre as proveedor_nombre,
+                   m.codigo as moneda_codigo
             FROM finanzas2.cont_factura_proveedor fp
             LEFT JOIN finanzas2.cont_tercero t ON fp.proveedor_id = t.id
+            LEFT JOIN finanzas2.cont_moneda m ON fp.moneda_id = m.id
             WHERE {' AND '.join(fp_conditions)}
             ORDER BY COALESCE(fp.fecha_contable, fp.fecha_factura), fp.id
         """, *params_fp)
@@ -4847,9 +4850,12 @@ async def export_compraapp(
             SELECT g.id, g.numero_documento, g.fecha, g.fecha_contable,
                    g.tipo_comprobante_sunat, g.base_gravada, g.igv_sunat,
                    g.base_no_gravada, g.isc, g.total, g.vou_numero,
-                   t.numero_documento as proveedor_doc, t.nombre as proveedor_nombre
+                   g.tipo_cambio,
+                   t.numero_documento as proveedor_doc, t.nombre as proveedor_nombre,
+                   m.codigo as moneda_codigo
             FROM finanzas2.cont_gasto g
             LEFT JOIN finanzas2.cont_tercero t ON g.proveedor_id = t.id
+            LEFT JOIN finanzas2.cont_moneda m ON g.moneda_id = m.id
             WHERE {' AND '.join(g_conditions)}
             ORDER BY COALESCE(g.fecha_contable, g.fecha), g.id
         """, *params_g)
