@@ -62,6 +62,7 @@ export default function Gastos() {
     proveedor_id: '',
     beneficiario_nombre: '',
     moneda_id: '',
+    tipo_cambio: '',
     tipo_documento: 'boleta',
     numero_documento: '',
     tipo_comprobante_sunat: '03',
