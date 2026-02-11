@@ -5094,6 +5094,7 @@ async def export_compraapp(
             igv_val = fmt_num(g['igv_sunat'])
             cta_igv = default_cta_igv if igv_val else None
             cta_xpagar = default_cta_xpagar if float(g.get('total') or 0) > 0 else None
+            m_letra, m_tc = moneda_tc(g.get('moneda_codigo'), g.get('tipo_cambio'))
 
             row_data = {
                 "Vou.Origen": VOU_ORIGEN,
@@ -5107,6 +5108,8 @@ async def export_compraapp(
                 "AD. NO GRAV.": fmt_num(g['base_no_gravada']),
                 "I.S.C.": fmt_num(g['isc']),
                 "IGV (A)": igv_val,
+                "Moneda": m_letra,
+                "TC": m_tc,
                 "Cta Gastos": cta_gasto,
                 "Cta IGV": cta_igv,
                 "Cta x Pagar": cta_xpagar,
