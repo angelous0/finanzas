@@ -361,6 +361,7 @@ class FacturaProveedorBase(BaseModel):
 
 class FacturaProveedorCreate(FacturaProveedorBase):
     numero: Optional[str] = None
+    tipo_cambio: Optional[float] = None
     lineas: List[FacturaLineaCreate] = []
 
 class FacturaProveedorUpdate(BaseModel):
@@ -378,6 +379,7 @@ class FacturaProveedorUpdate(BaseModel):
     igv_sunat: Optional[float] = None
     base_no_gravada: Optional[float] = None
     isc: Optional[float] = None
+    tipo_cambio: Optional[float] = None
     notas: Optional[str] = None
 
 class FacturaProveedor(FacturaProveedorBase):
@@ -540,6 +542,7 @@ class GastoPagoDetalle(BaseModel):
     referencia: Optional[str] = None
 
 class GastoCreate(GastoBase):
+    tipo_cambio: Optional[float] = None
     lineas: List[GastoLineaCreate] = []
     pagos: List[GastoPagoDetalle] = []  # Multiple payments that must sum to total
 
