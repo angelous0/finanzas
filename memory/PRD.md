@@ -30,6 +30,8 @@ Sistema de gestión financiera completo con FastAPI backend + React frontend + P
 - 12: AD. NO GRAV. = base_no_gravada
 - 13: I.S.C. = isc
 - 14: IGV (A) = igv_sunat
+- 19: Moneda = 'S' (PEN) / 'D' (USD)
+- 20: TC = 1.00 (PEN) / tipo_cambio del documento (USD). USD sin TC bloquea export.
 - 22-25: Cta Gastos, Cta IGV, Cta O. Trib.(vacío), Cta x Pagar
 
 ## Backlog
