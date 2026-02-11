@@ -1631,12 +1631,12 @@ async def create_factura_proveedor(data: FacturaProveedorCreate, empresa_id: int
                 INSERT INTO finanzas2.cont_factura_proveedor 
                 (empresa_id, numero, proveedor_id, beneficiario_nombre, moneda_id, fecha_factura, fecha_contable, fecha_vencimiento,
                  terminos_dias, tipo_documento, estado, subtotal, igv, total, saldo_pendiente, 
-                 impuestos_incluidos, tipo_comprobante_sunat, base_gravada, igv_sunat, base_no_gravada, isc, notas)
-                VALUES ($1, $2, $3, $4, $5, TO_DATE($6, 'YYYY-MM-DD'), TO_DATE($7, 'YYYY-MM-DD'), TO_DATE($8, 'YYYY-MM-DD'), $9, $10, 'pendiente', $11, $12, $13, $13, $14, $15, $16, $17, $18, $19, $20)
+                 impuestos_incluidos, tipo_comprobante_sunat, base_gravada, igv_sunat, base_no_gravada, isc, tipo_cambio, notas)
+                VALUES ($1, $2, $3, $4, $5, TO_DATE($6, 'YYYY-MM-DD'), TO_DATE($7, 'YYYY-MM-DD'), TO_DATE($8, 'YYYY-MM-DD'), $9, $10, 'pendiente', $11, $12, $13, $13, $14, $15, $16, $17, $18, $19, $20, $21)
                 RETURNING id
             """, empresa_id, numero, data.proveedor_id, data.beneficiario_nombre, data.moneda_id,
                 safe_date_param(data.fecha_factura), safe_date_param(fecha_contable), safe_date_param(fecha_vencimiento), data.terminos_dias, data.tipo_documento,
-                subtotal, igv, total, data.impuestos_incluidos, data.tipo_comprobante_sunat, base_gravada, igv_sunat, base_no_gravada, isc_val, data.notas)
+                subtotal, igv, total, data.impuestos_incluidos, data.tipo_comprobante_sunat, base_gravada, igv_sunat, base_no_gravada, isc_val, data.tipo_cambio, data.notas)
             
             factura_id = row['id']
             
