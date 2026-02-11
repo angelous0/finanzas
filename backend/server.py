@@ -5040,6 +5040,12 @@ async def export_compraapp(
             v = round(float(val), 2)
             return v if v != 0 else None
 
+        def moneda_tc(moneda_codigo, tipo_cambio):
+            """Return (letra, tc) for Moneda/TC columns."""
+            if moneda_codigo == 'USD':
+                return 'D', round(float(tipo_cambio), 2)
+            return 'S', 1.00
+
         def write_row(ws, row, data_dict):
             """Write a dict keyed by column name into the correct 61-col positions."""
             for col_idx, col_name in enumerate(COLUMNS_61, 1):
