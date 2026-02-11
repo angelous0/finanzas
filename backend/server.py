@@ -4922,6 +4922,8 @@ async def export_compraapp(
                 errors.append(f"Factura #{i+1}: falta Número")
             if not f['proveedor_doc']:
                 errors.append(f"Factura '{f['numero']}': falta Código (RUC/DNI) del proveedor")
+            if f['moneda_codigo'] == 'USD' and not f['tipo_cambio']:
+                errors.append(f"Factura '{f['numero']}': moneda USD sin tipo de cambio")
         for i, g in enumerate(gastos):
             if not g['tipo_comprobante_sunat']:
                 errors.append(f"Gasto '{g['numero_documento']}': falta Doc SUNAT")
@@ -4929,6 +4931,8 @@ async def export_compraapp(
                 errors.append(f"Gasto #{i+1}: falta Número documento")
             if not g['proveedor_doc']:
                 errors.append(f"Gasto '{g['numero_documento']}': falta Código (RUC/DNI) del proveedor")
+            if g['moneda_codigo'] == 'USD' and not g['tipo_cambio']:
+                errors.append(f"Gasto '{g['numero_documento']}': moneda USD sin tipo de cambio")
 
         if errors:
             raise HTTPException(400, detail={"message": "Faltan datos obligatorios para la exportación", "errors": errors})
