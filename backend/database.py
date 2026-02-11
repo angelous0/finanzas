@@ -753,6 +753,12 @@ async def create_schema():
                 IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='finanzas2' AND table_name='cont_gasto' AND column_name='vou_numero') THEN
                     ALTER TABLE finanzas2.cont_gasto ADD COLUMN vou_numero VARCHAR(10);
                 END IF;
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='finanzas2' AND table_name='cont_factura_proveedor' AND column_name='tipo_cambio') THEN
+                    ALTER TABLE finanzas2.cont_factura_proveedor ADD COLUMN tipo_cambio NUMERIC(18,8);
+                END IF;
+                IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='finanzas2' AND table_name='cont_gasto' AND column_name='tipo_cambio') THEN
+                    ALTER TABLE finanzas2.cont_gasto ADD COLUMN tipo_cambio NUMERIC(18,8);
+                END IF;
                 IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='finanzas2' AND table_name='cont_categoria' AND column_name='cuenta_gasto_id') THEN
                     ALTER TABLE finanzas2.cont_categoria ADD COLUMN cuenta_gasto_id INT;
                 END IF;
