@@ -106,6 +106,7 @@ export const FacturasProveedor = () => {
     proveedor_id: '',
     beneficiario_nombre: '',
     moneda_id: '',
+    tipo_cambio: '',
     fecha_factura: new Date().toISOString().split('T')[0],
     fecha_contable: new Date().toISOString().split('T')[0],
     fecha_vencimiento: '',
