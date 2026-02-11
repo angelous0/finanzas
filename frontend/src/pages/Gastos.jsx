@@ -615,13 +615,35 @@ export default function Gastos() {
                     <select
                       className="form-input form-select"
                       value={formData.moneda_id}
-                      onChange={(e) => setFormData({ ...formData, moneda_id: e.target.value })}
+                      onChange={(e) => {
+                        const selMoneda = monedas.find(m => m.id === parseInt(e.target.value));
+                        setFormData(prev => ({
+                          ...prev,
+                          moneda_id: e.target.value,
+                          tipo_cambio: selMoneda?.codigo === 'PEN' ? '1' : prev.tipo_cambio || ''
+                        }));
+                      }}
                     >
                       {monedas.map(m => (
                         <option key={m.id} value={m.id}>{m.nombre} ({m.simbolo})</option>
                       ))}
                     </select>
                   </div>
+                  {monedas.find(m => m.id === parseInt(formData.moneda_id))?.codigo === 'USD' && (
+                    <div className="form-group">
+                      <label className="form-label required">T.C.</label>
+                      <input
+                        type="number"
+                        step="0.001"
+                        className="form-input"
+                        placeholder="Ej: 3.72"
+                        value={formData.tipo_cambio}
+                        onChange={(e) => setFormData(prev => ({ ...prev, tipo_cambio: e.target.value }))}
+                        data-testid="gasto-tipo-cambio-input"
+                        required
+                      />
+                    </div>
+                  )}
                   <div className="form-group">
                     <label className="form-label">Tipo Doc.</label>
                     <select
