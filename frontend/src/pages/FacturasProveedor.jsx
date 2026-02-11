@@ -910,6 +910,7 @@ export const FacturasProveedor = () => {
       proveedor_id: '',
       beneficiario_nombre: '',
       moneda_id: pen?.id || '',
+      tipo_cambio: '1',
       fecha_factura: hoy,
       fecha_contable: hoy,
       fecha_vencimiento: '',
