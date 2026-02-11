@@ -4978,15 +4978,31 @@ async def export_compraapp(
         ws = wb.active
         ws.title = "CompraAPP"
 
-        headers = ["Vou.Origen", "Vou.Numero", "Vou.Fecha", "Doc", "Numero", "Fec.Doc", "Fec.Venc", "Codigo",
-                   "B.I.O.G y E.(A)", "AD. NO GRAV.", "I.S.C.", "IGV(A)", "Cta Gastos", "Cta IGV", "Cta x Pagar"]
+        # Fixed 61-column order (NEVER change order)
+        COLUMNS_61 = [
+            "Vou.Origen", "Vou.Numero", "Vou.Fecha", "Doc", "Numero",
+            "Fec.Doc", "Fec.Venc.", "Codigo", "B.I.O.G y E. (A)",
+            "B.I.O.G.y E. y NO GRA. (B)", "B.I.O.G.sin D.C.FIS(C)",
+            "AD. NO GRAV.", "I.S.C.", "IGV (A)", "IGV (B)", "IGV (C)",
+            "OTROS TRIB.", "IMP. BOLSA", "Moneda", "TC", "Glosa",
+            "Cta Gastos", "Cta IGV", "Cta O. Trib.", "Cta x Pagar",
+            "C.Costo", "Presupuesto", "R.Doc", "R.numero", "R.Fecha",
+            "D.Numero", "D.Fecha", "RUC", "R.Social", "Tipo",
+            "Tip.Doc.Iden", "Medio de Pago", "Apellido 1", "Apellido 2",
+            "Nombre", "T.Bien", "P.origen", "P.vou", "P.fecha",
+            "P.fecha D.", "P.fecha V.", "P.cta cob", "P.m.pago", "P.doc",
+            "P.num doc", "P.moneda", "P.tc", "P.monto", "P.glosa",
+            "P.fe", "Retencion 0/1", "PDB ndes", "CodTasa", "Ind.Ret",
+            "B.Imp", "IGV",
+        ]
+
         header_font = Font(bold=True, size=10)
         thin_border = Border(
             left=Side(style='thin'), right=Side(style='thin'),
             top=Side(style='thin'), bottom=Side(style='thin')
         )
 
-        for col_idx, header in enumerate(headers, 1):
+        for col_idx, header in enumerate(COLUMNS_61, 1):
             cell = ws.cell(row=1, column=col_idx, value=header)
             cell.font = header_font
             cell.alignment = Alignment(horizontal='center')
@@ -4997,7 +5013,7 @@ async def export_compraapp(
 
         def fmt_date(d):
             if d is None:
-                return ""
+                return None
             if isinstance(d, str):
                 try:
                     from datetime import datetime as dt
@@ -5008,66 +5024,80 @@ async def export_compraapp(
             return d.strftime("%d/%m/%Y")
 
         def fmt_num(val):
+            """Return rounded float or None (truly empty cell)."""
             if val is None:
-                return 0.0
-            return round(float(val), 2)
+                return None
+            v = round(float(val), 2)
+            return v if v != 0 else None
+
+        def write_row(ws, row, data_dict):
+            """Write a dict keyed by column name into the correct 61-col positions."""
+            for col_idx, col_name in enumerate(COLUMNS_61, 1):
+                val = data_dict.get(col_name)
+                cell = ws.cell(row=row, column=col_idx, value=val)
+                cell.border = thin_border
 
         # Write facturas proveedor
         for f in facturas:
             f = dict(f) if not isinstance(f, dict) else f
             vou_fecha = f.get('fecha_contable') or f.get('fecha_factura')
-            cta_gasto = cat_account_map.get(f['id'], default_cta_gastos)
+            cta_gasto = cat_account_map.get(f['id'], default_cta_gastos) or None
             igv_val = fmt_num(f['igv_sunat'])
-            cta_igv = default_cta_igv if igv_val > 0 else ''
+            cta_igv = default_cta_igv if igv_val else None
             saldo = float(f.get('saldo_pendiente') or 0)
-            cta_xpagar = default_cta_xpagar if saldo > 0 else ''
-            ws.cell(row=row_num, column=1, value=VOU_ORIGEN).border = thin_border
-            ws.cell(row=row_num, column=2, value=f.get('vou_numero') or "").border = thin_border
-            ws.cell(row=row_num, column=3, value=fmt_date(vou_fecha)).border = thin_border
-            ws.cell(row=row_num, column=4, value=f['tipo_comprobante_sunat'] or "").border = thin_border
-            ws.cell(row=row_num, column=5, value=f['numero'] or "").border = thin_border
-            ws.cell(row=row_num, column=6, value=fmt_date(f['fecha_factura'])).border = thin_border
-            ws.cell(row=row_num, column=7, value=fmt_date(f['fecha_vencimiento'])).border = thin_border
-            ws.cell(row=row_num, column=8, value=clean_doc(f['proveedor_doc'])).border = thin_border
-            ws.cell(row=row_num, column=9, value=fmt_num(f['base_gravada'])).border = thin_border
-            ws.cell(row=row_num, column=10, value=fmt_num(f['base_no_gravada'])).border = thin_border
-            ws.cell(row=row_num, column=11, value=fmt_num(f['isc'])).border = thin_border
-            ws.cell(row=row_num, column=12, value=igv_val).border = thin_border
-            ws.cell(row=row_num, column=13, value=cta_gasto).border = thin_border
-            ws.cell(row=row_num, column=14, value=cta_igv).border = thin_border
-            ws.cell(row=row_num, column=15, value=cta_xpagar).border = thin_border
+            cta_xpagar = default_cta_xpagar if saldo > 0 else None
+
+            row_data = {
+                "Vou.Origen": VOU_ORIGEN,
+                "Vou.Numero": f.get('vou_numero') or None,
+                "Vou.Fecha": fmt_date(vou_fecha),
+                "Doc": f['tipo_comprobante_sunat'] or None,
+                "Numero": f['numero'] or None,
+                "Fec.Doc": fmt_date(f['fecha_factura']),
+                "Fec.Venc.": fmt_date(f['fecha_vencimiento']),
+                "Codigo": clean_doc(f['proveedor_doc']) or None,
+                "B.I.O.G y E. (A)": fmt_num(f['base_gravada']),
+                "AD. NO GRAV.": fmt_num(f['base_no_gravada']),
+                "I.S.C.": fmt_num(f['isc']),
+                "IGV (A)": igv_val,
+                "Cta Gastos": cta_gasto,
+                "Cta IGV": cta_igv,
+                "Cta x Pagar": cta_xpagar,
+            }
+            write_row(ws, row_num, row_data)
             row_num += 1
 
         # Write gastos
         for g in gastos:
             g = dict(g) if not isinstance(g, dict) else g
             vou_fecha = g.get('fecha_contable') or g.get('fecha')
-            cta_gasto = gasto_cat_account_map.get(g['id'], default_cta_gastos)
+            cta_gasto = gasto_cat_account_map.get(g['id'], default_cta_gastos) or None
             igv_val = fmt_num(g['igv_sunat'])
-            cta_igv = default_cta_igv if igv_val > 0 else ''
-            # Gastos don't have saldo_pendiente, use total as xpagar
-            cta_xpagar = default_cta_xpagar if float(g.get('total') or 0) > 0 else ''
-            ws.cell(row=row_num, column=1, value=VOU_ORIGEN).border = thin_border
-            ws.cell(row=row_num, column=2, value=g.get('vou_numero') or "").border = thin_border
-            ws.cell(row=row_num, column=3, value=fmt_date(vou_fecha)).border = thin_border
-            ws.cell(row=row_num, column=4, value=g['tipo_comprobante_sunat'] or "").border = thin_border
-            ws.cell(row=row_num, column=5, value=g['numero_documento'] or "").border = thin_border
-            ws.cell(row=row_num, column=6, value=fmt_date(g['fecha'])).border = thin_border
-            ws.cell(row=row_num, column=7, value="").border = thin_border
-            ws.cell(row=row_num, column=8, value=clean_doc(g['proveedor_doc'])).border = thin_border
-            ws.cell(row=row_num, column=9, value=fmt_num(g['base_gravada'])).border = thin_border
-            ws.cell(row=row_num, column=10, value=fmt_num(g['base_no_gravada'])).border = thin_border
-            ws.cell(row=row_num, column=11, value=fmt_num(g['isc'])).border = thin_border
-            ws.cell(row=row_num, column=12, value=igv_val).border = thin_border
-            ws.cell(row=row_num, column=13, value=cta_gasto).border = thin_border
-            ws.cell(row=row_num, column=14, value=cta_igv).border = thin_border
-            ws.cell(row=row_num, column=15, value=cta_xpagar).border = thin_border
+            cta_igv = default_cta_igv if igv_val else None
+            cta_xpagar = default_cta_xpagar if float(g.get('total') or 0) > 0 else None
+
+            row_data = {
+                "Vou.Origen": VOU_ORIGEN,
+                "Vou.Numero": g.get('vou_numero') or None,
+                "Vou.Fecha": fmt_date(vou_fecha),
+                "Doc": g['tipo_comprobante_sunat'] or None,
+                "Numero": g['numero_documento'] or None,
+                "Fec.Doc": fmt_date(g['fecha']),
+                "Codigo": clean_doc(g['proveedor_doc']) or None,
+                "B.I.O.G y E. (A)": fmt_num(g['base_gravada']),
+                "AD. NO GRAV.": fmt_num(g['base_no_gravada']),
+                "I.S.C.": fmt_num(g['isc']),
+                "IGV (A)": igv_val,
+                "Cta Gastos": cta_gasto,
+                "Cta IGV": cta_igv,
+                "Cta x Pagar": cta_xpagar,
+            }
+            write_row(ws, row_num, row_data)
             row_num += 1
 
-        # Auto-adjust column widths
-        col_widths = [10, 12, 12, 8, 20, 12, 12, 14, 18, 16, 10, 12, 14, 14, 14]
-        for i, w in enumerate(col_widths, 1):
-            ws.column_dimensions[openpyxl.utils.get_column_letter(i)].width = w
+        # Auto-adjust column widths for 61 columns
+        for i in range(1, 62):
+            ws.column_dimensions[openpyxl.utils.get_column_letter(i)].width = 14
 
         # Save to buffer
         buffer = io.BytesIO()
