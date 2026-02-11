@@ -279,6 +279,7 @@ export default function Gastos() {
       const payload = {
         ...formData,
         proveedor_id: formData.proveedor_id || null,
+        tipo_cambio: formData.tipo_cambio ? parseFloat(formData.tipo_cambio) : null,
         base_gravada: totales.base_gravada,
         igv_sunat: totales.igv_sunat,
         base_no_gravada: totales.base_no_gravada,
